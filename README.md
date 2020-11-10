@@ -17,4 +17,5 @@ You need to make a config file similar to this and drop it next to the bot file 
 	"NAME" : "alemibot",
 	"ID" : 1234,
 	"HASH" : "l00k4tm31m4nh45h"
-}```
+}
+```
