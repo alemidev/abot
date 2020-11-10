@@ -150,10 +150,15 @@ async def dizionario(event):
         res = italian_dictionary.get_definition(arg) 
 
         out = f"` → {res['lemma']} ` [ {' | '.join(res['sillabe'])} ]\n"
-        out += "\n\n".join(res['definizione'])
-        out += f"\n\n```{', '.join(res['grammatica'])} - {res['pronuncia']}```"
-        for m in batchify(out, 4090):
-            await event.message.reply(m)
+        out += f"```{', '.join(res['grammatica'])} - {res['pronuncia']}```\n\n"
+        buf = "\n\n".join(res['definizione'])
+        if len(buf) < 3500:
+            out += buf
+            await event.message.reply(out)
+        else:
+            out += res['definizione'][0]
+            out += f"\n__(skipped {len(res['definizione']-1} definitions)__"
+            await event.message.reply(out)
     except Exception as e:
         await event.message.reply("`[!] → ` " + str(e) if str(e) != "" else "Not found")
     await set_offline(event.client)
