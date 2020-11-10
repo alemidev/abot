@@ -344,7 +344,8 @@ async def helper(event):
                           "`→ .spam <number> <message> ` self explainatory *\n" +
                           "`→ .run <command> ` execute command on server *\n" +
                           "`→ .save ` save attached file to server *\n" +
-                          "`→ .upload ` upload a file from server to chat *\n")
+                          "`→ .upload ` upload a file from server to chat *\n" +
+                        "\nhttps://github.com/alemigliardi/alemibot")
 
 client = TelegramClient(
     config["NAME"], config["ID"],
