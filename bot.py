@@ -278,7 +278,10 @@ async def trigger_replies(event):
 async def save(event):
     if not can_react(event.chat_id):
         return
-    if event.message.media is not None:
+    msg = event.message
+    if event.is_reply:
+        msg = await event.get_reply_message()
+    if msg.media is not None:
         if event.out:
             try:
                 file = await event.client.download_media(message=event.message)
