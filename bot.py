@@ -336,6 +336,7 @@ async def helper(event):
                           "`→ .help ` print this\n" +
                           "`→ .wiki <something> ` search something on wikipedia\n" +
                           "`→ .diz <something> ` look up something on italian dictionary\n" +
+                          "`→ .dict <something> ` look up something on english dictionary\n" +
                           "`→ .shrug ` replace or reply with shrug composite emote\n" +
                           "`→ .roll d<n> ` roll a virtual dice with n faces\n" +
                           "`→ .fortune ` you feel lucky!?\n" +
