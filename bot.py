@@ -23,8 +23,9 @@ import requests
 import wikipedia
 import italian_dictionary
 
-import logging
-logging.basicConfig(level=logging.WARNING)
+from PyDictionary import PyDictionary
+
+dictionary = PyDictionary()
 
 # "When did we last react?"
 recent_reacts = {}
@@ -34,6 +35,7 @@ PREFIX = "."
 COOLDOWN = 3
 
 config = None
+
 with open("config.json") as f:
     config = json.load(f)
 
@@ -149,7 +151,7 @@ async def dizionario(event):
         return
     try:
         arg = event.pattern_match.group(1)
-        print(f" [ searching \"{arg}\" on dictionary ]")
+        print(f" [ searching \"{arg}\" on it dictionary ]")
         # Use this to get only the meaning 
         res = italian_dictionary.get_definition(arg) 
 
@@ -160,6 +162,25 @@ async def dizionario(event):
             await event.message.reply(m)
     except Exception as e:
         await event.message.reply("`[!] → ` " + str(e) if str(e) != "" else "Not found")
+    await set_offline(event.client)
+
+# Search on english dictionary
+@events.register(events.NewMessage(pattern=r"\.dict (.*)"))
+async def diz(event):
+    if not can_react(event.chat_id):
+        return
+    try:
+        arg = event.pattern_match.group(1)
+        print(f" [ searching \"{arg}\" on eng dictionary ]")
+        # Use this to get only the meaning 
+        res = dictionary.meaning(arg)
+        for k in res:
+            out += f"` → {k} `\n * {'\n * '.join(res[k])}"
+            out += "\n\n"
+        for m in batchify(out, 4080):
+            await event.message.reply(m)
+    except Exception as e:
+        await event.message.reply("`[!] → ` " + str(e))
     await set_offline(event.client)
 
 # Roll dice
@@ -341,6 +362,7 @@ with client:
     client.add_event_handler(fortune)
     client.add_event_handler(wiki)
     client.add_event_handler(dizionario)
+    client.add_event_handler(diz)
     client.add_event_handler(roll)
     client.add_event_handler(runit)
 
