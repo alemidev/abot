@@ -151,14 +151,9 @@ async def dizionario(event):
 
         out = f"` → {res['lemma']} ` [ {' | '.join(res['sillabe'])} ]\n"
         out += f"```{', '.join(res['grammatica'])} - {res['pronuncia']}```\n\n"
-        buf = "\n\n".join(res['definizione'])
-        if len(buf) < 3500:
-            out += buf
-            await event.message.reply(out)
-        else:
-            out += res['definizione'][0]
-            out += f"\n__(skipped {len(res['definizione']-1} definitions)__"
-            await event.message.reply(out)
+        out += "\n\n".join(res['definizione'])
+        for m in batchify(out, 4080):
+            await event.message.reply(m)
     except Exception as e:
         await event.message.reply("`[!] → ` " + str(e) if str(e) != "" else "Not found")
     await set_offline(event.client)
