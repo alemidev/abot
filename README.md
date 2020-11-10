@@ -1,6 +1,6 @@
 # alemibot / ᚨᛚᛖᛗᛁᛒᛟᛏ  v0.1
 My personal Telegram userbot. This is kinda early but I plan to work a little on this.
-Below some available commands right now (commands with * are restricted)
+Below some available commands right now (the ones with * are restricted)
 * `.help ` print help message
 * `.wiki <something> ` search something on wikipedia
 * `.diz <something> ` look up something on italian dictionary
@@ -14,7 +14,7 @@ Below some available commands right now (commands with * are restricted)
 * `.upload ` upload a file from server to chat *
 
 # How to deploy
-* You need python3
+You just need `python3` and a PC always on to run this
 * `git clone` this repo
 * Make a `venv` with `python3 -m venv <anyfolder>`
 * Activate `venv` with `source <venvfolder>/bin/activate`
