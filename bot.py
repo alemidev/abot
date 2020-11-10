@@ -89,6 +89,7 @@ async def runit(event):
     if event.out:
         try:
             args = event.pattern_match.group(1)
+            print(f" [ running command \"{args}\" ]")
             result = subprocess.run(args, shell=True, capture_output=True)
             output = f"$ {args}\n" + cleartermcolor(result.stdout.decode())
             if len(output) > 4080:
@@ -109,6 +110,7 @@ async def fortune(event):
     if not can_react(event.chat_id):
         return
     try:
+        print(f" [ running command \"fortune\" ]")
         result = subprocess.run("fortune", capture_output=True)
         output = cleartermcolor(result.stdout.decode())
         await event.message.reply("```" + output + "```")
@@ -123,6 +125,7 @@ async def wiki(event):
         return
     try:
         arg = event.pattern_match.group(1).replace(" ", "")
+        print(f" [ searching \"{arg}\" on wikipedia ]")
         page = wikipedia.page(arg)
         out = f"` → {page.title}`\n"
         out += page.content[:750]
@@ -146,6 +149,7 @@ async def dizionario(event):
         return
     try:
         arg = event.pattern_match.group(1)
+        print(f" [ searching \"{arg}\" on dictionary ]")
         # Use this to get only the meaning 
         res = italian_dictionary.get_definition(arg) 
 
@@ -165,6 +169,7 @@ async def roll(event):
         return
     try:
         arg = int(event.pattern_match.group(1).replace("d",""))
+        print(f" [ rolling d{arg} ]")
         await event.message.reply(f"` → {random.randint(1, arg)}`")
     except Exception as e:
         await event.message.reply("`[!] → ` " + str(e))
@@ -194,6 +199,7 @@ async def spam(event):
 async def shrug(event):
     if not can_react(event.chat_id):
         return
+    print(f" [ ¯\_(ツ)_/¯ ]")
     if event.out:
         await event.message.edit(r'¯\_(ツ)_/¯')
     else:
@@ -204,6 +210,7 @@ async def shrug(event):
 @events.register(events.NewMessage(pattern=r"\.delete"))
 async def deleteme(event):
     if event.out:
+        print(f" [ deleting last message ]")
         await event.message.delete()
         await set_offline(event.client)
 
@@ -337,7 +344,7 @@ with client:
     client.add_event_handler(roll)
     client.add_event_handler(runit)
 
-    print('[ Press Ctrl+C to stop this ]\n')
+    print(' [ Press Ctrl+C to stop this ]\n')
     client.run_until_disconnected()
 print()
 
