@@ -127,14 +127,12 @@ async def wiki(event):
         out = f"` → {page.title}`\n"
         out += page.content[:750]
         out += f"... {page.url}"
-        image = None
-        for i in page.images:
-            if i.endswith(".jpg") or i.endswith(".png"):
-                image = i
-                break
-        if image is not None:
-            await event.message.reply(out, link_preview=False,
-                file=page.images[0])
+        if len(page.images) > 0:
+            try:
+                await event.message.reply(out, link_preview=False,
+                    file=page.images[0])
+            except Exception as e:
+                await event.message.reply(out)
         else:
             await event.message.reply(out, link_preview=False)
     except Exception as e:
