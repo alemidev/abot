@@ -174,6 +174,8 @@ async def diz(event):
         print(f" [ searching \"{arg}\" on eng dictionary ]")
         # Use this to get only the meaning 
         res = dictionary.meaning(arg)
+        if res is None:
+            return await event.message.reply("` → No match`")
         out = ""
         for k in res:
             out += f"`→ {k} : `"
