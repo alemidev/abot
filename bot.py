@@ -285,7 +285,9 @@ async def printer(event):
     chat = await client.get_entity(event.message.peer_id)
     chan = "UNKNOWN"
     if isinstance(chat, User):
-        chan = chat.username if chat.username is not None else f"{chat.first_name} {chat.last_name}"
+        chan = (chat.username if chat.username is not None 
+                else f"{chat.first_name}" + (f" {chat.last_name}" if
+                    chat.last_name is not None else ""))
     else:
         chan = chat.title
     print_if_different(chan)
