@@ -11,10 +11,10 @@ My Telegram userbot
 * Run bot : `./bot.py` or `python bot.py`
 
 ## config file
-You need to make a config file with this format and drop it next to the bot file :
+You need to make a config file similar to this and drop it next to the bot file :
 ```json
 {
-	"NAME" : "alemibot", // or anything else really
-	"ID" : <api-id , it's an integer> ,
-	"HASH" : "<api-hash, it's a string>"
+	"NAME" : "alemibot",
+	"ID" : 1234,
+	"HASH" : "l00k4tm31m4nh45h"
 }```
