@@ -122,13 +122,21 @@ async def wiki(event):
     if not can_react(event.chat_id):
         return
     try:
-        arg = event.pattern_match.group(1)
+        arg = event.pattern_match.group(1).replace(" ", "")
         page = wikipedia.page(arg)
         out = f"` → {page.title}`\n"
         out += page.content[:750]
         out += f"... {page.url}"
-        await event.message.reply(out, link_preview=False,
+        image = None
+        for i in page.images:
+            if i.endswith(".jpg") or i.endswith(".png"):
+                image = i
+                break
+        if image is not None:
+            await event.message.reply(out, link_preview=False,
                 file=page.images[0])
+        else:
+            await event.message.reply(out, link_preview=False)
     except Exception as e:
         await event.message.reply("`[!] → ` " + str(e))
     await set_offline(event.client)
@@ -146,9 +154,10 @@ async def dizionario(event):
         out = f"` → {res['lemma']} ` [ {' | '.join(res['sillabe'])} ]\n"
         out += "\n\n".join(res['definizione'])
         out += f"\n\n```{', '.join(res['grammatica'])} - {res['pronuncia']}```"
-        await event.message.reply(out)
+        for m in batchify(out, 4090):
+            await event.message.reply(m)
     except Exception as e:
-        await event.message.reply("`[!] → ` " + str(e))
+        await event.message.reply("`[!] → ` " + str(e) if str(e) != "" else "Not found")
     await set_offline(event.client)
 
 # Roll dice
