@@ -14,7 +14,7 @@ Below some available commands right now (the ones with * are restricted)
 * `.upload ` upload a file from server to chat *
 
 # How to deploy
-You just need `python3` and a PC always on to run this
+You just need Python 3.7+ and a PC always on to run this
 * `git clone` this repo
 * Make a `venv` with `python3 -m venv <anyfolder>`
 * Activate `venv` with `source <venvfolder>/bin/activate`
