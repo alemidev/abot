@@ -1,0 +1,5 @@
+telethon
+termcolor
+wikipedia
+italian-dictionary
+requests
