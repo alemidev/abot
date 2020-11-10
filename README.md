@@ -1,4 +1,4 @@
-# alemibot / ᚨᛚᛖᛒᛟᛏ  v0.1
+# alemibot / ᚨᛚᛖᛗᛁᛒᛟᛏ  v0.1
 My personal Telegram userbot. This is kinda early but I plan to work a little on this.
 Below some available commands right now (commands with * are restricted)
 * `.help ` print help message

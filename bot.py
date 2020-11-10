@@ -292,7 +292,7 @@ async def printer(event):
 @events.register(events.NewMessage(pattern=r"\.help"))
 async def helper(event):
     if can_react(event.chat_id):
-        await event.reply("` ᚨᛚᛖᛒᛟᛏ v0.1` (cmds with * are restricted)\n" +
+        await event.reply("` ᚨᛚᛖᛗᛁᛒᛟᛏ v0.1` (cmds with * are restricted)\n" +
                           "`→ .help ` print this\n" +
                           "`→ .wiki <something> ` search something on wikipedia\n" +
                           "`→ .diz <something> ` look up something on italian dictionary\n" +
