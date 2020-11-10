@@ -1,17 +1,17 @@
 # alemibot / ᚨᛚᛖᛒᛟᛏ  v0.1
 My personal Telegram userbot. This is kinda early but I plan to work a little on this.
 Below some available commands right now (commands with * are restricted)
-`→ .help ` print help message
-`→ .wiki <something> ` search something on wikipedia
-`→ .diz <something> ` look up something on italian dictionary
-`→ .shrug ` replace or reply with shrug composite emote
-`→ .roll d<n> ` roll a virtual dice with n faces
-`→ .fortune ` you feel lucky!?
-`→ .delete ` delete sent message immediately *
-`→ .spam <number> <message> ` self explainatory *
-`→ .run <command> ` execute command on server *
-`→ .save ` save attached file to server *
-`→ .upload ` upload a file from server to chat *
+* `.help ` print help message
+* `.wiki <something> ` search something on wikipedia
+* `.diz <something> ` look up something on italian dictionary
+* `.shrug ` replace or reply with shrug composite emote
+* `.roll d<n> ` roll a virtual dice with n faces
+* `.fortune ` you feel lucky!?
+* `.delete ` delete sent message immediately *
+* `.spam <number> <message> ` self explainatory *
+* `.run <command> ` execute command on server *
+* `.save ` save attached file to server *
+* `.upload ` upload a file from server to chat *
 
 # How to deploy
 * You need python3
