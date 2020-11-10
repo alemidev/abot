@@ -174,8 +174,11 @@ async def diz(event):
         print(f" [ searching \"{arg}\" on eng dictionary ]")
         # Use this to get only the meaning 
         res = dictionary.meaning(arg)
+        out = ""
         for k in res:
-            out += f"` → {k} `\n * {'\n * '.join(res[k])}"
+            out += f"`→ {k} : `"
+            out += "\n * "
+            out += "\n * ".join(res[k])
             out += "\n\n"
         for m in batchify(out, 4080):
             await event.message.reply(m)
