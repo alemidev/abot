@@ -284,7 +284,7 @@ async def save(event):
     if msg.media is not None:
         if event.out:
             try:
-                file = await event.client.download_media(message=event.message)
+                file = await event.client.download_media(message=msg)
                 await event.message.reply('` → ` saved file as {}'.format(file))
             except Exception as e:
                 await event.message.reply("`[!] → ` " + str(e))
