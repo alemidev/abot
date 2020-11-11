@@ -98,6 +98,7 @@ async def memelist(event):
     try:
         print(" [ getting meme list ]")
         memes = os.listdir("memes")
+        memes.sort()
         out = f"` → ` **Meme list** ({len(memes)} total) :\n[ "
         for m in memes:
             out += m.split(".")[0] + " "
@@ -265,8 +266,14 @@ async def spam(event):
             number = int(event.pattern_match.group(1))
             mess = event.pattern_match.group(2)
             print(f" [ spamming \"{mess}\" for {number} times ]")
-            for i in range(number):
-                await event.respond(mess)
+            
+            if event.is_reply:
+                msg = await event.get_reply_message()
+                for i in range(number):
+                    await msg.reply(mess)
+            else:
+                for i in range(number):
+                    await event.respond(mess)
         except Exception as e:
             await event.reply("`[!] → ` " + str(e))
     else:
