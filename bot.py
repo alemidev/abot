@@ -137,7 +137,7 @@ async def steal(event):
         else:
             await event.message.reply("` → ` nah only I can judge good memz")
     else:
-        await event.message.reply("` → ` you need to attach a file, dummy")
+        await event.message.reply("` → ` you need to attach or reply to a file, dummy")
     await set_offline(event.client)
 
 # Run fortune
@@ -308,8 +308,8 @@ async def trigger_replies(event):
         await set_offline(event.client)
 
 # Save file
-@events.register(events.NewMessage(pattern=r"\.save"))
-async def save(event):
+@events.register(events.NewMessage(pattern=r"\.put"))
+async def upload(event):
     if not can_react(event.chat_id):
         return
     msg = event.message
@@ -325,12 +325,12 @@ async def save(event):
         else:
             await event.message.reply("` → ` nice malware, u can keep it")
     else:
-        await event.message.reply("` → ` you need to attach a file, dummy")
+        await event.message.reply("` → ` you need to attach or reply to a file, dummy")
     await set_offline(event.client)
 
 # Upload file
-@events.register(events.NewMessage(pattern=r"\.upload (.*)"))
-async def upload(event):
+@events.register(events.NewMessage(pattern=r"\.get (.*)"))
+async def download(event):
     if not can_react(event.chat_id):
         return
     if event.out:
@@ -378,12 +378,14 @@ async def helper(event):
                           "`→ .dict <something> ` look up something on english dictionary\n" +
                           "`→ .shrug ` replace or reply with shrug composite emote\n" +
                           "`→ .roll d<n> ` roll a virtual dice with n faces\n" +
+                          "`→ .meme ` get a random meme from collection\n" +
+                          "`→ .steal <name> ` add meme to collection *\n" +
                           "`→ .fortune ` you feel lucky!?\n" +
                           "`→ .delete ` delete sent message immediately *\n" +
                           "`→ .spam <number> <message> ` self explainatory *\n" +
                           "`→ .run <command> ` execute command on server *\n" +
-                          "`→ .save ` save attached file to server *\n" +
-                          "`→ .upload ` upload a file from server to chat *\n" +
+                          "`→ .put ` save attached file to server *\n" +
+                          "`→ .get <name> ` upload a file from server to chat *\n" +
                         "\nhttps://github.com/alemigliardi/alemibot")
 
 client = TelegramClient(
@@ -399,10 +401,10 @@ with client:
 
     # This remembers the events.NewMessage we registered before
     client.add_event_handler(spam)
-    client.add_event_handler(save)
-    client.add_event_handler(deleteme)
+    client.add_event_handler(download)
     client.add_event_handler(upload)
     client.add_event_handler(shrug)
+    client.add_event_handler(deleteme)
     client.add_event_handler(meme)
     client.add_event_handler(steal)
     client.add_event_handler(fortune)
