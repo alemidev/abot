@@ -31,7 +31,6 @@ dictionary = PyDictionary()
 recent_reacts = {}
 
 last_group = "N/A"
-PREFIX = "."
 COOLDOWN = 3
 
 config = None
@@ -371,7 +370,7 @@ async def printer(event):
 @events.register(events.NewMessage(pattern=r"\.help"))
 async def helper(event):
     if can_react(event.chat_id):
-        await event.reply("` ᚨᛚᛖᛗᛁᛒᛟᛏ v0.1` (cmds with * are restricted)\n" +
+        await event.reply("` ᚨᛚᛖᛗᛁᛒᛟᛏ v0.1`\n" +
                           "`→ .help ` print this\n" +
                           "`→ .wiki <something> ` search something on wikipedia\n" +
                           "`→ .diz <something> ` look up something on italian dictionary\n" +
@@ -386,6 +385,8 @@ async def helper(event):
                           "`→ .run <command> ` execute command on server *\n" +
                           "`→ .put ` save attached file to server *\n" +
                           "`→ .get <name> ` upload a file from server to chat *\n" +
+                         f"\n__All cmds have a {COOLDOWN}s cooldown per chat__\n" +
+                         f"__Commands with * are restricted__\n" +
                         "\nhttps://github.com/alemigliardi/alemibot")
 
 client = TelegramClient(
