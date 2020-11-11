@@ -100,8 +100,7 @@ async def memelist(event):
         memes = os.listdir("memes")
         memes.sort()
         out = f"` → ` **Meme list** ({len(memes)} total) :\n[ "
-        for m in memes:
-            out += m.split(".")[0] + " "
+        out += ", ".join(memes)
         out += "]"
         for m in batchify(out, 4090):
             await event.message.reply(m)
