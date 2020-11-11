@@ -114,9 +114,12 @@ async def memespecific(event):
         return
     try:
         arg = event.pattern_match.group(1).split(" ")[0] # just in case don't allow spaces
-        fname = [s for s in os.listdir("memes") if arg in s][0] # I can't decide if this is nice or horrible
-        print(f" [ getting specific meme : \"{fname}\" ]")
-        await event.message.reply('` → {}`'.format(fname), file=("memes/" + fname))
+        fname = [s for s in os.listdir("memes") if arg in s.lower()] # I can't decide if this is nice or horrible
+        if len(fname) > 0:
+            print(f" [ getting specific meme : \"{fname}\" ]")
+            await event.message.reply('` → {}`'.format(fname), file=("memes/" + fname))
+        else:
+            await event.message.reply(f"`[!] → ` no meme named {arg}")
     except Exception as e:
         await event.message.reply("`[!] → ` " + str(e))
     await set_offline(event.client)
