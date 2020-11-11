@@ -102,7 +102,8 @@ async def memelist(event):
         for m in memes:
             out += m.split(".")[0] + " "
         out += "]"
-        await event.message.reply(out)
+        for m in batchify(out, 4090):
+            await event.message.reply(m)
     except Exception as e:
         await event.message.reply("`[!] → ` " + str(e))
     await set_offline(event.client)
