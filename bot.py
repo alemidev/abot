@@ -4,7 +4,6 @@ This is still kind of a single file mess, but I'm trying to get the hang of the 
 A plugin system with a core launcher is sure the next step in making a proper project.
 Also, some of this code comes from telehon examples
 """
-import re
 import os
 import sys
 import time
@@ -25,6 +24,9 @@ import italian_dictionary
 
 from PyDictionary import PyDictionary
 
+from util import batchify
+from util.parse import cleartermcolor
+
 dictionary = PyDictionary()
 
 # "When did we last react?"
@@ -37,23 +39,6 @@ config = None
 
 with open("config.json") as f:
     config = json.load(f)
-
-def batchify(str_in, size):
-    if len(str_in) < size:
-        return [str_in]
-    out = []
-    for i in range((len(str_in)//size) + 1):
-        out.append(str_in[i*size : (i+1)*size])
-    return out
-
-def cleanhtml(raw_html):
-    cleanr = re.compile('<.*?>')
-    cleantext = re.sub(cleanr, '', raw_html)
-    return cleantext
-
-def cleartermcolor(raw_in):
-    ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
-    return ansi_escape.sub('', raw_in)
 
 async def set_offline(client):
     await client(UpdateStatusRequest(offline=True))
@@ -102,7 +87,38 @@ async def runit(event):
         except Exception as e:
             await event.message.reply("`[!] → ` " + str(e))
     else:
-        await event.message.reply("no")
+        await event.message.reply("` → ( ͡° ͜ʖ ͡°)` nice try")
+    await set_offline(event.client)
+
+# Get list of memes
+@events.register(events.NewMessage(pattern=r"\.memelist"))
+async def memelist(event):
+    if not can_react(event.chat_id):
+        return
+    try:
+        print(" [ getting meme list ]")
+        memes = os.listdir("memes")
+        out = "` → ` **Meme list**:\n[ "
+        for m in memes:
+            out += m.split(".")[0] + " "
+        out += "]"
+        await event.message.reply(out)
+    except Exception as e:
+        await event.message.reply("`[!] → ` " + str(e))
+    await set_offline(event.client)
+
+# Get specific meme
+@events.register(events.NewMessage(pattern=r"\.meme (.*)"))
+async def memespecific(event):
+    if not can_react(event.chat_id):
+        return
+    try:
+        arg = event.pattern_match.group(1).split(" ")[0] # just in case don't allow spaces
+        fname = [s for s in os.listdir("memes") if arg in s][0] # I can't decide if this is nice or horrible
+        print(f" [ getting specific meme : \"{fname}\" ]")
+        await event.message.reply('` → {}`'.format(fname), file=("memes/" + fname))
+    except Exception as e:
+        await event.message.reply("`[!] → ` " + str(e))
     await set_offline(event.client)
 
 # Get random meme from memes folder
@@ -112,7 +128,8 @@ async def meme(event):
         return
     try:
         fname = random.choice(os.listdir("memes"))
-        await event.message.reply('` → {}`'.format(fname.split(".")[0]), file=("memes/" + fname))
+        print(f" [ getting random meme : \"{fname}\" ]")
+        await event.message.reply('` → {}`'.format(fname), file=("memes/" + fname))
     except Exception as e:
         await event.message.reply("`[!] → ` " + str(e))
     await set_offline(event.client)
@@ -120,23 +137,21 @@ async def meme(event):
 # Save a meme
 @events.register(events.NewMessage(pattern=r"\.steal (.*)"))
 async def steal(event):
-    if not can_react(event.chat_id):
+    if not event.out or not can_react(event.chat_id):
         return
     msg = event.message
     if event.is_reply:
         msg = await event.get_reply_message()
     if msg.media is not None:
-        if event.out:
-            arg = event.pattern_match.group(1).split(" ")[0] # just in case don't allow spaces
-            try:
-                fname = await event.client.download_media(message=msg, file="memes/"+arg)
-                await event.message.reply('` → ` saved meme as {}'.format(fname))
-            except Exception as e:
-                await event.message.reply("`[!] → ` " + str(e))
-        else:
-            await event.message.reply("` → ` nah only I can judge good memz")
+        arg = event.pattern_match.group(1).split(" ")[0] # just in case don't allow spaces
+        print(f" [ stealing meme as \"{arg}\" ]")
+        try:
+            fname = await event.client.download_media(message=msg, file="memes/"+arg)
+            await event.message.reply('` → ` saved meme as {}'.format(fname))
+        except Exception as e:
+            await event.message.reply("`[!] → ` " + str(e))
     else:
-        await event.message.reply("` → ` you need to attach or reply to a file, dummy")
+        await event.message.reply("`[!] → ` you need to attach or reply to a file, dummy")
     await set_offline(event.client)
 
 # Run fortune
@@ -250,7 +265,7 @@ async def spam(event):
         except Exception as e:
             await event.reply("`[!] → ` " + str(e))
     else:
-        await event.reply("` → ` you wish")
+        await event.reply("` → ◔_◔ ` u wish")
     await set_offline(event.client)
 
 # Replace .shrug with shrug emoji (or reply with one)
@@ -324,7 +339,7 @@ async def upload(event):
         else:
             await event.message.reply("` → ` nice malware, u can keep it")
     else:
-        await event.message.reply("` → ` you need to attach or reply to a file, dummy")
+        await event.message.reply("`[!] → ` you need to attach or reply to a file, dummy")
     await set_offline(event.client)
 
 # Upload file
@@ -377,6 +392,8 @@ async def helper(event):
                           "`→ .dict <something> ` look up something on english dictionary\n" +
                           "`→ .shrug ` replace or reply with shrug composite emote\n" +
                           "`→ .roll d<n> ` roll a virtual dice with n faces\n" +
+                          "`→ .memelist ` print a list of memes in collection\n" +
+                          "`→ .meme <name> ` get specific meme\n" +
                           "`→ .meme ` get a random meme from collection\n" +
                           "`→ .steal <name> ` add meme to collection *\n" +
                           "`→ .fortune ` you feel lucky!?\n" +
@@ -406,6 +423,8 @@ with client:
     client.add_event_handler(upload)
     client.add_event_handler(shrug)
     client.add_event_handler(deleteme)
+    client.add_event_handler(memelist)
+    client.add_event_handler(memespecific)
     client.add_event_handler(meme)
     client.add_event_handler(steal)
     client.add_event_handler(fortune)
