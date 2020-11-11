@@ -152,7 +152,7 @@ async def steal(event):
         print(f" [ stealing meme as \"{arg}\" ]")
         try:
             fname = await event.client.download_media(message=msg, file="memes/"+arg)
-            await event.message.reply('` → ` saved meme as {}'.format(fname))
+            await event.message.reply('` → ` saved meme as {}'.format(fname.replace("memes/", ""))
         except Exception as e:
             await event.message.reply("`[!] → ` " + str(e))
     else:
