@@ -93,12 +93,12 @@ async def runit(event):
 # Get list of memes
 @events.register(events.NewMessage(pattern=r"\.memelist"))
 async def memelist(event):
-    if not can_react(event.chat_id):
+    if not event.out or not can_react(event.chat_id):
         return
     try:
         print(" [ getting meme list ]")
         memes = os.listdir("memes")
-        out = "` → ` **Meme list**:\n[ "
+        out = f"` → ` **Meme list** ({len(memes)} total) :\n[ "
         for m in memes:
             out += m.split(".")[0] + " "
         out += "]"
@@ -110,7 +110,7 @@ async def memelist(event):
 # Get specific meme
 @events.register(events.NewMessage(pattern=r"\.meme (.*)"))
 async def memespecific(event):
-    if not can_react(event.chat_id):
+    if not event.out or not can_react(event.chat_id):
         return
     try:
         arg = event.pattern_match.group(1).split(" ")[0] # just in case don't allow spaces
@@ -396,8 +396,8 @@ async def helper(event):
                           "`→ .dict <something> ` look up something on english dictionary\n" +
                           "`→ .shrug ` replace or reply with shrug composite emote\n" +
                           "`→ .roll d<n> ` roll a virtual dice with n faces\n" +
-                          "`→ .memelist ` print a list of memes in collection\n" +
-                          "`→ .meme <name> ` get specific meme\n" +
+                          "`→ .memelist ` print a list of memes in collection *\n" +
+                          "`→ .meme <name> ` get specific meme *\n" +
                           "`→ .meme ` get a random meme from collection\n" +
                           "`→ .steal <name> ` add meme to collection *\n" +
                           "`→ .fortune ` you feel lucky!?\n" +
