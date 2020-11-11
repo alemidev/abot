@@ -91,7 +91,7 @@ async def runit(event):
     await set_offline(event.client)
 
 # Get list of memes
-@events.register(events.NewMessage(pattern=r"\.memelist"))
+@events.register(events.NewMessage(pattern=r"\.listmeme"))
 async def memelist(event):
     if not event.out or not can_react(event.chat_id):
         return
@@ -109,7 +109,7 @@ async def memelist(event):
     await set_offline(event.client)
 
 # Get specific meme
-@events.register(events.NewMessage(pattern=r"\.meme (.*)"))
+@events.register(events.NewMessage(pattern=r"\.smeme (.*)"))
 async def memespecific(event):
     if not event.out or not can_react(event.chat_id):
         return
@@ -397,8 +397,8 @@ async def helper(event):
                           "`→ .dict <something> ` look up something on english dictionary\n" +
                           "`→ .shrug ` replace or reply with shrug composite emote\n" +
                           "`→ .roll d<n> ` roll a virtual dice with n faces\n" +
-                          "`→ .memelist ` print a list of memes in collection *\n" +
-                          "`→ .meme <name> ` get specific meme *\n" +
+                          "`→ .listmeme ` print a list of memes in collection *\n" +
+                          "`→ .smeme <name> ` get specific meme *\n" +
                           "`→ .meme ` get a random meme from collection\n" +
                           "`→ .steal <name> ` add meme to collection *\n" +
                           "`→ .fortune ` you feel lucky!?\n" +
