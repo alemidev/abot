@@ -113,11 +113,7 @@ async def meme(event):
         return
     try:
         fname = random.choice(os.listdir("memes"))
-        if event.out:
-            await event.message.respond('` → {}`'.format(fname.split(".")[0]), file=("memes/" + fname))
-            await event.message.delete()
-        else:
-            await event.message.reply('` → {}`'.format(fname.split(".")[0]), file=("memes/" + fname))
+        await event.message.reply('` → {}`'.format(fname.split(".")[0]), file=("memes/" + fname))
     except Exception as e:
         await event.message.reply("`[!] → ` " + str(e))
     await set_offline(event.client)
