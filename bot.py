@@ -116,6 +116,7 @@ async def memespecific(event):
         arg = event.pattern_match.group(1).split(" ")[0] # just in case don't allow spaces
         fname = [s for s in os.listdir("memes") if arg in s.lower()] # I can't decide if this is nice or horrible
         if len(fname) > 0:
+            fname = fname[0]
             print(f" [ getting specific meme : \"{fname}\" ]")
             await event.message.reply('` → {}`'.format(fname), file=("memes/" + fname))
         else:
