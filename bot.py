@@ -92,7 +92,7 @@ async def runit(event):
         try:
             args = event.pattern_match.group(1)
             print(f" [ running command \"{args}\" ]")
-            result = subprocess.run(args, shell=True, capture_output=True)
+            result = subprocess.run(args, shell=True, capture_output=True, timeout=60)
             output = f"$ {args}\n" + cleartermcolor(result.stdout.decode())
             if len(output) > 4080:
                 with open("output", "w") as f:
@@ -104,6 +104,40 @@ async def runit(event):
             await event.message.reply("`[!] → ` " + str(e))
     else:
         await event.message.reply("no")
+    await set_offline(event.client)
+
+# Get random meme from memes folder
+@events.register(events.NewMessage(pattern=r"\.meme"))
+async def meme(event):
+    if not can_react(event.chat_id):
+        return
+    try:
+        fname = random.choice(os.listdir("memes"))
+        await event.message.reply('` → {}`'.format(fname.split(".")[0]), file=("memes/" + fname))
+    except Exception as e:
+        await event.message.reply("`[!] → ` " + str(e))
+    await set_offline(event.client)
+
+# Save a meme
+@events.register(events.NewMessage(pattern=r"\.steal (.*)"))
+async def steal(event):
+    if not can_react(event.chat_id):
+        return
+    msg = event.message
+    if event.is_reply:
+        msg = await event.get_reply_message()
+    if msg.media is not None:
+        if event.out:
+            arg = event.pattern_match.group(1).split(" ")[0] # just in case don't allow spaces
+            try:
+                fname = await event.client.download_media(message=msg, file="memes/"+arg)
+                await event.message.reply('` → ` saved meme as {}'.format(fname))
+            except Exception as e:
+                await event.message.reply("`[!] → ` " + str(e))
+        else:
+            await event.message.reply("` → ` nah only I can judge good memz")
+    else:
+        await event.message.reply("` → ` you need to attach a file, dummy")
     await set_offline(event.client)
 
 # Run fortune
@@ -369,6 +403,8 @@ with client:
     client.add_event_handler(deleteme)
     client.add_event_handler(upload)
     client.add_event_handler(shrug)
+    client.add_event_handler(meme)
+    client.add_event_handler(steal)
     client.add_event_handler(fortune)
     client.add_event_handler(wiki)
     client.add_event_handler(dizionario)
