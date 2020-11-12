@@ -16,9 +16,15 @@ dictionary = PyDictionary()
 
 def ud_define(word):
     try:
-        r = requests.get("http://api.urbandictionary.com/v0/define?term=" + word, timeout=10)
+        r = requests.get("http://api.urbandictionary.com/v0/define?term=" + word.capitalize(), timeout=10)
         if r.status_code == 200:
-            return r.json()["list"][0]
+            best = 0
+            match = None
+            for el in r.json()["list"]:
+                if el["thumbs_up"] > best:
+                    best = el["thumbs_up"]
+                    match = el
+            return match
         else:
             return None
     except Exception as e:
