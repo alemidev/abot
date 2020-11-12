@@ -13,7 +13,7 @@ async def memelist(event):
         return
     try:
         print(" [ getting meme list ]")
-        memes = os.listdir("memes")
+        memes = os.listdir("data/memes")
         memes.sort()
         out = f"` → ` **Meme list** ({len(memes)} total) :\n[ "
         out += ", ".join(memes)
@@ -31,11 +31,11 @@ async def memespecific(event):
         return
     try:
         arg = event.pattern_match.group(1).split(" ")[0] # just in case don't allow spaces
-        fname = [s for s in os.listdir("memes") if arg in s.lower()] # I can't decide if this is nice or horrible
+        fname = [s for s in os.listdir("data/memes") if arg in s.lower()] # I can't decide if this is nice or horrible
         if len(fname) > 0:
             fname = fname[0]
             print(f" [ getting specific meme : \"{fname}\" ]")
-            await event.message.reply('` → {}`'.format(fname), file=("memes/" + fname))
+            await event.message.reply('` → {}`'.format(fname), file=("data/memes/" + fname))
         else:
             await event.message.reply(f"`[!] → ` no meme named {arg}")
     except Exception as e:
@@ -48,9 +48,9 @@ async def meme(event):
     if not can_react(event.chat_id):
         return
     try:
-        fname = random.choice(os.listdir("memes"))
+        fname = random.choice(os.listdir("data/memes"))
         print(f" [ getting random meme : \"{fname}\" ]")
-        await event.message.reply('` → {}`'.format(fname), file=("memes/" + fname))
+        await event.message.reply('` → {}`'.format(fname), file=("data/memes/" + fname))
     except Exception as e:
         await event.message.reply("`[!] → ` " + str(e))
     await set_offline(event.client)
@@ -67,8 +67,8 @@ async def steal(event):
         arg = event.pattern_match.group(1).split(" ")[0] # just in case don't allow spaces
         print(f" [ stealing meme as \"{arg}\" ]")
         try:
-            fname = await event.client.download_media(message=msg, file="memes/"+arg)
-            await event.message.reply('` → ` saved meme as {}'.format(fname.replace("memes/", "")))
+            fname = await event.client.download_media(message=msg, file="data/memes/"+arg)
+            await event.message.reply('` → ` saved meme as {}'.format(fname.replace("data/memes/", "")))
         except Exception as e:
             await event.message.reply("`[!] → ` " + str(e))
     else:
