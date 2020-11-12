@@ -15,6 +15,7 @@ from modules.files import FilesModules
 from modules.meme import MemeModules
 from modules.system import SystemModules
 from modules.trigger import TriggerModules
+from modules.management import ManagementModules
 
 from util import can_react, set_offline
 
@@ -40,6 +41,7 @@ with client:
     helptext += TextModules(client).helptext
     helptext += MemeModules(client).helptext
     helptext += FilesModules(client).helptext
+    helptext += ManagementModules(client).helptext
     helptext += SystemModules(client).helptext
     helptext += TriggerModules(client).helptext
 

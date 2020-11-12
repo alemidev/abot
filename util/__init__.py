@@ -35,6 +35,9 @@ def can_react(chat_id):
     else:
         return False
 
+def ignore_chat(chat_id, seconds):
+    recent_reacts[chat_id] = time.time() + seconds
+
 async def set_offline(client):
     await client(UpdateStatusRequest(offline=True))
 
