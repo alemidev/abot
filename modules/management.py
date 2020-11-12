@@ -96,7 +96,7 @@ class ManagementModules:
         client.add_event_handler(purge)
         self.helptext += "`→ .purge <number> ` delete last <n> sent messages *\n"
 
-        client.add_event_handler(censor)
+        client.add_event_handler(wipe)
         self.helptext += "`→ .wipe <number> ` delete last <n> from ANYONE *\n"
 
         client.add_event_handler(ignore)
