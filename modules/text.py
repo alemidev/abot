@@ -11,8 +11,8 @@ from util import can_react, set_offline
 async def claps(event):
     if not can_react(event.chat_id):
         return
-    print(f" [ replacing spaces with claps ]")
     if event.out:
+        print(f" [ replacing spaces with claps ]")
         await event.message.edit(event.raw_text.replace(".clap ","").replace(" ", "👏"))
     await set_offline(event.client)
 
@@ -21,8 +21,8 @@ async def claps(event):
 async def randomcase(event):
     if not can_react(event.chat_id):
         return
-    print(f" [ making message randomly capitalized ]")
     if event.out:
+        print(f" [ making message randomly capitalized ]")
         msg = "" # omg this part is done so badly
         val = 0  # but I want a kinda imbalanced random
         upper = False
@@ -122,10 +122,10 @@ class TextModules:
         self.helptext = ""
 
         client.add_event_handler(randomcase)
-        self.helptext += "`→ .randomcase <message> ` maKe mEsSAgE cASe RaNdOMizEd\n"
+        self.helptext += "`→ .randomcase <message> ` maKe mEsSAgE cASe RaNdOMizEd *\n"
 
         client.add_event_handler(claps)
-        self.helptext += "`→ .clap <message> ` replace spaces with clap emoji in message\n"
+        self.helptext += "`→ .clap <message> ` replace spaces with 👏 in message *\n"
 
         client.add_event_handler(shrug)
         self.helptext += "`→ .shrug ` replace or reply with shrug composite emote\n"
