@@ -6,7 +6,7 @@ from termcolor import colored
 from telethon import events
 
 from util import can_react, set_offline, batchify
-from util.parser import cleartermcolor
+from util.parse import cleartermcolor
 
 last_group = "N/A"
 
