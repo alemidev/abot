@@ -2,3 +2,7 @@ config.json
 *.session
 *.session-journal
 output
+
+__pycache__/
+modules/__pycache__/
+util/__pycache__/
