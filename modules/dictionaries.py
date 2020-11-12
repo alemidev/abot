@@ -1,5 +1,6 @@
 import random
 import asyncio
+import traceback
 
 from telethon import events
 
@@ -7,9 +8,22 @@ import wikipedia
 import italian_dictionary
 from PyDictionary import PyDictionary
 
+import requests
+
 from util import can_react, set_offline, batchify
 
 dictionary = PyDictionary()
+
+def ud_define(word):
+    try:
+        r = requests.get("http://api.urbandictionary.com/v0/define?term=" + word, timeout=10)
+        if r.status_code == 200:
+            return r.json()["list"][0]
+        else:
+            return None
+    except Exception as e:
+        traceback.print_exc()
+        return None
 
 # Search on italian dictionary
 @events.register(events.NewMessage(pattern=r"\.diz (.*)"))
@@ -39,7 +53,6 @@ async def dic(event):
     try:
         arg = event.pattern_match.group(1)
         print(f" [ searching \"{arg}\" on eng dictionary ]")
-        # Use this to get only the meaning 
         res = dictionary.meaning(arg)
         if res is None:
             return await event.message.reply("` → No match`")
@@ -51,6 +64,28 @@ async def dic(event):
             out += "\n\n"
         for m in batchify(out, 4080):
             await event.message.reply(m)
+    except Exception as e:
+        await event.message.reply("`[!] → ` " + str(e))
+    await set_offline(event.client)
+
+# Search on urban dictionary
+@events.register(events.NewMessage(pattern=r"\.ud (.*)"))
+async def urbandict(event):
+    if not can_react(event.chat_id):
+        return
+    try:
+        arg = event.pattern_match.group(1)
+        print(f" [ searching \"{arg}\" on urban dictionary ]")
+        res = ud_define(arg)
+        if res is None:
+            return await event.message.reply("`[!] → ` Not found")
+        out = ""
+        out += f"`→ {res['word']} [+{res['thumbs_up']}]: `\n"
+        out += f"{res['definition']}\n\n"
+        out += f"ex: __{res['example']}__\n\n"
+        out += res['permalink']
+        for m in batchify(out, 4080):
+            await event.message.reply(m, link_preview=False)
     except Exception as e:
         await event.message.reply("`[!] → ` " + str(e))
     await set_offline(event.client)
@@ -83,6 +118,9 @@ async def wiki(event):
 class DictionaryModules:
     def __init__(self, client):
         self.helptext = ""
+
+        client.add_event_handler(urbandict)
+        self.helptext += "`→ .ud <something> ` look up something on urban dictionary\n"
 
         client.add_event_handler(dic)
         self.helptext += "`→ .dic <something> ` look up something on english dictionary\n"
