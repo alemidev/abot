@@ -6,6 +6,9 @@ just makes the client, instantiates the classes, makes the help command
 and runs the client. All handlers are defined inside modules/
 """
 import json
+import time
+import os
+import sys
 
 from telethon import TelegramClient, events
 
@@ -58,8 +61,16 @@ with client:
 
     client.add_event_handler(helper)
 
+    print()
     print(' [ Press Ctrl+C to stop this ]\n')
     client.run_until_disconnected()
 
-print() # print a newline
+print()
+try:
+    print("→ Bot will self restart in 5 seconds, CTRL+C now to stop it")
+    time.sleep(5)
+    print()
+    os.execv(__file__, sys.argv)
+except KeyboardInterrupt as e:
+    print()
 

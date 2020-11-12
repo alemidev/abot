@@ -1,5 +1,6 @@
 import asyncio
 import subprocess
+import time
 
 from termcolor import colored
 
@@ -40,6 +41,41 @@ async def printer(event):
     text = ("\n" + " "*pre).join(batchify(text, 50))
     print(f"{colored(author, 'cyan')} {colored('→', 'grey')} {text}")
 
+# Repy to .asd with "a sunny day" (and calculate ping)
+@events.register(events.NewMessage(pattern=r"\.asd"))
+async def ping(event):
+    if not can_react(event.chat_id):
+        return
+    if event.out:
+        msg = event.raw_text
+        before = time.time()
+        await event.message.edit(msg + "\n` → ` a sunny day")
+        after = time.time()
+        latency = (after - before) * 1000
+        await event.message.edit(msg + f"\n` → ` a sunny day `({latency:.0f}ms)`")
+    await set_offline(event.client)
+
+
+# Update userbot (git pull + restart)
+@events.register(events.NewMessage(pattern=r"\.update"))
+async def update(event):
+    if not can_react(event.chat_id):
+        return
+    if event.out:
+        msg = event.raw_text
+        try:
+            print(f" [ Updating bot ]")
+            msg += "\n` → ` Updating"
+            await event.message.edit(msg) 
+            result = subprocess.run(["git", "pull"], capture_output=True, timeout=60)
+            msg += " [OK]\n` → ` Bot will now restart"
+            await event.message.edit(msg) 
+            await event.client.disconnect()
+        except Exception as e:
+            msg += " [FAIL]\n`[!] → ` " + str(e)
+            await event.message.edit(msg) 
+    await set_offline(event.client)
+
 # Run command
 @events.register(events.NewMessage(pattern=r"\.run (.*)"))
 async def runit(event):
@@ -68,6 +104,12 @@ class SystemModules:
         self.helptext = ""
 
         client.add_event_handler(printer)
+
+        client.add_event_handler(ping)
+        self.helptext += "`→ .asd ` a sunny day (+ get latency) *\n"
+
+        client.add_event_handler(update)
+        self.helptext += "`→ .update ` (git) pull changes and reboot bot *\n"
 
         client.add_event_handler(runit)
         self.helptext += "`→ .run <command> ` execute command on server *\n"
