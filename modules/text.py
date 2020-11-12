@@ -6,6 +6,45 @@ from telethon import events
 
 from util import can_react, set_offline
 
+# Replace spaces with clap emoji
+@events.register(events.NewMessage(pattern=r"\.clap "))
+async def claps(event):
+    if not can_react(event.chat_id):
+        return
+    print(f" [ replacing spaces with claps ]")
+    if event.out:
+        await event.message.edit(event.raw_text.replace(".clap ","").replace(" ", "👏"))
+    await set_offline(event.client)
+
+# make character random case (lIkE tHiS)
+@events.register(events.NewMessage(pattern=r"\.randomcase "))
+async def randomcase(event):
+    if not can_react(event.chat_id):
+        return
+    print(f" [ making message randomly capitalized ]")
+    if event.out:
+        msg = "" # omg this part is done so badly
+        val = 0  # but I want a kinda imbalanced random
+        upper = False
+        for c in event.raw_text.lower().replace(".randomcase ", ""):
+            last = val
+            val = random.randint(0, 3)
+            if val > 2:
+                msg += c.upper()
+                upper = True
+            elif val < 1:
+                msg += c
+                upper = False
+            else:
+                if upper:
+                    msg += c
+                    upper = False
+                else:
+                    msg += c.upper()
+                    upper = True
+        await event.message.edit(msg)
+    await set_offline(event.client)
+
 # Replace .shrug with shrug emoji (or reply with one)
 @events.register(events.NewMessage(pattern=r"\.shrug"))
 async def shrug(event):
@@ -81,6 +120,12 @@ async def spam(event):
 class TextModules:
     def __init__(self, client):
         self.helptext = ""
+
+        client.add_event_handler(randomcase)
+        self.helptext += "`→ .randomcase <message> ` maKe mEsSAgE cASe RaNdOMizEd\n"
+
+        client.add_event_handler(claps)
+        self.helptext += "`→ .clap <message> ` replace spaces with clap emoji in message\n"
 
         client.add_event_handler(shrug)
         self.helptext += "`→ .shrug ` replace or reply with shrug composite emote\n"
