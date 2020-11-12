@@ -31,6 +31,24 @@ async def purge(event):
         await event.message.delete()
         await set_offline(event.client)
 
+# Delete last X messages sent by anyone
+@events.register(events.NewMessage(pattern=r"\.censor (.*)"))
+async def censor(event):
+    if event.out:
+        number = int(event.pattern_match.group(1))
+        print(f" [ censoring last {number} message ]")
+        n = 0
+        async for message in event.client.iter_messages(await event.get_chat()):
+            try:
+                await message.delete()
+            except:
+                pass # in case you can't delete messages for others
+            n += 1
+            if n >= number:
+                break
+        await event.message.delete()
+        await set_offline(event.client)
+
 # Set chat as ignored for a while
 @events.register(events.NewMessage(pattern=r"\.ignore (.*)"))
 async def ignore(event):
@@ -78,10 +96,13 @@ class ManagementModules:
         client.add_event_handler(purge)
         self.helptext += "`→ .purge <number> ` delete last <n> sent messages *\n"
 
+        client.add_event_handler(censor)
+        self.helptext += "`→ .censor <number> ` delete last <n> from ANYONE *\n"
+
         client.add_event_handler(ignore)
         self.helptext += "`→ .ignore <seconds> ` ignore commands in this chat *\n"
 
         client.add_event_handler(spam)
         self.helptext += "`→ .spam <number> <message> ` self explainatory *\n"
 
-        print(" [ Registered Text Modules ]")
+        print(" [ Registered Management Modules ]")
