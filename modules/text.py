@@ -6,16 +6,6 @@ from telethon import events
 
 from util import can_react, set_offline
 
-# Replace spaces with clap emoji
-@events.register(events.NewMessage(pattern=r"\.clap "))
-async def claps(event):
-    if not can_react(event.chat_id):
-        return
-    if event.out:
-        print(f" [ replacing spaces with claps ]")
-        await event.message.edit(event.raw_text.replace(".clap ","").replace(" ", "👏"))
-    await set_offline(event.client)
-
 # make character random case (lIkE tHiS)
 @events.register(events.NewMessage(pattern=r"\.randomcase "))
 async def randomcase(event):
@@ -122,10 +112,7 @@ class TextModules:
         self.helptext = ""
 
         client.add_event_handler(randomcase)
-        self.helptext += "`→ .randomcase <message> ` maKe mEsSAgE cASe RaNdOMizEd *\n"
-
-        client.add_event_handler(claps)
-        self.helptext += "`→ .clap <message> ` replace spaces with 👏 in message *\n"
+        self.helptext += "`→ .randomcase <message> ` maKe mEsSAgEs lIkE tHIs *\n"
 
         client.add_event_handler(shrug)
         self.helptext += "`→ .shrug ` replace or reply with shrug composite emote\n"
