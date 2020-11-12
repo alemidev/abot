@@ -1,0 +1,53 @@
+import asyncio
+
+from telethon import events
+
+from util import can_react, set_offline
+
+# Save file
+@events.register(events.NewMessage(pattern=r"\.put"))
+async def upload(event):
+    if not can_react(event.chat_id):
+        return
+    msg = event.message
+    if event.is_reply:
+        msg = await event.get_reply_message()
+    if msg.media is not None:
+        if event.out:
+            try:
+                file = await event.client.download_media(message=msg)
+                await event.message.reply('` → ` saved file as {}'.format(file))
+            except Exception as e:
+                await event.message.reply("`[!] → ` " + str(e))
+        else:
+            await event.message.reply("` → ` nice malware, u can keep it")
+    else:
+        await event.message.reply("`[!] → ` you need to attach or reply to a file, dummy")
+    await set_offline(event.client)
+
+# Upload file
+@events.register(events.NewMessage(pattern=r"\.get (.*)"))
+async def download(event):
+    if not can_react(event.chat_id):
+        return
+    if event.out:
+        try:
+            name = event.pattern_match.group(1)
+            await event.message.reply('` → {}`'.format(name), file=name)
+        except Exception as e:
+            await event.message.reply("`[!] → ` " + str(e))
+    else:
+        await event.message.reply("` → ` wouldn't you like to know, weather boy?")
+    await set_offline(event.client)
+
+class FilesModules:
+    def __init__(self, client):
+        self.helptext = ""
+
+        client.add_event_handler(upload)
+        self.helptext += "`→ .put ` save attached file to server *\n"
+
+        client.add_event_handler(download)
+        self.helptext += "`→ .get <name> ` upload a file from server to chat *\n"
+
+        print(" [ Registered Files Modules ]")
