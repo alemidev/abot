@@ -20,7 +20,7 @@ async def purge(event):
     if event.out:
         number = int(event.pattern_match.group(1))
         me = await event.client.get_me()
-        print(f" [ deleting last {number} message ]")
+        print(f" [ purging last {number} message ]")
         n = 0
         async for message in event.client.iter_messages(await event.get_chat()):
             if message.sender_id == me.id:
@@ -32,11 +32,11 @@ async def purge(event):
         await set_offline(event.client)
 
 # Delete last X messages sent by anyone
-@events.register(events.NewMessage(pattern=r"\.censor (.*)"))
-async def censor(event):
+@events.register(events.NewMessage(pattern=r"\.wipe (.*)"))
+async def wipe(event):
     if event.out:
         number = int(event.pattern_match.group(1))
-        print(f" [ censoring last {number} message ]")
+        print(f" [ wiping last {number} message ]")
         n = 0
         async for message in event.client.iter_messages(await event.get_chat()):
             try:
@@ -97,7 +97,7 @@ class ManagementModules:
         self.helptext += "`→ .purge <number> ` delete last <n> sent messages *\n"
 
         client.add_event_handler(censor)
-        self.helptext += "`→ .censor <number> ` delete last <n> from ANYONE *\n"
+        self.helptext += "`→ .wipe <number> ` delete last <n> from ANYONE *\n"
 
         client.add_event_handler(ignore)
         self.helptext += "`→ .ignore <seconds> ` ignore commands in this chat *\n"
