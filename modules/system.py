@@ -100,10 +100,14 @@ async def runit(event):
     await set_offline(event.client)
 
 class SystemModules:
-    def __init__(self, client):
+    def __init__(self, client, limit=False):
         self.helptext = ""
 
-        client.add_event_handler(printer)
+        if not limit:
+            client.add_event_handler(printer)
+
+            client.add_event_handler(runit)
+            self.helptext += "`→ .run <command> ` execute command on server *\n"
 
         client.add_event_handler(ping)
         self.helptext += "`→ .asd ` a sunny day (+ get latency) *\n"
@@ -111,7 +115,5 @@ class SystemModules:
         client.add_event_handler(update)
         self.helptext += "`→ .update ` (git) pull changes and reboot bot *\n"
 
-        client.add_event_handler(runit)
-        self.helptext += "`→ .run <command> ` execute command on server *\n"
 
         print(" [ Registered System Modules ]")
