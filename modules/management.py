@@ -91,7 +91,7 @@ class ManagementModules:
         self.helptext = ""
 
         client.add_event_handler(deleteme)
-        self.helptext += "`→ .delete ` delete sent message immediately *\n"
+        self.helptext += "`→ .delme ` delete sent message immediately *\n"
 
         client.add_event_handler(purge)
         self.helptext += "`→ .purge <number> ` delete last <n> sent messages *\n"
