@@ -69,18 +69,25 @@ async def fortune(event):
     await set_offline(event.client)
 
 # Roll dice
-@events.register(events.NewMessage(pattern=r"{p}roll(?: d| |d)(?P<max>[0-9]+)".format(p=PREFIX)))
-async def roll(event):
+@events.register(events.NewMessage(
+    pattern=r"{p}(?:rand|roll)(?: |)(?:(?P<max>d[0-9]+)|(?P<values>.*))".format(p=PREFIX)))
+async def rand(event):
     if not can_react(event.chat_id):
         return
+    args = event.pattern_match.groupdict()
     try:
-        arg = int(event.pattern_match.group("max"))
-        print(f" [ rolling d{arg} ]")
-        n = random.randint(1, arg)
+        c = "N/A"
+        if "max" in args and args["max"] not in [ "", None ]: # this checking is kinda lame
+            maxval = int(args["max"].replace("d", ""))
+            print(f" [ rolling d{maxval} ]")
+            c = random.randint(1, maxval)
+        elif "values" in args and args["values"] not in [ "", None ]:
+            choices = args["values"].split(" ")
+            c = random.choice(choices)[0]
         if event.out:
-            await event.message.edit(event.raw_text + "\n` → ` **{n}**")
+            await event.message.edit(event.raw_text + f"\n` → ` **{c}**")
         else:
-            await event.message.reply(f"` → **{n}**`")
+            await event.message.reply(f"` → **{c}**`")
     except Exception as e:
         await event.message.reply("`[!] → ` " + str(e))
     await set_offline(event.client)
@@ -114,8 +121,8 @@ class TextModules:
         client.add_event_handler(fortune)
         self.helptext += "`→ .fortune ` you feel lucky!?\n"
 
-        client.add_event_handler(roll)
-        self.helptext += "`→ .roll d<n> ` get a random number from 1 to n (incl)\n"
+        client.add_event_handler(rand)
+        self.helptext += "`→ .rand [max] [choices] ` get random number or element\n"
 
         client.add_event_handler(lmgtfy)
         self.helptext += "`→ .lmgtfy <something> ` make a lmgtfy link\n"
