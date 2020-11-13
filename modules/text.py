@@ -5,38 +5,42 @@ import subprocess
 from telethon import events
 
 from util import can_react, set_offline
+from util.globals import PREFIX
 
 # make character random case (lIkE tHiS)
-@events.register(events.NewMessage(pattern=r"\.randomcase "))
+@events.register(events.NewMessage(
+        pattern=r"{p}(?:randomcase|rc) (?P<text>.*)".format(p=PREFIX), outgoing=True))
 async def randomcase(event):
     if not can_react(event.chat_id):
         return
-    if event.out:
-        print(f" [ making message randomly capitalized ]")
-        msg = "" # omg this part is done so badly
-        val = 0  # but I want a kinda imbalanced random
-        upper = False
-        for c in event.raw_text.lower().replace(".randomcase ", ""):
-            last = val
-            val = random.randint(0, 3)
-            if val > 2:
-                msg += c.upper()
-                upper = True
-            elif val < 1:
+    print(f" [ making message randomly capitalized ]")
+    text = event.pattern_match.group("text")
+    if text == "":
+        return 
+    msg = "" # omg this part is done so badly
+    val = 0  # but I want a kinda imbalanced random
+    upper = False
+    for c in text:
+        last = val
+        val = random.randint(0, 3)
+        if val > 2:
+            msg += c.upper()
+            upper = True
+        elif val < 1:
+            msg += c
+            upper = False
+        else:
+            if upper:
                 msg += c
                 upper = False
             else:
-                if upper:
-                    msg += c
-                    upper = False
-                else:
-                    msg += c.upper()
-                    upper = True
-        await event.message.edit(msg)
+                msg += c.upper()
+                upper = True
+    await event.message.edit(msg)
     await set_offline(event.client)
 
 # Replace .shrug with shrug emoji (or reply with one)
-@events.register(events.NewMessage(pattern=r"\.shrug"))
+@events.register(events.NewMessage(pattern=r"{p}shrug".format(p=PREFIX)))
 async def shrug(event):
     if not can_react(event.chat_id):
         return
@@ -47,16 +51,8 @@ async def shrug(event):
         await event.reply(r'¯\_(ツ)_/¯')
     await set_offline(event.client)
 
-# Delete message immediately after it being sent
-@events.register(events.NewMessage(pattern=r"\.delete"))
-async def deleteme(event):
-    if event.out:
-        print(f" [ deleting last message ]")
-        await event.message.delete()
-        await set_offline(event.client)
-
 # Run fortune
-@events.register(events.NewMessage(pattern=r"\.fortune"))
+@events.register(events.NewMessage(pattern=r"{p}fortune".format(p=PREFIX)))
 async def fortune(event):
     if not can_react(event.chat_id):
         return
@@ -64,20 +60,27 @@ async def fortune(event):
         print(f" [ running command \"fortune\" ]")
         result = subprocess.run("fortune", capture_output=True)
         output = cleartermcolor(result.stdout.decode())
-        await event.message.reply("```" + output + "```")
+        if event.out:
+            await event.message.edit(event.raw_text + "\n``` → " + output + "```")
+        else:
+            await event.message.reply("``` → " + output + "```")
     except Exception as e:
         await event.message.reply("`[!] → ` " + str(e))
     await set_offline(event.client)
 
 # Roll dice
-@events.register(events.NewMessage(pattern=r"\.roll (.*)"))
+@events.register(events.NewMessage(pattern=r"{p}roll(?: d| |d)(?P<max>[0-9]+)".format(p=PREFIX)))
 async def roll(event):
     if not can_react(event.chat_id):
         return
     try:
-        arg = int(event.pattern_match.group(1).replace("d",""))
+        arg = int(event.pattern_match.group("max"))
         print(f" [ rolling d{arg} ]")
-        await event.message.reply(f"` → {random.randint(1, arg)}`")
+        n = random.randint(1, arg)
+        if event.out:
+            await event.message.edit(event.raw_text + "\n` → ` **{n}**")
+        else:
+            await event.message.reply(f"` → **{n}**`")
     except Exception as e:
         await event.message.reply("`[!] → ` " + str(e))
     await set_offline(event.client)
@@ -92,13 +95,10 @@ class TextModules:
         client.add_event_handler(shrug)
         self.helptext += "`→ .shrug ` replace or reply with shrug composite emote\n"
 
-        client.add_event_handler(deleteme)
-        self.helptext += "`→ .delete ` delete sent message immediately *\n"
-
         client.add_event_handler(fortune)
         self.helptext += "`→ .fortune ` you feel lucky!?\n"
 
         client.add_event_handler(roll)
-        self.helptext += "`→ .roll d<n> ` roll a virtual dice with n faces\n"
+        self.helptext += "`→ .roll d<n> ` get a random number from 1 to n (incl)\n"
 
         print(" [ Registered Text Modules ]")

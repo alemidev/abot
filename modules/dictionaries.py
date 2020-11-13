@@ -11,6 +11,7 @@ from PyDictionary import PyDictionary
 import requests
 
 from util import can_react, set_offline, batchify
+from util.globals import PREFIX
 
 dictionary = PyDictionary()
 
@@ -32,12 +33,12 @@ def ud_define(word):
         return None
 
 # Search on italian dictionary
-@events.register(events.NewMessage(pattern=r"\.diz (.*)"))
+@events.register(events.NewMessage(pattern=r"{p}diz (?P<word>[^ ]+)".format(p=PREFIX)))
 async def diz(event):
     if not can_react(event.chat_id):
         return
     try:
-        arg = event.pattern_match.group(1)
+        arg = event.pattern_match.group("word")
         print(f" [ searching \"{arg}\" on it dictionary ]")
         # Use this to get only the meaning 
         res = italian_dictionary.get_definition(arg) 
@@ -52,12 +53,12 @@ async def diz(event):
     await set_offline(event.client)
 
 # Search on english dictionary
-@events.register(events.NewMessage(pattern=r"\.dic (.*)"))
+@events.register(events.NewMessage(pattern=r"{p}dic (?P<word>[^ ]+)".format(p=PREFIX)))
 async def dic(event):
     if not can_react(event.chat_id):
         return
     try:
-        arg = event.pattern_match.group(1)
+        arg = event.pattern_match.group('word')
         print(f" [ searching \"{arg}\" on eng dictionary ]")
         res = dictionary.meaning(arg)
         if res is None:
@@ -75,7 +76,7 @@ async def dic(event):
     await set_offline(event.client)
 
 # Search on urban dictionary
-@events.register(events.NewMessage(pattern=r"\.ud (.*)"))
+@events.register(events.NewMessage(pattern=r"{p}ud (?P<word>[^ ]+)".format(p=PREFIX)))
 async def urbandict(event):
     if not can_react(event.chat_id):
         return
@@ -97,7 +98,7 @@ async def urbandict(event):
     await set_offline(event.client)
 
 # Search on wikipedia
-@events.register(events.NewMessage(pattern=r"\.wiki (.*)"))
+@events.register(events.NewMessage(pattern=r"{p}wiki (.*)".format(p=PREFIX)))
 async def wiki(event):
     if not can_react(event.chat_id):
         return

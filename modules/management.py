@@ -1,90 +1,62 @@
 import random
 import asyncio
 import subprocess
+import traceback
 
 from telethon import events
 
 from util import can_react, set_offline, ignore_chat
+from util.globals import PREFIX
 
 # Delete message immediately after it being sent
-@events.register(events.NewMessage(pattern=r"\.delme"))
+@events.register(events.NewMessage(pattern=r"{p}(?:delme|delete)".format(p=PREFIX), outgoing=True))
 async def deleteme(event):
     if event.out:
         print(" [ deleting sent message ]")
         await event.message.delete()
         await set_offline(event.client)
 
-# Delete last X messages you sent
-@events.register(events.NewMessage(pattern=r"\.purge (.*)"))
+# Delete last X messages sent
+@events.register(events.NewMessage(
+    pattern=r"{p}(?:purge|wipe|clear)(?: |)(?P<target>@[^ ]+|)(?: |)(?P<number>[0-9]+|)".format(p=PREFIX),
+    outgoing=True))
 async def purge(event):
-    if event.out:
-        number = int(event.pattern_match.group(1))
-        me = await event.client.get_me()
-        print(f" [ purging last {number} message ]")
+    try:
+        args = event.pattern_match.groupdict()
+        number = 1
+        if "number" in args and args["number"] != "":
+            try:
+                number = int(args["number"])
+            except:
+                pass # default to 1 on fail
+
+        target = await event.client.get_me() # default to delete only self
+        if "target" in args and args["target"] not in { "", "@me" }:
+            if args["target"] in [ "@all", "@everyone" ]:
+                target = None
+            else:
+                target = await event.client.get_entity(args["target"])
+        print(f" [ purging last {number} message from {target} ]")
         n = 0
         async for message in event.client.iter_messages(await event.get_chat()):
-            if message.sender_id == me.id:
+            if target is None or message.sender_id == target.id:
                 await message.delete()
                 n += 1
             if n >= number:
                 break
-        await event.message.delete()
-        await set_offline(event.client)
-
-# Delete last X messages sent by anyone
-@events.register(events.NewMessage(pattern=r"\.wipe (.*)"))
-async def wipe(event):
-    if event.out:
-        number = int(event.pattern_match.group(1))
-        print(f" [ wiping last {number} message ]")
-        n = 0
-        async for message in event.client.iter_messages(await event.get_chat()):
-            try:
-                await message.delete()
-            except:
-                pass # in case you can't delete messages for others
-            n += 1
-            if n >= number:
-                break
-        await event.message.delete()
-        await set_offline(event.client)
+    except Exception as e:
+        traceback.print_exc()
+        event.message.edit(event.message.message + "\n`[!] → ` " + str(e))
+    await set_offline(event.client)
 
 # Set chat as ignored for a while
-@events.register(events.NewMessage(pattern=r"\.ignore (.*)"))
+@events.register(events.NewMessage(pattern=r"{p}ignore (?P<seconds>[0-9]+)".format(p=PREFIX), outgoing=True))
 async def ignore(event):
-    if event.out:
-        try:
-            number = int(event.pattern_match.group(1))
-            print(f" [ muting chat ]")
-            ignore_chat(event.chat_id, number)
-        except: pass
-
-# Spam message x times
-#  this command is not really group-management but seems more
-#  appropriate here than in modules/text.py
-@events.register(events.NewMessage(pattern=r"\.spam " +
-                r"([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]) (.*)"))
-async def spam(event):
-    if not can_react(event.chat_id):
-        return
-    if event.out:
-        try:
-            number = int(event.pattern_match.group(1))
-            mess = event.pattern_match.group(2)
-            print(f" [ spamming \"{mess}\" for {number} times ]")
-            
-            if event.is_reply:
-                msg = await event.get_reply_message()
-                for i in range(number):
-                    await msg.reply(mess)
-            else:
-                for i in range(number):
-                    await event.respond(mess)
-        except Exception as e:
-            await event.reply("`[!] → ` " + str(e))
-    else:
-        await event.reply("` → ◔_◔ ` u wish")
-    await set_offline(event.client)
+    try:
+        number = int(event.pattern_match.group(1))
+        print(f" [ muting chat ]")
+        ignore_chat(event.chat_id, number)
+    except: pass
 
 class ManagementModules:
     def __init__(self, client):
@@ -94,15 +66,9 @@ class ManagementModules:
         self.helptext += "`→ .delme ` delete sent message immediately *\n"
 
         client.add_event_handler(purge)
-        self.helptext += "`→ .purge <number> ` delete last <n> sent messages *\n"
-
-        client.add_event_handler(wipe)
-        self.helptext += "`→ .wipe <number> ` delete last <n> from ANYONE *\n"
+        self.helptext += "`→ .purge [target] [number] ` delete last <n> messages *\n"
 
         client.add_event_handler(ignore)
         self.helptext += "`→ .ignore <seconds> ` ignore commands in this chat *\n"
-
-        client.add_event_handler(spam)
-        self.helptext += "`→ .spam <number> <message> ` self explainatory *\n"
 
         print(" [ Registered Management Modules ]")

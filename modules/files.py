@@ -3,9 +3,10 @@ import asyncio
 from telethon import events
 
 from util import can_react, set_offline
+from util.globals import PREFIX
 
 # Save file
-@events.register(events.NewMessage(pattern=r"\.put"))
+@events.register(events.NewMessage(pattern=r"{p}put".format(p=PREFIX)))
 async def upload(event):
     if not can_react(event.chat_id):
         return
@@ -26,13 +27,13 @@ async def upload(event):
     await set_offline(event.client)
 
 # Upload file
-@events.register(events.NewMessage(pattern=r"\.get (.*)"))
+@events.register(events.NewMessage(pattern=r"{p}get(?: |)(?P<name>[^ ]*)".format(p=PREFIX)))
 async def download(event):
     if not can_react(event.chat_id):
         return
     if event.out:
         try:
-            name = event.pattern_match.group(1)
+            name = event.pattern_match.group("name")
             await event.message.reply('` → {}`'.format(name), file=name)
         except Exception as e:
             await event.message.reply("`[!] → ` " + str(e))

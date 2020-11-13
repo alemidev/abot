@@ -6,10 +6,11 @@ import traceback
 from telethon import events
 
 from util import can_react, set_offline, batchify
+from util.globals import PREFIX
 
 # Get random meme from memes folder
 @events.register(events.NewMessage(
-    pattern=r"^[\.\/]meme(?: |$)(?P<list>-list|-l|)(?: |$ |)(?P<name>[^ ]*)"))
+    pattern=r"{p}meme(?: |$)(?P<list>-list|-l|)(?: |$ |)(?P<name>[^ ]*)".format(p=PREFIX)))
 async def getmeme(event):
     if not can_react(event.chat_id):
         return
@@ -44,7 +45,7 @@ async def getmeme(event):
     await set_offline(event.client)
 
 # Save a meme
-@events.register(events.NewMessage(pattern=r"^[\.\/]steal (?P<name>[^ ]*)", outgoing=True))
+@events.register(events.NewMessage(pattern=r"{p}steal (?P<name>[^ ]*)".format(p=PREFIX), outgoing=True))
 async def steal(event):
     if not can_react(event.chat_id):
         return

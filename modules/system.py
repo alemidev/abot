@@ -8,6 +8,7 @@ from telethon import events
 
 from util import can_react, set_offline, batchify
 from util.parse import cleartermcolor
+from util.globals import PREFIX
 
 last_group = "N/A"
 
@@ -18,6 +19,7 @@ def print_if_different(chan):
     last_group = chan
 
 # Print in terminal received chats
+# TODO make this a proper chat logger, for edits and deletes
 @events.register(events.NewMessage)
 async def printer(event):
     sender = await event.client.get_entity(await event.get_input_sender())
@@ -42,7 +44,7 @@ async def printer(event):
     print(f"{colored(author, 'cyan')} {colored('→', 'grey')} {text}")
 
 # Repy to .asd with "a sunny day" (and calculate ping)
-@events.register(events.NewMessage(pattern=r"\.asd"))
+@events.register(events.NewMessage(pattern=r"{p}asd".format(p=PREFIX)))
 async def ping(event):
     if not can_react(event.chat_id):
         return
@@ -57,33 +59,32 @@ async def ping(event):
 
 
 # Update userbot (git pull + restart)
-@events.register(events.NewMessage(pattern=r"\.update"))
+@events.register(events.NewMessage(pattern=r"{p}update".format(p=PREFIX), outgoing=True))
 async def update(event):
     if not can_react(event.chat_id):
         return
-    if event.out:
-        msg = event.raw_text
-        try:
-            print(f" [ Updating bot ]")
-            msg += "\n` → ` Updating"
-            await event.message.edit(msg) 
-            result = subprocess.run(["git", "pull"], capture_output=True, timeout=60)
-            msg += " [OK]\n` → ` Bot will now restart"
-            await event.message.edit(msg) 
-            await event.client.disconnect()
-        except Exception as e:
-            msg += " [FAIL]\n`[!] → ` " + str(e)
-            await event.message.edit(msg) 
+    msg = event.raw_text
+    try:
+        print(f" [ Updating bot ]")
+        msg += "\n` → ` Updating"
+        await event.message.edit(msg) 
+        result = subprocess.run(["git", "pull"], capture_output=True, timeout=60)
+        msg += " [OK]\n` → ` Bot will now restart"
+        await event.message.edit(msg) 
+        await event.client.disconnect()
+    except Exception as e:
+        msg += " [FAIL]\n`[!] → ` " + str(e)
+        await event.message.edit(msg) 
     await set_offline(event.client)
 
 # Run command
-@events.register(events.NewMessage(pattern=r"\.run (.*)"))
+@events.register(events.NewMessage(pattern=r"{p}(?:run|r) (?P<cmd>.*)"))
 async def runit(event):
     if not can_react(event.chat_id):
         return
     if event.out:
         try:
-            args = event.pattern_match.group(1)
+            args = event.pattern_match.group("cmd")
             print(f" [ running command \"{args}\" ]")
             result = subprocess.run(args, shell=True, capture_output=True, timeout=60)
             output = f"$ {args}\n" + cleartermcolor(result.stdout.decode())
@@ -107,7 +108,7 @@ class SystemModules:
             client.add_event_handler(printer)
 
             client.add_event_handler(runit)
-            self.helptext += "`→ .run <command> ` execute command on server *\n"
+            self.helptext += "`→ .run <cmd> ` execute command on server (`.r`) *\n"
 
         client.add_event_handler(ping)
         self.helptext += "`→ .asd ` a sunny day (+ get latency) *\n"

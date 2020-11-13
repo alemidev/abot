@@ -1,56 +1,70 @@
 import random
 import asyncio
 import subprocess
+import traceback
 
 from telethon import events
 
 from util import can_react, set_offline
+from util.globals import PREFIX
 
-bullied_chats = []
-last_msg = None
+censoring = {}
 
 # Delete all messages as soon as they arrive
 @events.register(events.NewMessage)
 async def bully(event):
-    # chat = await event.get_chat()   # checking the title is a shit way to
-    # if hasattr(chat, 'title'):      # check if this is a group but I found
-    #     return                      # no better way (for now)
-    if event.chat_id in bullied_chats:
-        if event.raw_text.startswith(".stop"):
-            bullied_chats.remove(event.chat_id)
+    if event.chat_id in censoring:
+        if event.out and event.raw_text.startswith(".stop"):
+            censoring.pop(event.chat_id)
             await event.message.edit(event.message.message + "\n` → ` You can speak again")
             print(" [ No longer censoring a chat ]")
         else:
-            await event.message.delete()
-
+            if censoring[event.chat_id] is None:
+                await event.message.delete()
+            else:
+                sender = await event.client.get_entity(await event.get_input_sender())
+                if sender.id in censoring[event.chat_id]:
+                    await event.message.delete()
 
 # Start bullying a chat
-@events.register(events.NewMessage(pattern=r"\.censor"))
+@events.register(events.NewMessage(
+    pattern=r"{p}(?:censor|bully)(?: |)(?P<target>@[^ ]+|)".format(p=PREFIX), outgoing=True))
 async def startcensor(event):
-    if event.out and event.chat_id not in bullied_chats:
-        bullied_chats.append(event.chat_id)
-        await event.message.edit(event.message.message + "\n` → ` Censoring")
-        print(" [ Censoring new chat ]")
+    target = event.pattern_match.group("target")
+    if target in { "", "@all", "@everyone" }:
+        censoring[event.chat_id] = None
+    else:
+        tgt = await event.client.get_entity(target)
+        if target is None:
+            return
+        if event.chat_id not in censoring:
+            censoring[event.chat_id] = []
+        elif censoring[event.chat_id] is None:
+            censoring[event.chat_id] = []
+        censoring[event.chat_id].append(tgt.id)
+    await event.message.edit(event.message.message + f"\n` → ` Censoring {target}")
+    print(" [ Censoring new chat ]")
 
 # Spam message x times
-@events.register(events.NewMessage(pattern=r"\.spam " +
-                r"([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]) (.*)"))
+@events.register(events.NewMessage(
+        pattern=r"{p}spam(?: |)(?P<number>[0-9]+|)(?: |)(?P<text>.*)".format(p=PREFIX)))
 async def spam(event):
     if not can_react(event.chat_id):
         return
     if event.out:
+        args = event.pattern_match.groupdict()
+        if "text" not in args or args["text"] == "":
+            return
         try:
-            number = int(event.pattern_match.group(1))
-            mess = event.pattern_match.group(2)
-            print(f" [ spamming \"{mess}\" for {number} times ]")
-            
+            number = int(args["number"]) if "number" in args and args["number"] != "" else 5
+            print(f" [ spamming \"{args['text']}\" for {number} times ]")
             if event.is_reply:
                 msg = await event.get_reply_message()
                 for i in range(number):
-                    await msg.reply(mess)
+                    await msg.reply(args['text'])
             else:
                 for i in range(number):
-                    await event.respond(mess)
+                    await event.respond(args['text'])
         except Exception as e:
             await event.reply("`[!] → ` " + str(e))
     else:
@@ -62,11 +76,11 @@ class BullyModules:
         self.helptext = ""
 
         client.add_event_handler(spam)
-        self.helptext += "`→ .spam <number> <message> ` self explainatory *\n"
+        self.helptext += "`→ .spam [number] <message> ` self explainatory *\n"
 
         client.add_event_handler(bully)
         client.add_event_handler(startcensor)
-        self.helptext += "`→ .censor ` delete all further messages *\n"
+        self.helptext += "`→ .censor [target]` delete messages from target *\n"
         self.helptext += "`→ .stop ` stop censoring this chat *\n"
 
         print(" [ Registered Bully Modules ]")
