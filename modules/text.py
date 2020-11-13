@@ -70,7 +70,7 @@ async def fortune(event):
 
 # Roll dice
 @events.register(events.NewMessage(
-    pattern=r"{p}(?:rand|roll)(?: |)(?:(?P<max>d[0-9]+)|(?P<values>.*))".format(p=PREFIX)))
+    pattern=r"{p}(?:rand|roll) (?:(?P<max>d[0-9]+)|(?P<values>.*))".format(p=PREFIX)))
 async def rand(event):
     if not can_react(event.chat_id):
         return
