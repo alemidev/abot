@@ -54,7 +54,7 @@ async def parse_event(event, edit=False):
             author = chan
         elif sender.username is None:
             author = (sender.first_name + ' ' + sender.last_name if
-                        chat.last_name is not None else sender.first_name)
+                        sender.last_name is not None else sender.first_name)
         else:
             author = "@" + sender.username
     return MessageEntry(chan, author, msg, event.message.media is not None)
