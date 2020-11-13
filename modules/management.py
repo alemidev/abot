@@ -37,7 +37,7 @@ async def purge(event):
                 target = None
             else:
                 target = await event.client.get_entity(args["target"])
-        print(f" [ purging last {number} message from {target.username} ]")
+        print(f" [ purging last {number} message from {args['target']} ]")
         n = 0
         async for message in event.client.iter_messages(await event.get_chat()):
             if target is None or message.sender_id == target.id:
