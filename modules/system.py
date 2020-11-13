@@ -6,48 +6,9 @@ from termcolor import colored
 
 from telethon import events
 
-from util import can_react, set_offline, batchify
+from util import can_react, set_offline
 from util.parse import cleartermcolor
 from util.globals import PREFIX
-
-last_group = "N/A"
-
-def print_if_different(chan):
-    global last_group
-    if chan != last_group:
-        print(colored("━━━━━━━━━━┫ " + chan, 'magenta', attrs=['bold']))
-    last_group = chan
-
-# Print in terminal received chats
-# TODO make this a proper chat logger, for edits and deletes
-@events.register(events.NewMessage)
-async def printer(event):
-    peer = await event.get_input_sender()
-    if peer is None:
-        sender = None
-    else:
-        sender = await event.client.get_entity(peer)
-    chan = "UNKNOWN"
-    chat = await event.get_chat()   # checking the title is a shit way to
-    if hasattr(chat, 'title'):      # check if this is a group but I found
-        chan = chat.title           # no better way (for now)
-    else:
-        chan = (chat.username if chat.username is not None 
-                else f"{chat.first_name}" + (f" {chat.last_name}" if
-                    chat.last_name is not None else ""))
-    print_if_different(chan)
-    if sender is None:
-        author = chan
-    elif sender.username is None:
-        author = sender.first_name + ' ' + sender.last_name
-    else:
-        author = "@" + sender.username
-    pre = len(author) + 3
-    text = event.raw_text.replace("\n", "\n" + " "*pre)
-    if event.message.media is not None:
-        text = "[+MEDIA] " + text
-    text = ("\n" + " "*pre).join(batchify(text, 50))
-    print(f"{colored(author, 'cyan')} {colored('→', 'grey')} {text}")
 
 # Repy to .asd with "a sunny day" (and calculate ping)
 @events.register(events.NewMessage(pattern=r"{p}asd".format(p=PREFIX)))
@@ -111,8 +72,6 @@ class SystemModules:
         self.helptext = ""
 
         if not limit:
-            client.add_event_handler(printer)
-
             client.add_event_handler(runit)
             self.helptext += "`→ .run <cmd> ` execute command on server (`.r`) *\n"
 

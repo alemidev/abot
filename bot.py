@@ -12,6 +12,7 @@ import sys
 
 from telethon import TelegramClient, events
 
+# TODO make a module loader
 from modules.text import TextModules
 from modules.dictionaries import DictionaryModules
 from modules.files import FilesModules
@@ -20,6 +21,7 @@ from modules.system import SystemModules
 from modules.trigger import TriggerModules
 from modules.management import ManagementModules
 from modules.bully import BullyModules
+from modules.logger import LoggerModules
 
 from util import can_react, set_offline
 
@@ -41,6 +43,7 @@ client = TelegramClient(
 with client:
     helptext = "" # lmao don't look at how helptext is handled inside the module classes
 
+    helptext += LoggerModules(client).helptext
     helptext += DictionaryModules(client).helptext
     helptext += TextModules(client).helptext
     helptext += MemeModules(client).helptext
