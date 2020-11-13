@@ -57,7 +57,7 @@ async def parse_event(event, edit=False):
                         sender.last_name is not None else sender.first_name)
         else:
             author = "@" + sender.username
-    return MessageEntry(chan, author, msg, event.message.media is not None)
+    return MessageEntry(chan, author, msg, media=event.message.media is not None)
 
 # Print in terminal received edits
 @events.register(events.MessageEdited)
