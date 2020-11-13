@@ -1,5 +1,5 @@
 # alemibot / ᚨᛚᛖᛗᛁᛒᛟᛏ  v0.1
-## Join the bot telegram group on https://t.me/alemibothelp
+### Join the bot telegram group on https://t.me/alemibothelp
 
 My personal Telegram userbot. This is still quite early in development but I plan to keep polishing it.
 Below some of the available commands right now (the ones with * are restricted to you, others are public)
