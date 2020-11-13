@@ -83,6 +83,11 @@ async def rand(event):
             c = random.randint(1, maxval)
         elif "values" in args and args["values"] not in [ "", None ]:
             choices = args["values"].split(" ")
+            print(f" [ rolling {choices} ]")
+            c = random.choice(choices)
+        else:
+            choices = [ "Yes", "No" ]
+            print(f" [ rolling {choices} ]")
             c = random.choice(choices)
         if event.out:
             await event.message.edit(event.raw_text + f"\n` → ` **{c}**")
