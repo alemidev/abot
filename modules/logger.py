@@ -13,7 +13,7 @@ from util.globals import PREFIX
 last_group = "N/A"
 
 class MessageEntry:
-    def __init__(self, channel, author, message, media=False):
+    def __init__(self, channel, author, message, media):
         self.channel = channel
         self.author = author
         self.message = message
@@ -29,7 +29,7 @@ class MessageEntry:
         if self.media:
             text = "[+MEDIA] " + text
         text = ("\n" + " "*pre).join(batchify(text, 50)) # 
-        print(f"{colored(self.author, 'cyan')} {colored('→', 'grey')} {self.message}")
+        print(f"{colored(self.author, 'cyan')} {colored('→', 'grey')} {text}")
         
 async def parse_event(event, edit=False):
     chat = await event.get_chat()
@@ -57,7 +57,8 @@ async def parse_event(event, edit=False):
                         sender.last_name is not None else sender.first_name)
         else:
             author = "@" + sender.username
-    return MessageEntry(chan, author, msg, media=event.message.media is not None)
+    media = event.message.media is not None
+    return MessageEntry(chan, author, msg, media)
 
 # Print in terminal received edits
 @events.register(events.MessageEdited)
