@@ -83,7 +83,7 @@ async def rand(event):
             c = random.randint(1, maxval)
         elif "values" in args and args["values"] not in [ "", None ]:
             choices = args["values"].split(" ")
-            c = random.choice(choices)[0]
+            c = random.choice(choices)
         if event.out:
             await event.message.edit(event.raw_text + f"\n` → ` **{c}**")
         else:
