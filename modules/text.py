@@ -9,7 +9,7 @@ from util.globals import PREFIX
 
 # make character random case (lIkE tHiS)
 @events.register(events.NewMessage(
-        pattern=r"{p}(?:randomcase|rc) (?P<text>.*)".format(p=PREFIX), outgoing=True))
+        pattern=r"{p}(?:rc|randomcase)(?: |)(?P<text>.*)".format(p=PREFIX), outgoing=True))
 async def randomcase(event):
     if not can_react(event.chat_id):
         return
@@ -113,7 +113,7 @@ class TextModules:
         self.helptext = ""
 
         client.add_event_handler(randomcase)
-        self.helptext += "`→ .randomcase <message> ` maKe mEsSAgEs lIkE tHIs *\n"
+        self.helptext += "`→ .rc <message> ` maKe mEsSAgEs lIkE tHIs *\n"
 
         client.add_event_handler(shrug)
         self.helptext += "`→ .shrug ` replace or reply with shrug composite emote\n"
