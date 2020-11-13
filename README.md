@@ -1,13 +1,17 @@
 # alemibot / ᚨᛚᛖᛗᛁᛒᛟᛏ  v0.1
-My personal Telegram userbot. This is kinda early but I plan to work a little on this.
-Below some of the available commands right now (the ones with * are restricted)
+## Join the bot telegram group on https://t.me/alemibothelp
+
+My personal Telegram userbot. This is still quite early in development but I plan to keep polishing it.
+Below some of the available commands right now (the ones with * are restricted to you, others are public)
 * `.wiki <something> ` search something on wikipedia
 * `.dic <something> ` look up something on english dictionary
 * `.ud <something> ` look up something on urban dictionary
 * `.roll d<n> ` roll a virtual dice with n faces
-* `.fortune ` you feel lucky!?
-* `.delete ` delete sent message immediately *
-* `.spam <number> <message> ` self explainatory *
+* `.fortune ` runs the fortune command on your server (`sudo apt install fortune`)
+* `.delme ` delete sent message immediately *
+* `.spam [number] <message> ` self explainatory *
+* `.purge [target] [number] ` delete last (number) messages from target *
+* `.censor [target] ` immediately delete all messages from target in this chat *
 * `.run <command> ` execute command on server *
 
 # How to deploy
