@@ -19,6 +19,7 @@ from modules.meme import MemeModules
 from modules.system import SystemModules
 from modules.trigger import TriggerModules
 from modules.management import ManagementModules
+from modules.bully import BullyModules
 
 from util import can_react, set_offline
 
@@ -43,6 +44,7 @@ with client:
     helptext += DictionaryModules(client).helptext
     helptext += TextModules(client).helptext
     helptext += MemeModules(client).helptext
+    helptext += BullyModules(client).helptext
     helptext += FilesModules(client).helptext
     helptext += ManagementModules(client).helptext
     helptext += SystemModules(client).helptext
@@ -60,6 +62,13 @@ with client:
                             "\nhttps://github.com/alemigliardi/alemibot")
 
     client.add_event_handler(helper)
+
+    # async def edit_last(client):
+    #     lastmsg = (await client.get_messages('me'))[0]
+    #     if lastmsg.message.startswith(".update"):
+    #         await lastmsg.edit(lastmsg.message + " [DONE]")
+    
+    client.loop.run_until_complete(client.send_message('me', '` → ᚨᛚᛖᛗᛁᛒᛟᛏ ` **online**'))
 
     print()
     print(' [ Press Ctrl+C to stop this ]\n')

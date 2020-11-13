@@ -82,31 +82,6 @@ async def roll(event):
         await event.message.reply("`[!] → ` " + str(e))
     await set_offline(event.client)
 
-# Spam message x times
-@events.register(events.NewMessage(pattern=r"\.spam " +
-                r"([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]) (.*)"))
-async def spam(event):
-    if not can_react(event.chat_id):
-        return
-    if event.out:
-        try:
-            number = int(event.pattern_match.group(1))
-            mess = event.pattern_match.group(2)
-            print(f" [ spamming \"{mess}\" for {number} times ]")
-            
-            if event.is_reply:
-                msg = await event.get_reply_message()
-                for i in range(number):
-                    await msg.reply(mess)
-            else:
-                for i in range(number):
-                    await event.respond(mess)
-        except Exception as e:
-            await event.reply("`[!] → ` " + str(e))
-    else:
-        await event.reply("` → ◔_◔ ` u wish")
-    await set_offline(event.client)
-
 class TextModules:
     def __init__(self, client):
         self.helptext = ""
@@ -125,8 +100,5 @@ class TextModules:
 
         client.add_event_handler(roll)
         self.helptext += "`→ .roll d<n> ` roll a virtual dice with n faces\n"
-
-        client.add_event_handler(spam)
-        self.helptext += "`→ .spam <number> <message> ` self explainatory *\n"
 
         print(" [ Registered Text Modules ]")
