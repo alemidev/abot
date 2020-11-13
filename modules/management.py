@@ -9,7 +9,8 @@ from util import can_react, set_offline, ignore_chat
 from util.globals import PREFIX
 
 # Delete message immediately after it being sent
-@events.register(events.NewMessage(pattern=r"{p}(?:delme|delete)".format(p=PREFIX), outgoing=True))
+@events.register(events.NewMessage(
+    pattern=r"(?:.*|)(?:-delme|-delete|-d)$".format(p=PREFIX), outgoing=True))
 async def deleteme(event):
     if event.out:
         print(" [ deleting sent message ]")
@@ -36,7 +37,7 @@ async def purge(event):
                 target = None
             else:
                 target = await event.client.get_entity(args["target"])
-        print(f" [ purging last {number} message from {target} ]")
+        print(f" [ purging last {number} message from {target.username} ]")
         n = 0
         async for message in event.client.iter_messages(await event.get_chat()):
             if target is None or message.sender_id == target.id:
@@ -63,7 +64,7 @@ class ManagementModules:
         self.helptext = ""
 
         client.add_event_handler(deleteme)
-        self.helptext += "`→ .delme ` delete sent message immediately *\n"
+        self.helptext += "`→ [text] -delme ` delete msg ending with `-delme` *\n"
 
         client.add_event_handler(purge)
         self.helptext += "`→ .purge [target] [number] ` delete last <n> messages *\n"
