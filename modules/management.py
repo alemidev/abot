@@ -41,6 +41,7 @@ async def purge(event):
         n = 0
         async for message in event.client.iter_messages(await event.get_chat()):
             if target is None or message.sender_id == target.id:
+                print(f"[DELETING]> {message.message}")
                 await message.delete()
                 n += 1
             if n >= number:
