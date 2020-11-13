@@ -87,7 +87,7 @@ async def rand(event):
         if event.out:
             await event.message.edit(event.raw_text + f"\n` → ` **{c}**")
         else:
-            await event.message.reply(f"` → **{c}**`")
+            await event.message.reply(f"` → ` **{c}**")
     except Exception as e:
         await event.message.reply("`[!] → ` " + str(e))
     await set_offline(event.client)
