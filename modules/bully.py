@@ -12,36 +12,25 @@ last_msg = None
 # Delete all messages as soon as they arrive
 @events.register(events.NewMessage)
 async def bully(event):
-    chat = await event.get_chat()   # checking the title is a shit way to
-    if hasattr(chat, 'title'):      # check if this is a group but I found
-        return                      # no better way (for now)
+    # chat = await event.get_chat()   # checking the title is a shit way to
+    # if hasattr(chat, 'title'):      # check if this is a group but I found
+    #     return                      # no better way (for now)
     if event.chat_id in bullied_chats:
-        await event.message.delete()
+        if event.raw_text.startswith(".stop"):
+            bullied_chats.remove(event.chat_id)
+            await event.message.edit(event.message.message + "\n` → ` You can speak again")
+            print(" [ No longer censoring a chat ]")
+        else:
+            await event.message.delete()
 
 
 # Start bullying a chat
 @events.register(events.NewMessage(pattern=r"\.censor"))
 async def startcensor(event):
-    chat = await event.get_chat()   # checking the title is a shit way to
-    if hasattr(chat, 'title'):      # check if this is a group but I found
-        return                      # no better way (for now)
-    if event.chat_id not in bullied_chats:
+    if event.out and event.chat_id not in bullied_chats:
         bullied_chats.append(event.chat_id)
-        last_msg = event.message
-        await last_msg.edit(last_msg.message + "\n` → ` Censoring")
+        await event.message.edit(event.message.message + "\n` → ` Censoring")
         print(" [ Censoring new chat ]")
-
-# Stop bullying a chat
-@events.register(events.NewMessage(pattern=r"\.stop"))
-async def stopcensor(event):
-    chat = await event.get_chat()   # checking the title is a shit way to
-    if hasattr(chat, 'title'):      # check if this is a group but I found
-        return                      # no better way (for now)
-    if event.chat_id in bullied_chats:
-        bullied_chats.remove(event.chat_id)
-        if last_msg is not None:
-            await last_msg.edit(last_msg.message + "\n` → ` You can speak again")
-        print(" [ No longer censoring a chat ]")
 
 # Spam message x times
 @events.register(events.NewMessage(pattern=r"\.spam " +
@@ -76,11 +65,8 @@ class BullyModules:
         self.helptext += "`→ .spam <number> <message> ` self explainatory *\n"
 
         client.add_event_handler(bully)
-
         client.add_event_handler(startcensor)
         self.helptext += "`→ .censor ` delete all further messages *\n"
-
-        client.add_event_handler(stopcensor)
         self.helptext += "`→ .stop ` stop censoring this chat *\n"
 
         print(" [ Registered Bully Modules ]")
