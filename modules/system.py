@@ -22,7 +22,11 @@ def print_if_different(chan):
 # TODO make this a proper chat logger, for edits and deletes
 @events.register(events.NewMessage)
 async def printer(event):
-    sender = await event.client.get_entity(await event.get_input_sender())
+    peer = await event.get_input_sender()
+    if peer is None:
+        sender = None
+    else:
+        sender = await event.client.get_entity(peer)
     chan = "UNKNOWN"
     chat = await event.get_chat()   # checking the title is a shit way to
     if hasattr(chat, 'title'):      # check if this is a group but I found
@@ -32,7 +36,9 @@ async def printer(event):
                 else f"{chat.first_name}" + (f" {chat.last_name}" if
                     chat.last_name is not None else ""))
     print_if_different(chan)
-    if sender.username is None:
+    if sender is None:
+        author = chan
+    elif sender.username is None:
         author = sender.first_name + ' ' + sender.last_name
     else:
         author = "@" + sender.username
