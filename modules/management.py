@@ -74,6 +74,6 @@ class ManagementModules:
         self.helptext += "`→ .ignore <seconds> ` ignore commands in this chat *\n"
 
         client.add_event_handler(deleteme)
-        self.helptext += "`→ [text] -delme ` delete msg ending with `-delme` *\n"
+        self.helptext += "`→ ... -delme [time] ` delete msg ending with `-delme` *\n"
 
         print(" [ Registered Management Modules ]")
