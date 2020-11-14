@@ -106,7 +106,7 @@ async def shrug(event):
 
 # Replace or reply with figlet art
 @events.register(events.NewMessage(
-    pattern=r"{p}figlet(?: |)(?P<list>-l|)(?: |)(?P<font>-f [^ ]+|)(?: |)(?P<text>.*)".format(p=PREFIX)))
+    pattern=r"{p}figlet(?: |)(?:(?P<list>-l)|(?P<font>-f [^ ]+)|(?P<random>-r)|)(?: |)(?P<text>.*)".format(p=PREFIX)))
 async def figlettext(event):
     if not can_react(event.chat_id):
         return
@@ -119,10 +119,13 @@ async def figlettext(event):
         for m in batchify(msg, 4090):
             await event.message.reply(m)
         return
-    font = random.choice(FIGLET_FONTS)
-    f = args["font"].replace("-f ", "")
-    if f != "" and f in FIGLET_FONTS:
-        font = f
+    font = "slant"
+    if args["random"] == "-r":
+        font = random.choice(FIGLET_FONTS)
+    elif args["font"] is not None and args["font"] != "":
+        f = args["font"].replace("-f ", "")
+        if f != "" and f in FIGLET_FONTS:
+            font = f
     if args["text"] == "":
         return
     result = pyfiglet.figlet_format(args["text"], font=font)
@@ -208,7 +211,7 @@ class TextModules:
         self.helptext += "`→ .rc <message> ` maKe mEsSAgEs lIkE tHIs *\n"
 
         client.add_event_handler(figlettext)
-        self.helptext += "`→ .figlet [-l] [-f font] <text> ` maKe figlet art\n"
+        self.helptext += "`→ .figlet [-l]|[-r]|[-f font] <text> ` maKe figlet art\n"
 
         client.add_event_handler(shrug)
         self.helptext += "`→ .shrug ` replace or reply with shrug composite emote\n"
@@ -217,7 +220,7 @@ class TextModules:
         self.helptext += "`→ .fortune ` you feel lucky!?\n"
 
         client.add_event_handler(rand)
-        self.helptext += "`→ .rand [max] [choices] ` get random number or element\n"
+        self.helptext += "`→ .rand d[max]|[choices] ` get random number or element\n"
 
         client.add_event_handler(lmgtfy)
         self.helptext += "`→ .lmgtfy <something> ` make a lmgtfy link\n"
