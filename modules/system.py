@@ -45,7 +45,7 @@ async def update(event):
     await set_offline(event.client)
 
 # Run command
-@events.register(events.NewMessage(pattern=r"{p}(?:run|r) (?P<cmd>.*)"))
+@events.register(events.NewMessage(pattern=r"{p}(?:run|r) (?P<cmd>.*)".format(p=PREFIX)))
 async def runit(event):
     if not can_react(event.chat_id):
         return
