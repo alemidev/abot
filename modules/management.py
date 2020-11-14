@@ -10,10 +10,13 @@ from util.globals import PREFIX
 
 # Delete message immediately after it being sent
 @events.register(events.NewMessage(
-    pattern=r"(?:.*|)(?:-delme|-delete|-d)$".format(p=PREFIX), outgoing=True))
+    pattern=r"(?:.*|)(?:-delme|-delete|-d)(?: |)(?P<time>[0-9]+|)$".format(p=PREFIX), outgoing=True))
 async def deleteme(event):
     if event.out:
         print(" [ deleting sent message ]")
+        t = event.pattern_match.group("time")
+        if t != "":
+            await asyncio.sleep(float(t))
         await event.message.delete()
         await set_offline(event.client)
 
@@ -64,13 +67,13 @@ class ManagementModules:
     def __init__(self, client):
         self.helptext = ""
 
-        client.add_event_handler(deleteme)
-        self.helptext += "`→ [text] -delme ` delete msg ending with `-delme` *\n"
-
         client.add_event_handler(purge)
         self.helptext += "`→ .purge [target] [number] ` delete last <n> messages *\n"
 
         client.add_event_handler(ignore)
         self.helptext += "`→ .ignore <seconds> ` ignore commands in this chat *\n"
+
+        client.add_event_handler(deleteme)
+        self.helptext += "`→ [text] -delme ` delete msg ending with `-delme` *\n"
 
         print(" [ Registered Management Modules ]")

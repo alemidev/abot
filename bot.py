@@ -44,13 +44,13 @@ with client:
     helptext = "" # lmao don't look at how helptext is handled inside the module classes
 
     helptext += LoggerModules(client).helptext
+    helptext += SystemModules(client).helptext
     helptext += DictionaryModules(client).helptext
     helptext += TextModules(client).helptext
     helptext += MemeModules(client).helptext
     helptext += BullyModules(client).helptext
     helptext += FilesModules(client).helptext
     helptext += ManagementModules(client).helptext
-    helptext += SystemModules(client).helptext
     helptext += TriggerModules(client).helptext
 
     # Help message
