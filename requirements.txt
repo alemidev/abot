@@ -6,3 +6,4 @@ PyDictionary
 requests
 pyfiglet
 pillow
+sympy
