@@ -107,7 +107,7 @@ async def fry_image(img: Image) -> Image:
     return img
 
 # DeepFry a meme
-@events.register(events.NewMessage(pattern=r"{p}fry(?: |)(?P<count>-c [0-9]+|)".format(p=PREFIX)))
+@events.register(events.NewMessage(pattern=r"{p}fry(?: |)(?P<count>-c [0-9]+|)".format(p=PREFIX), outgoing=True))
 async def deepfry(event):
     if not can_react(event.chat_id):
         return
@@ -157,6 +157,6 @@ class MemeModules:
         self.helptext += "`→ .steal <name> ` add meme to collection *\n"
 
         client.add_event_handler(deepfry)
-        self.helptext += "`→ .fry [-c n] ` fry a meme n times\n"
+        self.helptext += "`→ .fry [-c n] ` fry a meme n times *\n"
 
         print(" [ Registered Meme Modules ]")
