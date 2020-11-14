@@ -4,3 +4,4 @@ wikipedia
 italian-dictionary
 PyDictionary
 requests
+pyfiglet
