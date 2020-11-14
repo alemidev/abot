@@ -65,7 +65,7 @@ async def ignore(event):
 
 class ManagementModules:
     def __init__(self, client):
-        self.helptext = ""
+        self.helptext = "`━━┫ MANAGE `\n"
 
         client.add_event_handler(purge)
         self.helptext += "`→ .purge [target] [number] ` delete last <n> messages *\n"

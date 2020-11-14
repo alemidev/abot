@@ -43,7 +43,7 @@ async def download(event):
 
 class FilesModules:
     def __init__(self, client):
-        self.helptext = ""
+        self.helptext = "`━━┫ FILES `\n"
 
         client.add_event_handler(upload)
         self.helptext += "`→ .put ` save attached file to server *\n"

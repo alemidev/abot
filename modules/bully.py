@@ -80,7 +80,7 @@ async def spam(event):
 
 class BullyModules:
     def __init__(self, client):
-        self.helptext = ""
+        self.helptext = "`━━┫ BULLY`\n"
 
         client.add_event_handler(spam)
         self.helptext += "`→ .spam [-n] [-t] <message> ` self explainatory *\n"

@@ -205,7 +205,7 @@ async def lmgtfy(event):
 
 class TextModules:
     def __init__(self, client):
-        self.helptext = ""
+        self.helptext = "`━━┫ TEXT `\n"
 
         client.add_event_handler(slowtype)
         self.helptext += "`→ .slow [-t n] <message> ` type msg char by char *\n"

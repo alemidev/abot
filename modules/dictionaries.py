@@ -124,7 +124,7 @@ async def wiki(event):
 
 class DictionaryModules:
     def __init__(self, client):
-        self.helptext = ""
+        self.helptext = "`━━┫ DICTIONARY `\n"
 
         client.add_event_handler(urbandict)
         self.helptext += "`→ .ud <something> ` look up something on urban dictionary\n"

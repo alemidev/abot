@@ -148,7 +148,7 @@ async def deepfry(event):
 
 class MemeModules:
     def __init__(self, client):
-        self.helptext = ""
+        self.helptext = "`━━┫ MEME `\n"
 
         client.add_event_handler(getmeme)
         self.helptext += "`→ .meme [-list] [name]` get a meme\n"

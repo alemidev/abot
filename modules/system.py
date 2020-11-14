@@ -69,7 +69,7 @@ async def runit(event):
 
 class SystemModules:
     def __init__(self, client, limit=False):
-        self.helptext = ""
+        self.helptext = "`━━┫ SYSTEM `\n"
 
         if not limit:
             client.add_event_handler(runit)
