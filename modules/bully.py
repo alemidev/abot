@@ -47,24 +47,31 @@ async def startcensor(event):
 
 # Spam message x times
 @events.register(events.NewMessage(
-        pattern=r"{p}spam(?: |)(?P<number>[0-9]+|)(?: |)(?P<text>.*)".format(p=PREFIX)))
+        pattern=r"{p}spam(?: |)(?P<number>(?:-n |)[0-9]+|)(?: |)(?P<time>-t [0-9.]+|)(?P<text>.*)".format(p=PREFIX)))
 async def spam(event):
     if not can_react(event.chat_id):
         return
     if event.out:
         args = event.pattern_match.groupdict()
-        if "text" not in args or args["text"] == "":
-            return
         try:
-            number = int(args["number"]) if "number" in args and args["number"] != "" else 5
+            if "text" not in args or args["text"] == "":
+                return
+            wait = 0
+            if args["time"] not in [ None, "" ]:
+                wait = float(args["time"].replace("-t ", ""))
+            number = 5
+            if args["number"] not in [ None, "" ]:
+                number = int(args["number"].replace("-n ", "")) 
             print(f" [ spamming \"{args['text']}\" for {number} times ]")
             if event.is_reply:
                 msg = await event.get_reply_message()
                 for i in range(number):
                     await msg.reply(args['text'])
+                    await asyncio.sleep(wait) 
             else:
                 for i in range(number):
                     await event.respond(args['text'])
+                    await asyncio.sleep(wait) 
         except Exception as e:
             await event.reply("`[!] → ` " + str(e))
     else:
@@ -76,7 +83,7 @@ class BullyModules:
         self.helptext = ""
 
         client.add_event_handler(spam)
-        self.helptext += "`→ .spam [number] <message> ` self explainatory *\n"
+        self.helptext += "`→ .spam [-n] [-t] <message> ` self explainatory *\n"
 
         client.add_event_handler(bully)
         client.add_event_handler(startcensor)
