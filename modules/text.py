@@ -38,7 +38,7 @@ async def slowtype(event):
             await t # does this work? I should read asyncio docs
     except:
         traceback.print_exc()
-        pass: # msg was deleted probably
+        pass # msg was deleted probably
     await set_offline(event.client)
 
 def interval(delta):
