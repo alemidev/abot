@@ -24,8 +24,8 @@ async def expr(event):
             preview(arg, viewer='file', filename='expr.png')
         else:
             res = parse_expr(arg)
-            preview(res, viewer='file', filename='expr.png')
-        await event.message.reply(file="expr.png")
+            preview(res, viewer='file', filename='expr.png', dvioptions=["-T", "bbox", "-D 300", "--truecolor", "-bg", "Transparent"])
+        await event.message.reply("` → `", file="expr.png")
     except Exception as e:
         traceback.print_exc()
         await event.message.reply("`[!] → ` " + str(e))
@@ -47,7 +47,7 @@ async def graph(event):
         #     plot3d_parametric_line(res, show=False).save("graph.png")
         else:
             plot(res, show=False).save("graph.png")
-        await event.message.reply(file="graph.png")
+        await event.message.reply("` → `", file="graph.png")
     except Exception as e:
         traceback.print_exc()
         await event.message.reply("`[!] → ` " + str(e))
