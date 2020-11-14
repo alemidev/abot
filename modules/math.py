@@ -21,7 +21,7 @@ async def expr(event):
         opt = event.pattern_match.group("opt")
         print(f" [ mathifying {arg} ]")
         if opt == "-latex":
-            preview(arg, viewer='file', filename='expr.png')
+            preview(arg, viewer='file', filename='expr.png', dvioptions=["-T", "bbox", "-D 300", "--truecolor", "-bg", "Transparent"])
         else:
             res = parse_expr(arg)
             preview(res, viewer='file', filename='expr.png', dvioptions=["-T", "bbox", "-D 300", "--truecolor", "-bg", "Transparent"])
