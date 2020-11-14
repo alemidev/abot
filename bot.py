@@ -24,7 +24,8 @@ from modules.bully import BullyModules
 from modules.logger import LoggerModules
 from modules.math import MathModules
 
-from util import can_react, set_offline
+from util import set_offline
+from util.permission import is_allowed
 
 import logging
 logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s',
@@ -58,12 +59,11 @@ with client:
     # Help message
     @events.register(events.NewMessage(pattern=r"\.help"))
     async def helper(event):
-        if can_react(event.chat_id):
+        if event.out or is_allowed(event.sender_id):
             await event.reply("` ᚨᛚᛖᛗᛁᛒᛟᛏ v0.1`\n" +
                               "`→ .help ` print this\n" +
                                 helptext +
-                             f"\n__All cmds have a {config['cooldown']}s cooldown per chat__\n" +
-                             f"__Commands with * are restricted__\n" +
+                             f"__Commands with * are available to trusted users__\n" +
                             "\nhttps://github.com/alemigliardi/alemibot")
 
     client.add_event_handler(helper)

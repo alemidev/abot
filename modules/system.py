@@ -6,30 +6,26 @@ from termcolor import colored
 
 from telethon import events
 
-from util import can_react, set_offline
+from util import set_offline
 from util.parse import cleartermcolor
 from util.globals import PREFIX
+from util.permission import is_allowed
 
 # Repy to .asd with "a sunny day" (and calculate ping)
-@events.register(events.NewMessage(pattern=r"{p}asd".format(p=PREFIX)))
+@events.register(events.NewMessage(pattern=r"{p}asd".format(p=PREFIX), outgoing=True))
 async def ping(event):
-    if not can_react(event.chat_id):
-        return
-    if event.out:
-        msg = event.raw_text
-        before = time.time()
-        await event.message.edit(msg + "\n` → ` a sunny day")
-        after = time.time()
-        latency = (after - before) * 1000
-        await event.message.edit(msg + f"\n` → ` a sunny day `({latency:.0f}ms)`")
+    msg = event.raw_text
+    before = time.time()
+    await event.message.edit(msg + "\n` → ` a sunny day")
+    after = time.time()
+    latency = (after - before) * 1000
+    await event.message.edit(msg + f"\n` → ` a sunny day `({latency:.0f}ms)`")
     await set_offline(event.client)
 
 
 # Update userbot (git pull + restart)
 @events.register(events.NewMessage(pattern=r"{p}update".format(p=PREFIX), outgoing=True))
 async def update(event):
-    if not can_react(event.chat_id):
-        return
     msg = event.raw_text
     try:
         print(f" [ Updating bot ]")
@@ -45,26 +41,21 @@ async def update(event):
     await set_offline(event.client)
 
 # Run command
-@events.register(events.NewMessage(pattern=r"{p}(?:run|r) (?P<cmd>.*)".format(p=PREFIX)))
+@events.register(events.NewMessage(pattern=r"{p}(?:run|r) (?P<cmd>.*)".format(p=PREFIX), outgoing=True))
 async def runit(event):
-    if not can_react(event.chat_id):
-        return
-    if event.out:
-        try:
-            args = event.pattern_match.group("cmd")
-            print(f" [ running command \"{args}\" ]")
-            result = subprocess.run(args, shell=True, capture_output=True, timeout=60)
-            output = f"$ {args}\n" + cleartermcolor(result.stdout.decode())
-            if len(output) > 4080:
-                with open("output", "w") as f:
-                    f.write(output) # lmaoooo there must be a better way
-                await event.message.reply("``` → Output too long to display```", file="output")
-            else:
-                await event.message.reply("```" + output + "```")
-        except Exception as e:
-            await event.message.reply("`[!] → ` " + str(e))
-    else:
-        await event.message.reply("` → ( ͡° ͜ʖ ͡°)` nice try")
+    try:
+        args = event.pattern_match.group("cmd")
+        print(f" [ running command \"{args}\" ]")
+        result = subprocess.run(args, shell=True, capture_output=True, timeout=60)
+        output = f"$ {args}\n" + cleartermcolor(result.stdout.decode())
+        if len(output) > 4080:
+            with open("output", "w") as f:
+                f.write(output) # lmaoooo there must be a better way
+            await event.message.reply("``` → Output too long to display```", file="output")
+        else:
+            await event.message.reply("```" + output + "```")
+    except Exception as e:
+        await event.message.reply("`[!] → ` " + str(e))
     await set_offline(event.client)
 
 class SystemModules:
@@ -73,13 +64,13 @@ class SystemModules:
 
         if not limit:
             client.add_event_handler(runit)
-            self.helptext += "`→ .run <cmd> ` execute command on server (`.r`) *\n"
+            self.helptext += "`→ .run <cmd> ` execute command on server\n"
 
         client.add_event_handler(ping)
-        self.helptext += "`→ .asd ` a sunny day (+ get latency) *\n"
+        self.helptext += "`→ .asd ` a sunny day (+ get latency)\n"
 
         client.add_event_handler(update)
-        self.helptext += "`→ .update ` (git) pull changes and reboot bot *\n"
+        self.helptext += "`→ .update ` (git) pull changes and reboot bot\n"
 
 
         print(" [ Registered System Modules ]")

@@ -5,8 +5,9 @@ import traceback
 
 from telethon import events
 
-from util import can_react, set_offline
+from util import set_offline
 from util.globals import PREFIX
+from util.permission import is_allowed
 
 censoring = {}
 
@@ -22,8 +23,9 @@ async def bully(event):
             if censoring[event.chat_id] is None:
                 await event.message.delete()
             else:
-                sender = await event.client.get_entity(await event.get_input_sender())
-                if sender.id in censoring[event.chat_id]:
+                if event.sender_id is None:
+                    return
+                if event.sender_id in censoring[event.chat_id]:
                     await event.message.delete()
 
 # Start bullying a chat
@@ -47,35 +49,33 @@ async def startcensor(event):
 
 # Spam message x times
 @events.register(events.NewMessage(
-        pattern=r"{p}spam(?: |)(?P<number>(?:-n |)[0-9]+|)(?: |)(?P<time>-t [0-9.]+|)(?P<text>.*)".format(p=PREFIX)))
+        pattern=r"{p}spam(?: |)(?P<number>(?:-n |)[0-9]+|)(?: |)(?P<time>-t [0-9.]+|)(?P<text>.*)".format(p=PREFIX),
+        outgoing=True))
 async def spam(event):
     if not can_react(event.chat_id):
         return
-    if event.out:
-        args = event.pattern_match.groupdict()
-        try:
-            if "text" not in args or args["text"] == "":
-                return
-            wait = 0
-            if args["time"] not in [ None, "" ]:
-                wait = float(args["time"].replace("-t ", ""))
-            number = 5
-            if args["number"] not in [ None, "" ]:
-                number = int(args["number"].replace("-n ", "")) 
-            print(f" [ spamming \"{args['text']}\" for {number} times ]")
-            if event.is_reply:
-                msg = await event.get_reply_message()
-                for i in range(number):
-                    await msg.reply(args['text'])
-                    await asyncio.sleep(wait) 
-            else:
-                for i in range(number):
-                    await event.respond(args['text'])
-                    await asyncio.sleep(wait) 
-        except Exception as e:
-            await event.reply("`[!] → ` " + str(e))
-    else:
-        await event.reply("` → ◔_◔ ` u wish")
+    args = event.pattern_match.groupdict()
+    try:
+        if "text" not in args or args["text"] == "":
+            return
+        wait = 0
+        if args["time"] not in [ None, "" ]:
+            wait = float(args["time"].replace("-t ", ""))
+        number = 5
+        if args["number"] not in [ None, "" ]:
+            number = int(args["number"].replace("-n ", "")) 
+        print(f" [ spamming \"{args['text']}\" for {number} times ]")
+        if event.is_reply:
+            msg = await event.get_reply_message()
+            for i in range(number):
+                await msg.reply(args['text'])
+                await asyncio.sleep(wait) 
+        else:
+            for i in range(number):
+                await event.respond(args['text'])
+                await asyncio.sleep(wait) 
+    except Exception as e:
+        await event.reply("`[!] → ` " + str(e))
     await set_offline(event.client)
 
 class BullyModules:
@@ -83,11 +83,11 @@ class BullyModules:
         self.helptext = "`━━┫ BULLY`\n"
 
         client.add_event_handler(spam)
-        self.helptext += "`→ .spam [-n] [-t] <message> ` self explainatory *\n"
+        self.helptext += "`→ .spam [-n] [-t] <message> ` self explainatory\n"
 
         client.add_event_handler(bully)
         client.add_event_handler(startcensor)
-        self.helptext += "`→ .censor [target]` delete messages from target *\n"
-        self.helptext += "`→ .stop ` stop censoring this chat *\n"
+        self.helptext += "`→ .censor [target] ` delete msgs sent by target\n"
+        self.helptext += "`→ .stop ` stop censoring this chat\n"
 
         print(" [ Registered Bully Modules ]")

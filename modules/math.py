@@ -3,8 +3,9 @@ import traceback
 
 from telethon import events
 
-from util import can_react, set_offline, batchify
+from util import set_offline, batchify
 from util.globals import PREFIX
+from util.permission import is_allowed
 
 from sympy import *
 from sympy.solvers import solve
@@ -14,7 +15,7 @@ from sympy.parsing.sympy_parser import parse_expr
 # Print LaTeX formatted expression from either sympy or latex
 @events.register(events.NewMessage(pattern=r"{p}(?:expr|math)(?: |)(?P<opt>-latex|)(?: |)(?P<query>.*)".format(p=PREFIX)))
 async def expr(event):
-    if not can_react(event.chat_id):
+    if not event.out and not is_allowed(event.sender_id):
         return
     try:
         arg = event.pattern_match.group("query")
@@ -34,7 +35,7 @@ async def expr(event):
 # Plot a matplotlib graph
 @events.register(events.NewMessage(pattern=r"{p}(?:plot|graph)(?: |)(?P<opt>-3d|-par|)(?: |)(?P<query>.*)".format(p=PREFIX)))
 async def graph(event):
-    if not can_react(event.chat_id):
+    if not event.out and not is_allowed(event.sender_id):
         return
     try:
         arg = event.pattern_match.group("query")
@@ -56,7 +57,7 @@ async def graph(event):
 # Solve equation
 @events.register(events.NewMessage(pattern=r"{p}solve(?: |)(?P<query>.*)".format(p=PREFIX)))
 async def solve_cmd(event):
-    if not can_react(event.chat_id):
+    if not event.out and not is_allowed(event.sender_id):
         return
     try:
         arg = event.pattern_match.group("query")
@@ -77,12 +78,12 @@ class MathModules:
         self.helptext = "`━━┫ MATH`\n"
 
         client.add_event_handler(expr)
-        self.helptext += "`→ .expr [-latex] <expr> ` print math expr formatted\n"
+        self.helptext += "`→ .expr [-latex] <expr> ` print math expr formatted *\n"
 
         client.add_event_handler(graph)
-        self.helptext += "`→ .plot [-3d] <expr> ` print graph of expression\n"
+        self.helptext += "`→ .plot [-3d] <expr> ` print graph of expression *\n"
 
         client.add_event_handler(solve_cmd)
-        self.helptext += "`→ .solve <expr> ` find roots of algebric equation\n"
+        self.helptext += "`→ .solve <expr> ` find roots of algebric equation *\n"
 
         print(" [ Registered Math Modules ]")

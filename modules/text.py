@@ -7,9 +7,10 @@ import traceback
 
 from telethon import events
 
-from util import can_react, set_offline, batchify
+from util import set_offline, batchify
 from util.globals import PREFIX
 from util.parse import cleartermcolor
+from util.permission import is_allowed
 
 import pyfiglet
 
@@ -19,8 +20,6 @@ FIGLET_FONTS = pyfiglet.FigletFont.getFonts()
 @events.register(events.NewMessage(
         pattern=r"{p}(?:slow|sl)(?: |)(?P<timer>-t [0-9.]+|)(?: |)(?P<text>.*)".format(p=PREFIX), outgoing=True))
 async def slowtype(event):
-    if not can_react(event.chat_id):
-        return
     args = event.pattern_match.groupdict()
     print(f" [ making text appear slowly ]")
     interval = 0.5
@@ -55,23 +54,25 @@ def interval(delta):
 @events.register(events.NewMessage(
         pattern=r"{p}(?:countdown|cd)(?: |)(?P<timer>[0-9.]+)".format(p=PREFIX)))
 async def countdown(event):
-    if not can_react(event.chat_id):
+    if not event.out and not is_allowed(event.sender_id):
         return
+    if event.out:
+        tgt_msg = event.message
+    else:
+        tgt_msg = await event.message.reply("` → `")
     end = time.time() + float(event.pattern_match.group("timer"))
     msg = event.raw_text + "\n` → Countdown ` **{:.1f}**"
     print(f" [ countdown ]")
     while time.time() < end:
-        await event.message.edit(msg.format(time.time() - end))
+        await tgt_msg.edit(msg.format(time.time() - end))
         await asyncio.sleep(interval(end - time.time()))
-    await event.message.edit(msg.format(0))
+    await tgt_msg.edit(msg.format(0))
     await set_offline(event.client)
 
 # make character random case (lIkE tHiS)
 @events.register(events.NewMessage(
         pattern=r"{p}(?:rc|randomcase)(?: |)(?P<text>.*)".format(p=PREFIX), outgoing=True))
 async def randomcase(event):
-    if not can_react(event.chat_id):
-        return
     print(f" [ making message randomly capitalized ]")
     text = event.pattern_match.group("text")
     if text == "":
@@ -101,7 +102,7 @@ async def randomcase(event):
 # Replace .shrug with shrug emoji (or reply with one)
 @events.register(events.NewMessage(pattern=r"{p}shrug".format(p=PREFIX)))
 async def shrug(event):
-    if not can_react(event.chat_id):
+    if not event.out and not is_allowed(event.sender_id):
         return
     print(f" [ ¯\_(ツ)_/¯ ]")
     if event.out:
@@ -114,7 +115,7 @@ async def shrug(event):
 @events.register(events.NewMessage(
     pattern=r"{p}figlet(?: |)(?:(?P<list>-l)|(?P<font>-f [^ ]+)|(?P<random>-r)|)(?: |)(?P<text>.*)".format(p=PREFIX)))
 async def figlettext(event):
-    if not can_react(event.chat_id):
+    if not event.out and not is_allowed(event.sender_id):
         return
     print(f" [ figlet ]")
     args = event.pattern_match.groupdict()
@@ -144,7 +145,7 @@ async def figlettext(event):
 # Run fortune
 @events.register(events.NewMessage(pattern=r"{p}fortune".format(p=PREFIX)))
 async def fortune(event):
-    if not can_react(event.chat_id):
+    if not event.out and not is_allowed(event.sender_id):
         return
     try:
         print(f" [ running command \"fortune\" ]")
@@ -162,7 +163,7 @@ async def fortune(event):
 @events.register(events.NewMessage(
     pattern=r"{p}(?:rand|roll) (?:(?P<max>d[0-9]+)|(?P<values>.*))".format(p=PREFIX)))
 async def rand(event):
-    if not can_react(event.chat_id):
+    if not event.out and not is_allowed(event.sender_id):
         return
     args = event.pattern_match.groupdict()
     try:
@@ -192,24 +193,24 @@ class TextModules:
         self.helptext = "`━━┫ TEXT `\n"
 
         client.add_event_handler(slowtype)
-        self.helptext += "`→ .slow [-t n] <message> ` type msg char by char *\n"
+        self.helptext += "`→ .slow [-t n] <message> ` type msg char by char\n"
 
         client.add_event_handler(countdown)
-        self.helptext += "`→ .cd <time> ` count down time\n"
+        self.helptext += "`→ .cd <time> ` count down time *\n"
 
         client.add_event_handler(randomcase)
-        self.helptext += "`→ .rc <message> ` maKe mEsSAgEs lIkE tHIs *\n"
+        self.helptext += "`→ .rc <message> ` maKe mEsSAgEs lIkE tHIs\n"
 
         client.add_event_handler(figlettext)
-        self.helptext += "`→ .figlet [-l]|[-r]|[-f font] <text> ` maKe figlet art\n"
+        self.helptext += "`→ .figlet [-l]|[-r]|[-f font] <text> ` maKe figlet art *\n"
 
         client.add_event_handler(shrug)
-        self.helptext += "`→ .shrug ` replace or reply with shrug composite emote\n"
+        self.helptext += "`→ .shrug ` replace or reply with shrug composite emote *\n"
 
         client.add_event_handler(fortune)
-        self.helptext += "`→ .fortune ` you feel lucky!?\n"
+        self.helptext += "`→ .fortune ` you feel lucky!? *\n"
 
         client.add_event_handler(rand)
-        self.helptext += "`→ .rand d[max]|[choices] ` get random number or element\n"
+        self.helptext += "`→ .rand d[max]|[choices] ` get random number or element *\n"
 
         print(" [ Registered Text Modules ]")

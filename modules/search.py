@@ -10,8 +10,9 @@ from PyDictionary import PyDictionary
 
 import requests
 
-from util import can_react, set_offline, batchify
+from util import set_offline, batchify
 from util.globals import PREFIX
+from util.permission import is_allowed
 
 dictionary = PyDictionary()
 
@@ -35,7 +36,7 @@ def ud_define(word):
 # Search on italian dictionary
 @events.register(events.NewMessage(pattern=r"{p}diz (?P<word>[^ ]+)".format(p=PREFIX)))
 async def diz(event):
-    if not can_react(event.chat_id):
+    if not event.out and not is_allowed(event.sender_id):
         return
     try:
         arg = event.pattern_match.group("word")
@@ -55,7 +56,7 @@ async def diz(event):
 # Search on english dictionary
 @events.register(events.NewMessage(pattern=r"{p}dic (?P<word>[^ ]+)".format(p=PREFIX)))
 async def dic(event):
-    if not can_react(event.chat_id):
+    if not event.out and not is_allowed(event.sender_id):
         return
     try:
         arg = event.pattern_match.group('word')
@@ -78,7 +79,7 @@ async def dic(event):
 # Search on urban dictionary
 @events.register(events.NewMessage(pattern=r"{p}ud (?P<word>[^ ]+)".format(p=PREFIX)))
 async def urbandict(event):
-    if not can_react(event.chat_id):
+    if not event.out and not is_allowed(event.sender_id):
         return
     try:
         arg = event.pattern_match.group(1)
@@ -100,7 +101,7 @@ async def urbandict(event):
 # Search on wikipedia
 @events.register(events.NewMessage(pattern=r"{p}wiki (.*)".format(p=PREFIX)))
 async def wiki(event):
-    if not can_react(event.chat_id):
+    if not event.out and not is_allowed(event.sender_id):
         return
     try:
         arg = event.pattern_match.group(1).replace(" ", "")
@@ -124,7 +125,7 @@ async def wiki(event):
 # Let me google that for you
 @events.register(events.NewMessage(pattern=r"{p}lmgtfy(?: |)(?P<query>.*)".format(p=PREFIX)))
 async def lmgtfy(event):
-    if not can_react(event.chat_id):
+    if not event.out and not is_allowed(event.sender_id):
         return
     try:
         arg = event.pattern_match.group("query").replace(" ", "+")
@@ -143,19 +144,19 @@ class SearchModules:
         self.helptext = "`━━┫ SEARCH `\n"
 
         client.add_event_handler(urbandict)
-        self.helptext += "`→ .ud <something> ` look up something on urban dictionary\n"
+        self.helptext += "`→ .ud <something> ` look up something on urban dictionary *\n"
 
         client.add_event_handler(dic)
-        self.helptext += "`→ .dic <something> ` look up something on english dictionary\n"
+        self.helptext += "`→ .dic <something> ` look up something on english dictionary *\n"
 
         client.add_event_handler(diz)
-        self.helptext += "`→ .diz <something> ` look up something on italian dictionary\n"
+        self.helptext += "`→ .diz <something> ` look up something on italian dictionary *\n"
 
         client.add_event_handler(wiki)
-        self.helptext += "`→ .wiki <something> ` search something on wikipedia\n"
+        self.helptext += "`→ .wiki <something> ` search something on wikipedia *\n"
 
         client.add_event_handler(lmgtfy)
-        self.helptext += "`→ .lmgtfy <something> ` make a lmgtfy link\n"
+        self.helptext += "`→ .lmgtfy <something> ` make a lmgtfy link *\n"
 
         print(" [ Registered Search Modules ]")
 

@@ -8,14 +8,15 @@ from PIL import Image, ImageEnhance, ImageOps
 
 from telethon import events
 
-from util import can_react, set_offline, batchify
+from util import set_offline, batchify
 from util.globals import PREFIX
+from util.permission import is_allowed
 
 # Get random meme from memes folder
 @events.register(events.NewMessage(
     pattern=r"{p}meme(?: |$)(?P<list>-list|-l|)(?: |$ |)(?P<name>[^ ]*)".format(p=PREFIX)))
 async def getmeme(event):
-    if not can_react(event.chat_id):
+    if not event.out and not is_allowed(event.sender_id):
         return
     try:
         args = event.pattern_match.groupdict()
@@ -50,8 +51,6 @@ async def getmeme(event):
 # Save a meme
 @events.register(events.NewMessage(pattern=r"{p}steal (?P<name>[^ ]*)".format(p=PREFIX), outgoing=True))
 async def steal(event):
-    if not can_react(event.chat_id):
-        return
     msg = event.message
     if event.is_reply:
         msg = await event.get_reply_message()
@@ -107,9 +106,9 @@ async def fry_image(img: Image) -> Image:
     return img
 
 # DeepFry a meme
-@events.register(events.NewMessage(pattern=r"{p}fry(?: |)(?P<count>-c [0-9]+|)".format(p=PREFIX), outgoing=True))
+@events.register(events.NewMessage(pattern=r"{p}fry(?: |)(?P<count>-c [0-9]+|)".format(p=PREFIX)))
 async def deepfry(event):
-    if not can_react(event.chat_id):
+    if not event.out and not is_allowed(event.sender_id):
         return
     msg = event.message
     if event.is_reply:
@@ -151,10 +150,10 @@ class MemeModules:
         self.helptext = "`━━┫ MEME `\n"
 
         client.add_event_handler(getmeme)
-        self.helptext += "`→ .meme [-list] [name]` get a meme\n"
+        self.helptext += "`→ .meme [-list] [name]` get a meme *\n"
 
         client.add_event_handler(steal)
-        self.helptext += "`→ .steal <name> ` add meme to collection *\n"
+        self.helptext += "`→ .steal <name> ` add meme to collection\n"
 
         client.add_event_handler(deepfry)
         self.helptext += "`→ .fry [-c n] ` fry a meme n times *\n"

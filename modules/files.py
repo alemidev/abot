@@ -46,9 +46,9 @@ class FilesModules:
         self.helptext = "`━━┫ FILES `\n"
 
         client.add_event_handler(upload)
-        self.helptext += "`→ .put ` save attached file to server *\n"
+        self.helptext += "`→ .put ` save attached file to server\n"
 
         client.add_event_handler(download)
-        self.helptext += "`→ .get <name> ` upload a file from server to chat *\n"
+        self.helptext += "`→ .get <name> ` upload a file from server to chat\n"
 
         print(" [ Registered Files Modules ]")
