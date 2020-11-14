@@ -3,6 +3,7 @@ import asyncio
 import random
 import subprocess
 import time
+import traceback
 
 from telethon import events
 
@@ -27,13 +28,17 @@ async def slowtype(event):
     if args["text"] == "":
         return 
     msg = ""
-    for c in args["text"]:
-        msg += c
-        if c.isspace():
-            continue # important because sending same message twice causes an exception
-        t = asyncio.sleep(interval) # does this "start" the coroutine early?
-        await event.message.edit(msg)
-        await t # does this work? I should read asyncio docs
+    try:
+        for c in args["text"]:
+            msg += c
+            if c.isspace():
+                continue # important because sending same message twice causes an exception
+            t = asyncio.sleep(interval) # does this "start" the coroutine early?
+            await event.message.edit(msg)
+            await t # does this work? I should read asyncio docs
+    except:
+        traceback.print_exc()
+        pass: # msg was deleted probably
     await set_offline(event.client)
 
 def interval(delta):
