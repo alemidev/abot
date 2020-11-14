@@ -5,3 +5,4 @@ italian-dictionary
 PyDictionary
 requests
 pyfiglet
+pillow

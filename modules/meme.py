@@ -2,6 +2,9 @@ import random
 import asyncio
 import os
 import traceback
+import io
+
+from PIL import Image, ImageEnhance, ImageOps
 
 from telethon import events
 
@@ -68,6 +71,78 @@ async def steal(event):
                 "\n`[!] → ` you need to attach or reply to a file, dummy")
     await set_offline(event.client)
 
+#
+# This is from https://github.com/Ovyerus/deeppyer
+#   I should do some license stuff here but TODO
+#
+
+async def fry_image(img: Image) -> Image:
+    colours = ( # TODO tweak values
+        (random.randint(50, 200), random.randint(40, 170), random.randint(40, 190)),
+        (random.randint(190, 255), random.randint(170, 240), random.randint(180, 250))
+    )
+
+    img = img.copy().convert("RGB")
+
+    # Crush image to hell and back
+    img = img.convert("RGB")
+    width, height = img.width, img.height
+    img = img.resize((int(width ** random.uniform(0.8, 0.9)), int(height ** random.uniform(0.8, 0.9))), resample=Image.LANCZOS)
+    img = img.resize((int(width ** random.uniform(0.85, 0.95)), int(height ** random.uniform(0.85, 0.95))), resample=Image.BILINEAR)
+    img = img.resize((int(width ** random.uniform(0.89, 0.98)), int(height ** random.uniform(0.89, 0.98))), resample=Image.BICUBIC)
+    img = img.resize((width, height), resample=Image.BICUBIC)
+    img = ImageOps.posterize(img, random.randint(3, 7))
+
+    # Generate colour overlay
+    overlay = img.split()[0]
+    overlay = ImageEnhance.Contrast(overlay).enhance(random.uniform(1.0, 2.0))
+    overlay = ImageEnhance.Brightness(overlay).enhance(random.uniform(1.0, 2.0))
+
+    overlay = ImageOps.colorize(overlay, colours[0], colours[1])
+
+    # Overlay red and yellow onto main image and sharpen the hell out of it
+    img = Image.blend(img, overlay, random.uniform(0.1, 0.4))
+    img = ImageEnhance.Sharpness(img).enhance(random.randint(5, 300))
+
+    return img
+
+# DeepFry a meme
+@events.register(events.NewMessage(pattern=r"{p}fry(?: |)(?P<count>-c [0-9]+|)".format(p=PREFIX)))
+async def deepfry(event):
+    if not can_react(event.chat_id):
+        return
+    msg = event.message
+    if event.is_reply:
+        msg = await event.get_reply_message()
+    if msg.media is not None:
+        print(f" [ frying meme ]")
+        try:
+            count = 1
+            if event.pattern_match.group("count") != "":
+                count = int(event.pattern_match.group("count").replace("-c ", ""))
+            await event.message.edit(event.raw_text + "\n` → ` Downloading...")
+            image = io.BytesIO()
+            await event.client.download_media(message=msg, file=image)
+            image = Image.open(image)
+    
+            await event.message.edit(event.raw_text + "\n` → ` Downloading [OK]\n` → ` Frying...")
+            for _ in range(count):
+                image = await fry_image(image)
+            await event.message.edit(event.raw_text + "\n` → ` Downloading [OK]\n` → ` Frying [OK]")
+    
+            fried_io = io.BytesIO()
+            fried_io.name = "fried.jpeg"
+            image.save(fried_io, "JPEG")
+            fried_io.seek(0)
+            await event.reply(file=fried_io)
+        except Exception as e:
+            traceback.print_exc()
+            await event.message.edit(event.raw_text + "\n`[!] → ` " + str(e))
+    else:
+        await event.message.edit(event.raw_text + 
+                "\n`[!] → ` you need to attach or reply to a file, dummy")
+    await set_offline(event.client)
+
 class MemeModules:
     def __init__(self, client):
         self.helptext = ""
@@ -76,6 +151,9 @@ class MemeModules:
         self.helptext += "`→ .meme [-list] [name]` get a meme\n"
 
         client.add_event_handler(steal)
-        self.helptext += "`→ .steal [name] ` add meme to collection *\n"
+        self.helptext += "`→ .steal <name> ` add meme to collection *\n"
+
+        client.add_event_handler(deepfry)
+        self.helptext += "`→ .fry [-c n] ` fry a meme n times\n"
 
         print(" [ Registered Meme Modules ]")
