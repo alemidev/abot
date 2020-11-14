@@ -9,6 +9,7 @@ from telethon import events
 
 from util import can_react, set_offline, batchify
 from util.globals import PREFIX
+from util.parse import cleartermcolor
 
 import pyfiglet
 
