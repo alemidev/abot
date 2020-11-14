@@ -22,6 +22,7 @@ from modules.trigger import TriggerModules
 from modules.management import ManagementModules
 from modules.bully import BullyModules
 from modules.logger import LoggerModules
+from modules.math import MathModules
 
 from util import can_react, set_offline
 
@@ -47,6 +48,7 @@ with client:
     helptext += SystemModules(client).helptext
     helptext += DictionaryModules(client).helptext
     helptext += TextModules(client).helptext
+    helptext += MathModules(client).helptext
     helptext += MemeModules(client).helptext
     helptext += BullyModules(client).helptext
     helptext += FilesModules(client).helptext
