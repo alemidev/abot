@@ -128,13 +128,16 @@ async def deepfry(event):
             await event.message.edit(event.raw_text + "\n` → ` Downloading [OK]\n` → ` Frying...")
             for _ in range(count):
                 image = await fry_image(image)
-            await event.message.edit(event.raw_text + "\n` → ` Downloading [OK]\n` → ` Frying [OK]")
+            await event.message.edit(event.raw_text +
+                "\n` → ` Downloading [OK]\n` → ` Frying [OK]\n` → ` Uploading...")
     
             fried_io = io.BytesIO()
             fried_io.name = "fried.jpeg"
             image.save(fried_io, "JPEG")
             fried_io.seek(0)
             await event.reply(file=fried_io)
+            await event.message.edit(event.raw_text +
+                "\n` → ` Downloading [OK]\n` → ` Frying [OK]\n` → ` Uploading [OK]")
         except Exception as e:
             traceback.print_exc()
             await event.message.edit(event.raw_text + "\n`[!] → ` " + str(e))
