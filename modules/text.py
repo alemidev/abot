@@ -187,22 +187,6 @@ async def rand(event):
         await event.message.reply("`[!] → ` " + str(e))
     await set_offline(event.client)
 
-# Let me google that for you
-@events.register(events.NewMessage(pattern=r"{p}lmgtfy(?: |)(?P<query>.*)".format(p=PREFIX)))
-async def lmgtfy(event):
-    if not can_react(event.chat_id):
-        return
-    try:
-        arg = event.pattern_match.group("query").replace(" ", "+")
-        print(f" [ lmgtfy {arg} ]")
-        if event.out:
-            await event.message.edit(event.raw_text + f"\n` → ` http://letmegooglethat.com/?q={arg}")
-        else:
-            await event.message.reply(f"` → ` http://letmegooglethat.com/?q={arg}")
-    except Exception as e:
-        await event.message.reply("`[!] → ` " + str(e))
-    await set_offline(event.client)
-
 class TextModules:
     def __init__(self, client):
         self.helptext = "`━━┫ TEXT `\n"
@@ -227,8 +211,5 @@ class TextModules:
 
         client.add_event_handler(rand)
         self.helptext += "`→ .rand d[max]|[choices] ` get random number or element\n"
-
-        client.add_event_handler(lmgtfy)
-        self.helptext += "`→ .lmgtfy <something> ` make a lmgtfy link\n"
 
         print(" [ Registered Text Modules ]")

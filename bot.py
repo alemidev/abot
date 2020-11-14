@@ -14,7 +14,7 @@ from telethon import TelegramClient, events
 
 # TODO make a module loader
 from modules.text import TextModules
-from modules.dictionaries import DictionaryModules
+from modules.search import SearchModules
 from modules.files import FilesModules
 from modules.meme import MemeModules
 from modules.system import SystemModules
@@ -46,7 +46,7 @@ with client:
 
     helptext += LoggerModules(client).helptext
     helptext += SystemModules(client).helptext
-    helptext += DictionaryModules(client).helptext
+    helptext += SearchModules(client).helptext
     helptext += TextModules(client).helptext
     helptext += MathModules(client).helptext
     helptext += MemeModules(client).helptext
