@@ -1,5 +1,6 @@
 import random
 import asyncio
+import random
 import subprocess
 import time
 
@@ -118,7 +119,7 @@ async def figlettext(event):
         for m in batchify(msg, 4090):
             await event.message.reply(m)
         return
-    font = "slant"
+    font = random.choice(FIGLET_FONTS)
     f = args["font"].replace("-f ", "")
     if f != "" and f in FIGLET_FONTS:
         font = f
