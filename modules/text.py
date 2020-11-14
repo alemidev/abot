@@ -198,7 +198,7 @@ class TextModules:
         self.helptext = ""
 
         client.add_event_handler(slowtype)
-        self.helptext += "`→ .slow [-t 0.1] <message> ` makes the message apper slowly *\n"
+        self.helptext += "`→ .slow [-t n] <message> ` type msg char by char *\n"
 
         client.add_event_handler(countdown)
         self.helptext += "`→ .cd <time> ` count down time\n"
