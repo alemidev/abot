@@ -1,6 +1,5 @@
-import random
 import asyncio
-import random
+import secrets
 import subprocess
 import time
 import traceback
@@ -86,7 +85,7 @@ async def randomcase(event):
     upper = False
     for c in text:
         last = val
-        val = random.randint(0, 3)
+        val = secrets.randbelow(4)
         if val > 2:
             msg += c.upper()
             upper = True
@@ -132,7 +131,7 @@ async def figlettext(event):
         return
     font = "slant"
     if args["random"] == "-r":
-        font = random.choices(FIGLET_FONTS)[0]
+        font = secrets.choice(FIGLET_FONTS)
     elif args["font"] is not None and args["font"] != "":
         f = args["font"].replace("-f ", "")
         if f != "" and f in FIGLET_FONTS:
@@ -175,15 +174,15 @@ async def rand(event):
         if "max" in args and args["max"] not in [ "", None ]: # this checking is kinda lame
             maxval = int(args["max"].replace("d", ""))
             print(f" [ rolling d{maxval} ]")
-            c = random.randint(1, maxval)
+            c = secrets.randbelow(maxval) + 1
         elif "values" in args and args["values"] not in [ "", None ]:
             choices = args["values"].split(" ")
             print(f" [ rolling {choices} ]")
-            c = random.choices(choices)[0]
+            c = secrets.choice(choices)
         else:
             choices = [ "Yes", "No" ]
             print(f" [ rolling {choices} ]")
-            c = random.choices(choices)[0]
+            c = secrets.choice(choices)
         if event.out:
             await event.message.edit(event.raw_text + f"\n` → ` **{c}**")
         else:

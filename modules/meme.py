@@ -1,3 +1,4 @@
+import secrets
 import random
 import asyncio
 import os
@@ -40,7 +41,7 @@ async def getmeme(event):
             else:
                 await event.message.reply(f"`[!] → ` no meme named {args['name']}")
         else: 
-            fname = random.choices(os.listdir("data/memes"))[0]
+            fname = secrets.choice(os.listdir("data/memes"))
             print(f" [ getting random meme : \"{fname}\" ]")
             await event.message.reply('` → Random meme : ` **{}**'.format(fname), file=("data/memes/" + fname))
     except Exception as e:
