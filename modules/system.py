@@ -2,12 +2,13 @@ import asyncio
 import subprocess
 import time
 import io
+import traceback
 
 from termcolor import colored
 
 from telethon import events
 
-from util import set_offline
+from util import set_offline, batchify
 from util.parse import cleartermcolor
 from util.globals import PREFIX
 from util.permission import is_allowed
@@ -41,6 +42,25 @@ async def update(event):
         await event.message.edit(msg) 
     await set_offline(event.client)
 
+
+# Get info about a message
+@events.register(events.NewMessage(pattern=r"{p}info".format(p=PREFIX)))
+async def info_cmd(event):
+    if not event.out and not is_allowed(event.sender_id):
+        return
+    msg = event.message
+    if event.is_reply:
+        msg = await event.get_reply_message()
+    print(f" [ getting info of msg ]")
+    try:
+        out = " → Data : \n" + msg.stringify()
+        for m in batchify(out, 4080):
+            await event.message.reply("```" + m + "```")
+    except Exception as e:
+        traceback.print_exc()
+        await event.message.edit(event.raw_text + "\n`[!] → ` " + str(e))
+    await set_offline(event.client)
+
 # Run command
 @events.register(events.NewMessage(pattern=r"{p}(?:run|r) (?P<cmd>.*)".format(p=PREFIX), outgoing=True))
 async def runit(event):
@@ -72,8 +92,10 @@ class SystemModules:
         client.add_event_handler(ping)
         self.helptext += "`→ .asd ` a sunny day (+ get latency)\n"
 
+        client.add_event_handler(info_cmd)
+        self.helptext += "`→ .info ` print data of a message\n"
+
         client.add_event_handler(update)
         self.helptext += "`→ .update ` (git) pull changes and reboot bot\n"
-
 
         print(" [ Registered System Modules ]")
