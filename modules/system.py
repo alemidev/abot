@@ -1,6 +1,7 @@
 import asyncio
 import subprocess
 import time
+import io
 
 from termcolor import colored
 
@@ -51,7 +52,9 @@ async def runit(event):
         if len(output) > 4080:
             with open("output", "w") as f:
                 f.write(output) # lmaoooo there must be a better way
-            await event.message.reply("``` → Output too long to display```", file="output")
+            out = io.BytesIO(output.encode("utf-8"))
+            out.name = "output.txt"
+            await event.message.reply("``` → Output too long to display```", file=out)
         else:
             await event.message.reply("```" + output + "```")
     except Exception as e:

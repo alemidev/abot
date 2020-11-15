@@ -190,14 +190,10 @@ async def ascii_cmd(event):
             await event.client.download_media(message=msg, file=image)
             image = Image.open(image)
             
-            out = ascii_image(image)
-    
-            if len(out) > 4096: # TODO make this proper ffs!
-                with open("ascii", "w") as f:
-                    f.write(out) # lmaoooo there must be a better way
-                await event.message.reply("``` → Output too long to display```", file="ascii")
-            else:
-                await event.message.reply("` → `\n" + out)
+            out = io.BytesIO(ascii_image(image).encode('utf-8'))
+            out.name = "ascii.txt"
+
+            await event.message.reply("` → Made ASCII art `", file=out)
         except Exception as e:
             traceback.print_exc()
             await event.message.edit(event.raw_text + "\n`[!] → ` " + str(e))
