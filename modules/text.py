@@ -4,6 +4,8 @@ import subprocess
 import time
 import traceback
 
+from collections import Counter
+
 from telethon import events
 
 from util import set_offline, batchify
@@ -164,29 +166,47 @@ async def fortune(event):
 
 # Roll dice
 @events.register(events.NewMessage(
-    pattern=r"{p}(?:rand|roll) (?:(?P<max>d[0-9]+)|(?P<values>.*))".format(p=PREFIX)))
+    pattern=r"{p}(?:rand|roll)(?: |)(?:(?:(?P<num>[0-9]+|)d(?P<max>[0-9]+))|(?:(?P<batch>-n [0-9]+|)(?: |)(?P<values>.*)))".format(p=PREFIX)))
 async def rand(event):
     if not event.out and not is_allowed(event.sender_id):
         return
     args = event.pattern_match.groupdict()
     try:
-        c = "N/A"
-        if "max" in args and args["max"] not in [ "", None ]: # this checking is kinda lame
-            maxval = int(args["max"].replace("d", ""))
+        res = []
+        times = 1
+        out = ""
+        if args["num"] not in [ "", None ]:
+            times = int(args["num"])
+        elif args["batch"] not in [ "", None ]:
+            times = int(args["batch"].replace("-n ", ""))
+        if args["max"] not in [ "", None ]: # this checking is kinda lame
+            maxval = int(args["max"])
             print(f" [ rolling d{maxval} ]")
-            c = secrets.randbelow(maxval) + 1
+            for i in range(times):
+                res.append(secrets.randbelow(maxval) + 1)
+            if times > 1:
+                out += f"`→ Rolled {times}d{maxval}` : **{sum(res)}**\n"
         elif "values" in args and args["values"] not in [ "", None ]:
             choices = args["values"].split(" ")
             print(f" [ rolling {choices} ]")
-            c = secrets.choice(choices)
+            for i in range(times):
+                res.append(secrets.choice(choices))
+            res_count = Counter(res)
+            if times > 1:
+                out += "`→ Random choice ` **" + res_count.most_common(1)[0][0] + "**\n"
         else:
-            choices = [ "Yes", "No" ]
+            choices = [ 1, 0 ]
             print(f" [ rolling {choices} ]")
-            c = secrets.choice(choices)
+            for i in range(times):
+                res.append(secrets.choice(choices))
+            if times > 1:
+                out += "`→ Binary " + "".join(str(x) for x in res) + "`\n"
+        for r in res:
+            out += f"` → ` **{r}**\n"
         if event.out:
-            await event.message.edit(event.raw_text + f"\n` → ` **{c}**")
+            await event.message.edit(event.raw_text + "\n" + out)
         else:
-            await event.message.reply(f"` → ` **{c}**")
+            await event.message.reply(out)
     except Exception as e:
         await event.message.reply("`[!] → ` " + str(e))
     await set_offline(event.client)
@@ -214,6 +234,6 @@ class TextModules:
         self.helptext += "`→ .fortune ` you feel lucky!? *\n"
 
         client.add_event_handler(rand)
-        self.helptext += "`→ .rand d[max]|[choices] ` get random number or element *\n"
+        self.helptext += "`→ .rand [n]d[max] | [-n <n>] [vals] ` get random stuff *\n"
 
         print(" [ Registered Text Modules ]")
