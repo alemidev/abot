@@ -26,7 +26,7 @@ async def expr(event):
         else:
             res = parse_expr(arg)
             preview(res, viewer='file', filename='expr.png', dvioptions=["-T", "bbox", "-D 300", "--truecolor", "-bg", "Transparent"])
-        await event.message.reply("` → `", file="expr.png")
+        await event.message.reply(f"` → {arg} `", file="expr.png")
     except Exception as e:
         traceback.print_exc()
         await event.message.reply("`[!] → ` " + str(e))
@@ -48,7 +48,7 @@ async def graph(event):
         #     plot3d_parametric_line(res, show=False).save("graph.png")
         else:
             plot(res, show=False).save("graph.png")
-        await event.message.reply("` → `", file="graph.png")
+        await event.message.reply(f"` → {arg} `", file="graph.png")
     except Exception as e:
         traceback.print_exc()
         await event.message.reply("`[!] → ` " + str(e))
@@ -64,9 +64,9 @@ async def solve_cmd(event):
         print(f" [ mathifying {arg} ]")
         in_expr = parse_expr(arg)
         res = solve(in_expr)
-        out = f"` → ` {res}"
-        for m in batchify(out, 4090):
-            await event.message.reply(m)
+        out = " → {arg} :\n" + str(res)
+        for m in batchify(out, 4080):
+            await event.message.reply("```" + m + "```")
     except Exception as e:
         traceback.print_exc()
         await event.message.reply("`[!] → ` " + str(e))
