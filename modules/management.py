@@ -8,6 +8,7 @@ from telethon import events
 from util import set_offline, ignore_chat
 from util.globals import PREFIX
 from util.permission import is_allowed, allow, disallow, serialize, list_allowed
+from util.user import get_username
 
 # Delete message immediately after it being sent
 @events.register(events.NewMessage(
@@ -96,7 +97,10 @@ async def trusted_list(event):
     text = "[ "
     for u in users:
         try:
-            text += (await event.client.get_entity(int(u))).username + " "
+            print(u)
+            text += get_username(await event.client.get_entity(int(u))) + " "
+        except ValueError: # Users which lack an username need to be cached before or something
+            text += "~~[UNKN]~~ "
         except:
             traceback.print_exc()
             text += "{???} "

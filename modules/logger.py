@@ -9,6 +9,7 @@ from telethon import events
 from util import can_react, set_offline, batchify
 from util.parse import cleartermcolor
 from util.globals import PREFIX
+from util.user import get_username
 
 last_group = "N/A"
 
@@ -38,25 +39,18 @@ async def parse_event(event, edit=False):
     msg = event.raw_text
     if edit:
         msg = "[EDIT] " + msg
+
     if hasattr(chat, 'title'):      # check if this is a group but I found
         chan = chat.title           # no better way (for now)
     else:
-        chan = (chat.username if chat.username is not None 
-                else f"{chat.first_name}" + (f" {chat.last_name}" if
-                    chat.last_name is not None else f"{chat.first_name}"))
+        chan = get_username(chat)   # in DMs, get_chat returns an User
 
     peer = await event.get_input_sender()
     if peer is None:
         author = chan
     else:
         sender = await event.client.get_entity(peer)
-        if sender is None:
-            author = chan
-        elif sender.username is None:
-            author = (sender.first_name + ' ' + sender.last_name if
-                        sender.last_name is not None else sender.first_name)
-        else:
-            author = "@" + sender.username
+        author = get_username(sender)
     media = event.message.media is not None
     return MessageEntry(chan, author, msg, media)
 
