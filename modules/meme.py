@@ -119,24 +119,85 @@ async def deepfry(event):
             count = 1
             if event.pattern_match.group("count") != "":
                 count = int(event.pattern_match.group("count").replace("-c ", ""))
-            await event.message.edit(event.raw_text + "\n` → ` Downloading...")
+            if event.out:
+                await event.message.edit(event.raw_text + "\n` → ` Downloading...")
             image = io.BytesIO()
             await event.client.download_media(message=msg, file=image)
             image = Image.open(image)
     
-            await event.message.edit(event.raw_text + "\n` → ` Downloading [OK]\n` → ` Frying...")
+            if event.out:
+                await event.message.edit(event.raw_text + "\n` → ` Downloading [OK]\n` → ` Frying...")
             for _ in range(count):
                 image = await fry_image(image)
-            await event.message.edit(event.raw_text +
-                "\n` → ` Downloading [OK]\n` → ` Frying [OK]\n` → ` Uploading...")
+            if event.out:
+                await event.message.edit(event.raw_text +
+                    "\n` → ` Downloading [OK]\n` → ` Frying [OK]\n` → ` Uploading...")
     
             fried_io = io.BytesIO()
             fried_io.name = "fried.jpeg"
             image.save(fried_io, "JPEG")
             fried_io.seek(0)
-            await event.reply(file=fried_io)
-            await event.message.edit(event.raw_text +
-                "\n` → ` Downloading [OK]\n` → ` Frying [OK]\n` → ` Uploading [OK]")
+            await event.reply(f"` → Fried {count} time{'s' if count > 1 else ''}`", file=fried_io)
+            if event.out:
+                await event.message.edit(event.raw_text +
+                    "\n` → ` Downloading [OK]\n` → ` Frying [OK]\n` → ` Uploading [OK]")
+        except Exception as e:
+            traceback.print_exc()
+            await event.message.edit(event.raw_text + "\n`[!] → ` " + str(e))
+    else:
+        await event.message.edit(event.raw_text + 
+                "\n`[!] → ` you need to attach or reply to a file, dummy")
+    await set_offline(event.client)
+
+#
+#   This comes from https://github.com/anuragrana/Python-Scripts/blob/master/image_to_ascii.py
+#
+
+def ascii_image(img:Image) -> str:
+    # resize the image
+    width, height = img.size
+    aspect_ratio = height/width
+    new_width = 120
+    new_height = aspect_ratio * new_width * 0.55
+    img = img.resize((new_width, int(new_height)))
+    img = img.convert('L')
+    
+    pixels = img.getdata()
+    
+    # replace each pixel with a character from array
+    chars = ["B","S","#","&","@","$","%","*","!",":","."]
+    new_pixels = [chars[pixel//25] for pixel in pixels]
+    new_pixels = ''.join(new_pixels)
+    
+    # split string of chars into multiple strings of length equal to new width and create a list
+    new_pixels_count = len(new_pixels)
+    ascii_image = [new_pixels[index:index + new_width] for index in range(0, new_pixels_count, new_width)]
+    ascii_image = "\n".join(ascii_image)
+    return ascii_image
+
+# Make ASCII art of an image
+@events.register(events.NewMessage(pattern=r"{p}ascii".format(p=PREFIX)))
+async def ascii_cmd(event):
+    if not event.out and not is_allowed(event.sender_id):
+        return
+    msg = event.message
+    if event.is_reply:
+        msg = await event.get_reply_message()
+    if msg.media is not None:
+        print(f" [ making ascii of img ]")
+        try:
+            image = io.BytesIO()
+            await event.client.download_media(message=msg, file=image)
+            image = Image.open(image)
+            
+            out = ascii_image(image)
+    
+            if len(out) > 4096: # TODO make this proper ffs!
+                with open("ascii", "w") as f:
+                    f.write(out) # lmaoooo there must be a better way
+                await event.message.reply("``` → Output too long to display```", file="ascii")
+            else:
+                await event.message.reply("` → `\n" + out)
         except Exception as e:
             traceback.print_exc()
             await event.message.edit(event.raw_text + "\n`[!] → ` " + str(e))
@@ -157,5 +218,8 @@ class MemeModules:
 
         client.add_event_handler(deepfry)
         self.helptext += "`→ .fry [-c n] ` fry a meme n times *\n"
+
+        client.add_event_handler(ascii_cmd)
+        self.helptext += "`→ .ascii ` make ascii art from img *\n"
 
         print(" [ Registered Meme Modules ]")
