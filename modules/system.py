@@ -24,7 +24,6 @@ async def ping(event):
     await event.message.edit(msg + f"\n` → ` a sunny day `({latency:.0f}ms)`")
     await set_offline(event.client)
 
-
 # Update userbot (git pull + restart)
 @events.register(events.NewMessage(pattern=r"{p}update".format(p=PREFIX), outgoing=True))
 async def update(event):
@@ -42,10 +41,51 @@ async def update(event):
         await event.message.edit(msg) 
     await set_offline(event.client)
 
+# Get info about a chat
+@events.register(events.NewMessage(pattern=r"{p}where".format(p=PREFIX)))
+async def where_cmd(event):
+    if not event.out and not is_allowed(event.sender_id):
+        return
+    try:
+        chat = await event.get_chat()
+        print(f" [ getting info of chat ]")
+        out = " → Data : \n" + chat.stringify()
+        for m in batchify(out, 4080):
+            await event.message.reply("```" + m + "```")
+    except Exception as e:
+        traceback.print_exc()
+        await event.message.edit(event.raw_text + "\n`[!] → ` " + str(e))
+    await set_offline(event.client)
+
+# Get info about a user
+@events.register(events.NewMessage(pattern=r"{p}who(?: |)(?P<name>@[^ ]+|)".format(p=PREFIX)))
+async def who_cmd(event):
+    if not event.out and not is_allowed(event.sender_id):
+        return
+    try:
+        peer = None
+        if event.is_reply:
+            msg = await event.get_reply_message()
+            peer = await msg.get_input_sender()
+            if peer is None:
+                return
+            peer = await event.client.get_entity(peer)
+        elif event.pattern_match.group("name") != "":
+            peer = await event.client.get_entity(event.pattern_match.group("name"))
+        else:
+            return
+        print(f" [ getting info of user ]")
+        out = " → Data : \n" + peer.stringify()
+        for m in batchify(out, 4080):
+            await event.message.reply("```" + m + "```")
+    except Exception as e:
+        traceback.print_exc()
+        await event.message.edit(event.raw_text + "\n`[!] → ` " + str(e))
+    await set_offline(event.client)
 
 # Get info about a message
-@events.register(events.NewMessage(pattern=r"{p}info".format(p=PREFIX)))
-async def info_cmd(event):
+@events.register(events.NewMessage(pattern=r"{p}what".format(p=PREFIX)))
+async def what_cmd(event):
     if not event.out and not is_allowed(event.sender_id):
         return
     msg = event.message
@@ -92,8 +132,14 @@ class SystemModules:
         client.add_event_handler(ping)
         self.helptext += "`→ .asd ` a sunny day (+ get latency)\n"
 
-        client.add_event_handler(info_cmd)
-        self.helptext += "`→ .info ` print data of a message\n"
+        client.add_event_handler(who_cmd)
+        self.helptext += "`→ .who ` print info about a user *\n"
+
+        client.add_event_handler(what_cmd)
+        self.helptext += "`→ .what ` print info about a message *\n"
+
+        client.add_event_handler(where_cmd)
+        self.helptext += "`→ .where ` print info about a chat *\n"
 
         client.add_event_handler(update)
         self.helptext += "`→ .update ` (git) pull changes and reboot bot\n"
