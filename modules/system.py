@@ -133,7 +133,7 @@ class SystemModules:
         self.helptext += "`→ .asd ` a sunny day (+ get latency)\n"
 
         client.add_event_handler(who_cmd)
-        self.helptext += "`→ .who ` print info about a user *\n"
+        self.helptext += "`→ .who [@user] ` print info about a user *\n"
 
         client.add_event_handler(what_cmd)
         self.helptext += "`→ .what ` print info about a message *\n"
