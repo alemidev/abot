@@ -10,6 +10,7 @@ from util import can_react, set_offline, batchify
 from util.parse import cleartermcolor
 from util.globals import PREFIX
 from util.user import get_username
+from util.text import split_for_window
 
 last_group = "N/A"
 
@@ -23,13 +24,13 @@ class MessageEntry:
     def print_formatted(self):
         global last_group
         if self.channel != last_group:
-            print(colored("━━━━━━━━━━┫ " + self.channel, 'magenta', attrs=['bold']))
+            print(colored("━━━━━━━━━━┫ " + self.channel, 'cyan', attrs=['bold']))
         last_group = self.channel
         pre = len(self.author) + 3
         text = self.message.replace("\n", "\n" + " "*pre)
         if self.media:
             text = "[+MEDIA] " + text
-        text = ("\n" + " "*pre).join(batchify(text, 50)) # 
+        text = split_for_window(text, offset=pre)
         print(f"{colored(self.author, 'cyan')} {colored('→', 'grey')} {text}")
         
 async def parse_event(event, edit=False):

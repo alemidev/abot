@@ -5,10 +5,13 @@ import traceback
 
 from telethon import events
 
+from termcolor import colored
+
 from util import set_offline, ignore_chat
 from util.globals import PREFIX
 from util.permission import is_allowed, allow, disallow, serialize, list_allowed
 from util.user import get_username
+from util.text import split_for_window
 
 # Delete message immediately after it being sent
 @events.register(events.NewMessage(
@@ -46,7 +49,7 @@ async def purge(event):
         n = 0
         async for message in event.client.iter_messages(await event.get_chat()):
             if target is None or message.sender_id == target.id:
-                print(f"[DELETING]> {message.message}")
+                print(colored("[DELETING] → ", "red", attrs=["bold"]) + split_for_window(message.message, offset=13))
                 await message.delete()
                 n += 1
             if n >= number:
