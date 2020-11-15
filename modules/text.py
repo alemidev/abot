@@ -18,20 +18,24 @@ FIGLET_FONTS = pyfiglet.FigletFont.getFonts()
 
 # edit message adding characters one at a time
 @events.register(events.NewMessage(
-        pattern=r"{p}(?:slow|sl)(?: |)(?P<timer>-t [0-9.]+|)(?: |)(?P<text>.*)".format(p=PREFIX), outgoing=True))
+        pattern=r"{p}(?:slow|sl)(?: |)(?P<timer>-t [0-9.]+|)(?: |)(?P<batch>-b [0-9]+|)(?P<text>.*)".format(p=PREFIX),
+        outgoing=True))
 async def slowtype(event):
     args = event.pattern_match.groupdict()
     print(f" [ making text appear slowly ]")
     interval = 0.5
+    batchsize = 1
     if args["timer"] != "":
         interval = float(args["timer"].replace("-t ", ""))
+    if args["batch"] != "":
+        batchsize = int(args["batch"].replace("-b ", ""))
     if args["text"] == "":
         return 
     msg = ""
     try:
-        for c in args["text"]:
-            msg += c
-            if c.isspace():
+        for seg in batchify(args["text"], batchsize):
+            msg += seg
+            if seg.isspace():
                 continue # important because sending same message twice causes an exception
             t = asyncio.sleep(interval) # does this "start" the coroutine early?
             await event.message.edit(msg)
@@ -193,7 +197,7 @@ class TextModules:
         self.helptext = "`━━┫ TEXT `\n"
 
         client.add_event_handler(slowtype)
-        self.helptext += "`→ .slow [-t n] <message> ` type msg char by char\n"
+        self.helptext += "`→ .slow [-t n] [-b n] <message> ` type msg slowly\n"
 
         client.add_event_handler(countdown)
         self.helptext += "`→ .cd <time> ` count down time *\n"
