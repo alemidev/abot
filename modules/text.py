@@ -132,7 +132,7 @@ async def figlettext(event):
         return
     font = "slant"
     if args["random"] == "-r":
-        font = random.choices(FIGLET_FONTS)
+        font = random.choices(FIGLET_FONTS)[0]
     elif args["font"] is not None and args["font"] != "":
         f = args["font"].replace("-f ", "")
         if f != "" and f in FIGLET_FONTS:
@@ -179,11 +179,11 @@ async def rand(event):
         elif "values" in args and args["values"] not in [ "", None ]:
             choices = args["values"].split(" ")
             print(f" [ rolling {choices} ]")
-            c = random.choices(choices)
+            c = random.choices(choices)[0]
         else:
             choices = [ "Yes", "No" ]
             print(f" [ rolling {choices} ]")
-            c = random.choices(choices)
+            c = random.choices(choices)[0]
         if event.out:
             await event.message.edit(event.raw_text + f"\n` → ` **{c}**")
         else:
