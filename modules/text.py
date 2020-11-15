@@ -200,7 +200,7 @@ async def rand(event):
             for i in range(times):
                 res.append(secrets.choice(choices))
             if times > 1:
-                out += "`→ Binary " + "".join(str(x) for x in res) + "`\n"
+                out += "` → Binary " + "".join(str(x) for x in res) + "`\n"
                 res = [] # so it won't do the thing below
         for r in res:
             out += f"` → ` **{r}**\n"
