@@ -3,6 +3,7 @@ import subprocess
 import time
 import io
 import traceback
+import json
 
 from termcolor import colored
 
@@ -42,14 +43,20 @@ async def update(event):
     await set_offline(event.client)
 
 # Get info about a chat
-@events.register(events.NewMessage(pattern=r"{p}where".format(p=PREFIX)))
+@events.register(events.NewMessage(pattern=r"{p}where(?: |)(?P<pack>-p|-r|)".format(p=PREFIX)))
 async def where_cmd(event):
     if not event.out and not is_allowed(event.sender_id):
         return
     try:
         chat = await event.get_chat()
         print(f" [ getting info of chat ]")
-        out = " → Data : \n" + chat.stringify()
+        out = " → Data : \n"
+        if event.pattern_match.group("pack") == "-p":
+            out += str(chat.to_dict())
+        elif event.pattern_match.group("pack") == "-r":
+            out += chat.stringify()
+        else:
+            out += json.dumps(chat.to_dict(), indent=2, default=str)
         for m in batchify(out, 4080):
             await event.message.reply("```" + m + "```")
     except Exception as e:
@@ -58,7 +65,7 @@ async def where_cmd(event):
     await set_offline(event.client)
 
 # Get info about a user
-@events.register(events.NewMessage(pattern=r"{p}who(?: |)(?P<name>@[^ ]+|)".format(p=PREFIX)))
+@events.register(events.NewMessage(pattern=r"{p}who(?: |)(?P<pack>-p|-r|)(?: |)(?P<name>@[^ ]+|)".format(p=PREFIX)))
 async def who_cmd(event):
     if not event.out and not is_allowed(event.sender_id):
         return
@@ -75,7 +82,13 @@ async def who_cmd(event):
         else:
             return
         print(f" [ getting info of user ]")
-        out = " → Data : \n" + peer.stringify()
+        out = " → Data : \n"
+        if event.pattern_match.group("pack") == "-p":
+            out += str(peer.to_dict())
+        elif event.pattern_match.group("pack") == "-r":
+            out += peer.stringify()
+        else:
+            out += json.dumps(peer.to_dict(), indent=2, default=str)
         for m in batchify(out, 4080):
             await event.message.reply("```" + m + "```")
     except Exception as e:
@@ -84,7 +97,7 @@ async def who_cmd(event):
     await set_offline(event.client)
 
 # Get info about a message
-@events.register(events.NewMessage(pattern=r"{p}what".format(p=PREFIX)))
+@events.register(events.NewMessage(pattern=r"{p}what(?: |)(?P<pack>-p|-r|)".format(p=PREFIX)))
 async def what_cmd(event):
     if not event.out and not is_allowed(event.sender_id):
         return
@@ -93,7 +106,13 @@ async def what_cmd(event):
         msg = await event.get_reply_message()
     print(f" [ getting info of msg ]")
     try:
-        out = " → Data : \n" + msg.stringify()
+        out = " → Data : \n"
+        if event.pattern_match.group("pack") == "-p":
+            out += str(msg.to_dict())
+        elif event.pattern_match.group("pack") == "-r":
+            out += msg.stringify()
+        else:
+            out += json.dumps(msg.to_dict(), indent=2, default=str)
         for m in batchify(out, 4080):
             await event.message.reply("```" + m + "```")
     except Exception as e:
@@ -133,13 +152,13 @@ class SystemModules:
         self.helptext += "`→ .asd ` a sunny day (+ get latency)\n"
 
         client.add_event_handler(who_cmd)
-        self.helptext += "`→ .who [@user] ` print info about a user *\n"
+        self.helptext += "`→ .who [-p|-r] [@user] ` get info of user *\n"
 
         client.add_event_handler(what_cmd)
-        self.helptext += "`→ .what ` print info about a message *\n"
+        self.helptext += "`→ .what [-p|-r] ` get info of message *\n"
 
         client.add_event_handler(where_cmd)
-        self.helptext += "`→ .where ` print info about a chat *\n"
+        self.helptext += "`→ .where [-p|-r] ` get info of chat *\n"
 
         client.add_event_handler(update)
         self.helptext += "`→ .update ` (git) pull changes and reboot bot\n"
