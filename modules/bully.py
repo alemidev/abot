@@ -52,8 +52,6 @@ async def startcensor(event):
         pattern=r"{p}spam(?: |)(?P<number>(?:-n |)[0-9]+|)(?: |)(?P<time>-t [0-9.]+|)(?P<text>.*)".format(p=PREFIX),
         outgoing=True))
 async def spam(event):
-    if not can_react(event.chat_id):
-        return
     args = event.pattern_match.groupdict()
     try:
         if "text" not in args or args["text"] == "":
