@@ -123,9 +123,9 @@ async def log_cmd(event):
                 lim = int(args["limit"].replace("-l ", ""))
             if args["filter"] != "":
                 filt = json.loads(args["filter"].replace("-f ", ""))
-                cursor = EVENTS.find(q, filt).sort({"_id":-1})
+                cursor = EVENTS.find(q, filt).sort("_id", -1)
             else:
-                cursor = EVENTS.find(q).sort({"_id":-1})
+                cursor = EVENTS.find(q).sort("_id", -1)
             for doc in cursor:
                 buf.append(doc)
                 if len(buf) >= lim:
