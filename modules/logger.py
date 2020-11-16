@@ -94,10 +94,13 @@ async def log_cmd(event):
             await event.message.edit(event.raw_text + f"\n` → ` **{c}**")
         elif args["query"] != "":
             buf = [ { "query" : args["query"] } ]
-            filt = {}
+            q = json.loads(args["query"])
+            cursor = None
             if args["filter"] != "":
                 filt = json.loads(args["filter"].replace("-f ", ""))
-            cursor = EVENTS.find(json.loads(args["query"]), filt)
+                cursor = EVENTS.find(q), filt)
+            else:
+                cursor = EVENTS.find(q)
             for doc in cursor:
                 buf.append(doc)
             f = io.BytesIO(json.dumps(buf, indent=2, default=str).encode("utf-8"))
