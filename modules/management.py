@@ -157,7 +157,7 @@ class ManagementModules:
         self.helptext += "`→ .revoke [user] ` remove user permissions to use bot\n"
 
         client.add_event_handler(trusted_list)
-        self.helptext += "`→ .trusted ` list users allowed to run pub cmds\n"
+        self.helptext += "`→ .trusted [-i] ` list users allowed to run pub cmds\n"
 
         client.add_event_handler(deleteme)
         self.helptext += "`→ ... -delme [time] ` delete msg ending with `-delme`\n"
