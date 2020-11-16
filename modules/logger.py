@@ -165,7 +165,8 @@ async def hist_cmd(event):
         else:
             await event.message.reply("`[!] → ` You must reply to a message")
     else:
-        m_id = event.message.id
+        msg = await event.get_reply_message()
+        m_id = msg.id
         cursor = EVENTS.find( {"id": m_id}, {"message": 1} ).sort("_id", -1)
         out = ""
         for doc in cursor:
