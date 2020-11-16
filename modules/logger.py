@@ -190,6 +190,33 @@ async def hist_cmd(event):
             await event.message.reply(out)
     await set_offline(event.client)
 
+# Get last N deleted messages
+@events.register(events.NewMessage(pattern=r"{p}del(?:eted|)(?: |)(?P<number>[0-9]+|)".format(p=PREFIX)))
+async def deleted_cmd(event):
+    if not event.out and not is_allowed(event.sender_id):
+        return
+    limit = 1
+    try:
+        if event.pattern_match.group("number") != "":
+            limit = int(event.pattern_match.group("number")
+        cursor = EVENTS.find( {"WHAT": "Delete"}, {"deleted_id": 1} ).sort("_id", -1).limit(limit)
+        out = ""
+        for doc in cursor:
+            m_id = doc["deleted_id"]
+            msg = EVENTS.find_one({"id": m_id})
+            author = await event.client.get_entity(msg["from_id"]["user_id"])
+            if author is None:
+                continue
+            out += f"`{get_username(author)} → ` {msg['message']}\n"
+        if event.out:
+            await event.message.edit(event.raw_text + "\n" + out)
+        else:
+            await event.message.reply(out)
+    except Exception as e:
+        traceback.print_exc()
+        await event.message.reply("`[!] → ` " + str(e))
+    await set_offline(event.client)
+
 class LoggerModules:
     def __init__(self, client, limit=False):
         self.helptext = "`━━┫ LOG `\n"
@@ -204,5 +231,8 @@ class LoggerModules:
 
         client.add_event_handler(hist_cmd)
         self.helptext += "`→ .history` get edit history of a message *\n"
+
+        client.add_event_handler(deleted_cmd)
+        self.helptext += "`→ .deleted [n] ` get last (n) deleted msgs *\n"
 
         print(" [ Registered Logger Modules ]")
