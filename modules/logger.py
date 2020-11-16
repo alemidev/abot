@@ -130,9 +130,13 @@ async def log_cmd(event):
                 buf.append(doc)
                 if len(buf) >= lim:
                     break
-            f = io.BytesIO(json.dumps(buf, indent=2, default=str).encode("utf-8"))
-            f.name = "query.json"
-            await event.message.reply("``` → Query result```", file=f)
+            raw = json.dumps(buf, indent=2, default=str)
+            if len(event.raw_text) + len(raw) > 4080:
+                f = io.BytesIO(raw.encode("utf-8"))
+                f.name = "query.json"
+                await event.message.reply("``` → Query result```", file=f)
+            else:
+                await event.message.edit(event.raw_text + "\n```" + raw + "```")
     except Exception as e:
         traceback.print_exc()
         await event.message.edit(event.raw_text + "\n`[!] → ` " + str(e))
