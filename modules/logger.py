@@ -3,6 +3,7 @@ import subprocess
 import time
 import json
 import io
+import traceback
 
 from pymongo import MongoClient
 
@@ -92,7 +93,7 @@ async def log_cmd(event):
             c = EVENTS.count_documents({})
             await event.message.edit(event.raw_text + f"\n` → ` **{c}**")
         else:
-            buf = [ { "query" : args["query"] } ]
+            buf = [ ]
             cursor = EVENTS.find(json.loads(args["query"]))
             for doc in cursor:
                 buf.append(doc)
