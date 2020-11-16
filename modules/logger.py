@@ -120,9 +120,9 @@ async def actionlogger(event):
 def order_suffix(num, measure='B'):
     for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
         if abs(num) < 1024.0:
-            return "{n:.3.1f}{u}{m}%s".format(n=num, u=unit, m=measure)
+            return "{n:3.1f} {u}{m}".format(n=num, u=unit, m=measure)
         num /= 1024.0
-    return "{n:.1f}Yi{m}".format(n=num, m=measure)
+    return "{n:.1f} Yi{m}".format(n=num, m=measure)
 
 # Get data off database
 @events.register(events.NewMessage(
