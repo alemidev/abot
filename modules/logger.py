@@ -135,7 +135,7 @@ async def log_cmd(event):
                 cursor = EVENTS.find(q).sort("_id", -1)
             for doc in cursor:
                 buf.append(doc)
-                if len(buf) >= lim + 1: # there's the query elem by default
+                if lim is not None and len(buf) >= lim + 1: # there's the query elem by default
                     break
             raw = json.dumps(buf, indent=2, default=str)
             if len(event.raw_text) + len(raw) > 4080:
