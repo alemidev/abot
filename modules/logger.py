@@ -168,26 +168,27 @@ async def log_cmd(event):
     await set_offline(event.client)
 
 # Get edit history of a message
-@events.register(events.NewMessage(pattern=r"{p}hist(?:ory|)".format(p=PREFIX)))
+@events.register(events.NewMessage(pattern=r"{p}hist(?:ory|)(?: |)(?P<id>[0-9]+|)".format(p=PREFIX)))
 async def hist_cmd(event):
     if not event.out and not is_allowed(event.sender_id):
         return
-    if not event.is_reply:
-        if event.out:
-            await event.message.edit(event.raw_text + "\n`[!] → ` You must reply to a message")
-        else:
-            await event.message.reply("`[!] → ` You must reply to a message")
-    else:
+    m_id = None
+    chat = await event.get_chat()
+    if event.is_reply:
         msg = await event.get_reply_message()
         m_id = msg.id
-        cursor = EVENTS.find( {"id": m_id}, {"message": 1} ).sort("_id", -1)
-        out = ""
-        for doc in cursor:
-            out += f"` → ` {doc['message']}\n"
-        if event.out:
-            await event.message.edit(event.raw_text + "\n" + out)
-        else:
-            await event.message.reply(out)
+    elif event.pattern_match.group("id") != "":
+        m_id = int(event.pattern_match.group("id"))
+    if m_id is None:
+        return
+    cursor = EVENTS.find( {"id": m_id, "WHERE": chat.id}, {"message": 1} ).sort("_id", -1)
+    out = ""
+    for doc in cursor:
+        out += f"` → ` {doc['message']}\n"
+    if event.out:
+        await event.message.edit(event.raw_text + "\n" + out)
+    else:
+        await event.message.reply(out)
     await set_offline(event.client)
 
 # Get last N deleted messages
@@ -205,15 +206,15 @@ async def deleted_cmd(event):
         for doc in cursor:
             m_id = doc["deleted_id"]
             msg = EVENTS.find_one({"id": m_id})
-            peer = msg["from_id"]
+            peer = msg["WHO"]
             if peer is None:
                 out += f"`UNKN → ` {msg['message']}"
                 continue
-            author = await event.client.get_entity(peer["user_id"])
+            author = await event.client.get_entity(peer)
             if author is None:
                 out += f"`UNKN → ` {msg['message']}"
                 continue
-            out += f"`{get_username(author)} → ` {msg['message']}\n"
+            out += f"**[**`{m_id}`**]** `{get_username(author)} → ` {msg['message']}\n\n"
         if out == "":
             out = "` → ` Nothing to display"
         if event.out:
