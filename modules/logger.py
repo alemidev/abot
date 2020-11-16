@@ -69,7 +69,7 @@ async def parse_event(event, edit=False):
 async def editlogger(event):
     entry = event.message.to_dict()
     entry["WHO"] = event.sender_id
-    entry["WHAT"] = "MessageEdit"
+    entry["WHAT"] = "Edit"
     entry["WHERE"] = event.chat_id
     EVENTS.insert_one(entry)
     msg = await parse_event(event, edit=True)
@@ -82,7 +82,7 @@ async def editlogger(event):
 async def msglogger(event):
     entry = event.message.to_dict()
     entry["WHO"] = event.sender_id
-    entry["WHAT"] = "NewMessage"
+    entry["WHAT"] = "New"
     entry["WHERE"] = event.chat_id
     EVENTS.insert_one(entry)
     msg = await parse_event(event)
@@ -105,7 +105,7 @@ async def actionlogger(event):
     entry.pop("original_update", None)
     entry["action_message"] = entry["action_message"].to_dict()
     entry["WHO"] = event.sender_id
-    entry["WHAT"] = "ChatAction"
+    entry["WHAT"] = "Action"
     entry["WHERE"] = event.chat_id
     EVENTS.insert_one(entry)
 
