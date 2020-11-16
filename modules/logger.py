@@ -128,7 +128,7 @@ def order_suffix(num, measure='B'):
 @events.register(events.NewMessage(
     pattern=r"{p}(?:log|query|q)(?: |)(?P<count>-c|)(?: |)(?P<limit>-l [0-9]+|)(?: |)(?P<filter>-f [^ ]+|)(?: |)(?P<query>[^ ]+|)".format(p=PREFIX),
     outgoing=True))
-async def log_cmd(event):
+async def query_cmd(event):
     if not event.out and not is_allowed(event.sender_id):
         return
     args = event.pattern_match.groupdict()
@@ -168,12 +168,13 @@ async def log_cmd(event):
     await set_offline(event.client)
 
 # Get edit history of a message
-@events.register(events.NewMessage(pattern=r"{p}hist(?:ory|)(?: |)(?P<id>[0-9]+|)".format(p=PREFIX)))
+@events.register(events.NewMessage(pattern=r"{p}hist(?:ory|)(?: |)(?P<time>-t|)(?: |)(?P<id>[0-9]+|)".format(p=PREFIX)))
 async def hist_cmd(event):
     if not event.out and not is_allowed(event.sender_id):
         return
     m_id = None
     chat = await event.get_chat()
+    show_time = event.pattern_match.group("time") == "-t"
     if event.is_reply:
         msg = await event.get_reply_message()
         m_id = msg.id
@@ -184,6 +185,11 @@ async def hist_cmd(event):
     cursor = EVENTS.find( {"id": m_id, "WHERE": chat.id}, {"message": 1} ).sort("_id", -1)
     out = ""
     for doc in cursor:
+        if show_time:
+            if doc['edit_date'] is None:
+                out += f"[{str(doc['date']}] "    
+            else:
+                out += f"[{str(doc['edit_date']}] "    
         out += f"` → ` {doc['message']}\n"
     if event.out:
         await event.message.edit(event.raw_text + "\n" + out)
@@ -235,11 +241,11 @@ class LoggerModules:
         client.add_event_handler(dellogger)
         client.add_event_handler(actionlogger)
 
-        client.add_event_handler(log_cmd)
+        client.add_event_handler(query_cmd)
         self.helptext += "`→ .query [-c] [-l] [-f] [query] ` interact with db\n"
 
         client.add_event_handler(hist_cmd)
-        self.helptext += "`→ .history [id] ` get edit history of a message *\n"
+        self.helptext += "`→ .history [-t] [id] ` get edits to a message *\n"
 
         client.add_event_handler(deleted_cmd)
         self.helptext += "`→ .peek [n] ` get last (n) deleted msgs *\n"
