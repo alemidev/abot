@@ -89,7 +89,7 @@ async def log_cmd(event):
             c = EVENTS.count_documents({})
             await event.message.edit(event.raw_text + f"\n` → ` **{c}**")
         else:
-            res = " → \n" + str(EVENTS.find(json.loads(args["query"]))
+            res = " → \n" + str(EVENTS.find(json.loads(args["query"])))
             for m in batchify(res, 4080):
                 await event.message.reply("```" + m + "```")
     except Exception as e:
