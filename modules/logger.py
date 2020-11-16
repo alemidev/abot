@@ -218,7 +218,8 @@ async def deleted_cmd(event):
         chat = await event.get_chat()
         if event.pattern_match.group("number") != "":
             limit = int(event.pattern_match.group("number"))
-        cursor = EVENTS.find( {"WHAT": "Delete", "WHERE": chat.id }, {"deleted_id": 1} ).sort("_id", -1).limit(limit)
+        cursor = EVENTS.find( {"WHAT": "Delete", "WHERE": chat.id },
+                {"deleted_id": 1, "WHEN": 1} ).sort("_id", -1).limit(limit)
         out = ""
         for doc in cursor:
             if show_time and "WHEN" in doc:
