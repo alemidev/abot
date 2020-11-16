@@ -61,35 +61,55 @@ async def purge(event):
 # Allow someone
 @events.register(events.NewMessage(pattern=r"{p}allow(?: |)(?P<name>[^ ]*)".format(p=PREFIX), outgoing=True))
 async def allow_cmd(event):
-    user_id = None
+    users_to_allow = []
     if event.is_reply:
         msg = await event.get_reply_message()
-        user_id = (await msg.get_input_sender()).user_id
+        peer = await msg.get_input_sender()
+        if peer is None:
+            return
+        users_to_allow.append(await event.client.get_entity(peer))
+    elif event.pattern_match.group("name") in [ "@here", "@everyone" ]:
+        users_to_allow += await event.client.get_participants(await event.get_chat())
     else:
-        user = await event.client.get_entity(event.pattern_match.group('name'))
-        user_id = user.id
-    if user_id is not None:
-        allow(user_id)
-        await event.message.edit(event.raw_text + f"\n` → ` Allowed **{user_id}**") 
-    else:
-        await event.message.edit(event.raw_text + "\n`[!] → ` No user matched")
+        try:
+            user = await event.client.get_entity(event.pattern_match.group('name'))
+        except ValueError:
+            return await event.message.edit(event.raw_text + "\n`[!] → ` No user matched")
+        if user is None:
+            return await event.message.edit(event.raw_text + "\n`[!] → ` No user matched")
+        users_to_allow.append(user)
+    out = event.raw_text + "\n"
+    for u in users_to_allow:
+        if allow(u.id):
+            out += f"` → ` Allowed **{get_username(u)}**\n"
+    await event.message.edit(event.raw_text + out) 
     await set_offline(event.client)
 
 # Disallow someone
-@events.register(events.NewMessage(pattern=r"{p}(?:revoke|disallow)(?: |)(?P<name>[^ ]*)".format(p=PREFIX), outgoing=True))
+@events.register(events.NewMessage(pattern=r"{p}(?:revoke|disallow)(?: |)(?P<name>.*)".format(p=PREFIX), outgoing=True))
 async def revoke_cmd(event):
-    user_id = None
+    users_to_disallow = []
     if event.is_reply:
         msg = await event.get_reply_message()
-        user_id = (await msg.get_input_sender()).user_id
+        peer = await msg.get_input_sender()
+        if peer is None:
+            return
+        users_to_disallow.append(await event.client.get_entity(peer))
+    elif event.pattern_match.group("name") in [ "@here", "@everyone" ]:
+        users_to_disallow += await event.client.get_participants(await event.get_chat())
     else:
-        user = await event.client.get_entity(event.pattern_match.group('name'))
-        user_id = user.id
-    if user_id is not None:
-        disallow(user_id)
-        await event.message.edit(event.raw_text + f"\n` → ` Disallowed **{user_id}**") 
-    else:
-        await event.message.edit(event.raw_text + "\n`[!] → ` No user matched")
+        try:
+            user = await event.client.get_entity(event.pattern_match.group('name'))
+        except ValueError:
+            return await event.message.edit(event.raw_text + "\n`[!] → ` No user matched")
+        if user is None:
+            return await event.message.edit(event.raw_text + "\n`[!] → ` No user matched")
+        users_to_disallow.append(user)
+    out = event.raw_text + "\n"
+    for u in users_to_disallow:
+        if disallow(u.id):
+            out += f"` → ` Disallowed **{get_username(u)}**\n"
+    await event.message.edit(event.raw_text + out)
     await set_offline(event.client)
 
 # List trusted

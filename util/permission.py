@@ -14,12 +14,18 @@ def is_allowed(sender_id):
     return sender_id in ALLOWED
 
 def allow(uid):
+    if uid in ALLOWED and ALLOWED[uid]:
+        return False
     ALLOWED[uid] = True
     serialize()
+    return True
 
 def disallow(uid):
+    if uid not in ALLOWED:
+        return False
     ALLOWED.pop(uid, None)
     serialize()
+    return True
 
 def serialize():
     with open("perms.json", "w") as f:
