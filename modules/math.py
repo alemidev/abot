@@ -64,9 +64,9 @@ async def solve_cmd(event):
     try:
         arg = event.pattern_match.group("query")
         print(f" [ mathifying {arg} ]")
-        in_expr = parse_expr(arg)
+        in_expr = parse_expr(arg).simplify()
         res = solve(in_expr)
-        out = f" → {arg} = 0\n" + str(res)
+        out = f" → {str(in_expr}\n" + str(res)
         for m in batchify(out, 4080):
             await event.message.reply("```" + m + "```")
     except Exception as e:
