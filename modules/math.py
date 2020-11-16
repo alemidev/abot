@@ -66,7 +66,7 @@ async def solve_cmd(event):
         print(f" [ mathifying {arg} ]")
         in_expr = parse_expr(arg).simplify()
         res = solve(in_expr)
-        out = f" → {str(in_expr}\n" + str(res)
+        out = f" → {str(in_expr)}\n" + str(res)
         for m in batchify(out, 4080):
             await event.message.reply("```" + m + "```")
     except Exception as e:
