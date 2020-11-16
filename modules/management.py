@@ -82,7 +82,7 @@ async def allow_cmd(event):
     for u in users_to_allow:
         if allow(u.id):
             out += f"` → ` Allowed **{get_username(u)}**\n"
-    await event.message.edit(event.raw_text + out) 
+    await event.message.edit(out) 
     await set_offline(event.client)
 
 # Disallow someone
@@ -109,7 +109,7 @@ async def revoke_cmd(event):
     for u in users_to_disallow:
         if disallow(u.id):
             out += f"` → ` Disallowed **{get_username(u)}**\n"
-    await event.message.edit(event.raw_text + out)
+    await event.message.edit(out)
     await set_offline(event.client)
 
 # List trusted
