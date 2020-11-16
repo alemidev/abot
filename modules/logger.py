@@ -115,7 +115,7 @@ async def log_cmd(event):
             c = EVENTS.count_documents({})
             await event.message.edit(event.raw_text + f"\n` → ` **{c}**")
         elif args["query"] != "":
-            buf = [ { "query" : args["query"] } ]
+            buf = [ args["query"] ]
             q = json.loads(args["query"])
             cursor = None
             lim = None
@@ -128,7 +128,7 @@ async def log_cmd(event):
                 cursor = EVENTS.find(q).sort("_id", -1)
             for doc in cursor:
                 buf.append(doc)
-                if len(buf) >= lim:
+                if len(buf) >= lim + 1: # there's the query elem by default
                     break
             raw = json.dumps(buf, indent=2, default=str)
             if len(event.raw_text) + len(raw) > 4080:
