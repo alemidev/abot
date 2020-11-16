@@ -41,13 +41,15 @@ async def graph(event):
         arg = event.pattern_match.group("query")
         opt = event.pattern_match.group("opt")
         print(f" [ plotting {arg} ]")
-        res = parse_expr(arg)
+        eq = []
+        for a in arg.split(", "):
+            eq.append(parse_expr(a))
         if opt == "-3d":
-            plot3d(res, show=False).save("graph.png")
+            plot3d(*eq, show=False).save("graph.png")
         # elif opt == "-par":
         #     plot3d_parametric_line(res, show=False).save("graph.png")
         else:
-            plot(res, show=False).save("graph.png")
+            plot(*eq, show=False).save("graph.png")
         await event.message.reply(f"` → {arg} `", file="graph.png")
     except Exception as e:
         traceback.print_exc()
