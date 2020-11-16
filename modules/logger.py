@@ -22,7 +22,12 @@ from util.message import get_channel
 
 last_group = "N/A"
 
-M_CLIENT = MongoClient('localhost', 27017)
+with open("config.json") as f:
+    config = json.load(f)
+
+M_CLIENT = MongoClient('localhost', 27017,
+                        username=config["USER_DB"],
+                        password=config["PASS_DB"])
 DB = M_CLIENT.telegram
 EVENTS = DB.events
 
