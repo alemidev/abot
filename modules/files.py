@@ -6,7 +6,7 @@ from util import can_react, set_offline
 from util.globals import PREFIX
 
 # Save file
-@events.register(events.NewMessage(pattern=r"{p}put".format(p=PREFIX)))
+@events.register(events.NewMessage(pattern=r"{p}put".format(p=PREFIX), outgoing=True))
 async def upload(event):
     if not can_react(event.chat_id):
         return
@@ -14,31 +14,25 @@ async def upload(event):
     if event.is_reply:
         msg = await event.get_reply_message()
     if msg.media is not None:
-        if event.out:
-            try:
-                file = await event.client.download_media(message=msg)
-                await event.message.reply('` → ` saved file as {}'.format(file))
-            except Exception as e:
-                await event.message.reply("`[!] → ` " + str(e))
-        else:
-            await event.message.reply("` → ` nice malware, u can keep it")
+        try:
+            file = await event.client.download_media(message=msg)
+            await event.message.reply('` → ` saved file as {}'.format(file))
+        except Exception as e:
+            await event.message.reply("`[!] → ` " + str(e))
     else:
         await event.message.reply("`[!] → ` you need to attach or reply to a file, dummy")
     await set_offline(event.client)
 
 # Upload file
-@events.register(events.NewMessage(pattern=r"{p}get(?: |)(?P<name>[^ ]*)".format(p=PREFIX)))
+@events.register(events.NewMessage(pattern=r"{p}get(?: |)(?P<name>[^ ]*)".format(p=PREFIX), outgoing=True))
 async def download(event):
     if not can_react(event.chat_id):
         return
-    if event.out:
-        try:
-            name = event.pattern_match.group("name")
-            await event.message.reply('` → {}`'.format(name), file=name)
-        except Exception as e:
-            await event.message.reply("`[!] → ` " + str(e))
-    else:
-        await event.message.reply("` → ` wouldn't you like to know, weather boy?")
+    try:
+        name = event.pattern_match.group("name")
+        await event.message.reply('` → {}`'.format(name), file=name)
+    except Exception as e:
+        await event.message.reply("`[!] → ` " + str(e))
     await set_offline(event.client)
 
 class FilesModules:
