@@ -74,7 +74,7 @@ async def where_cmd(event):
     await set_offline(event.client)
 
 # Get info about a user
-@events.register(events.NewMessage(pattern=r"{p}who(?: |)(?P<pack>-p|-r|)(?: |)(?P<name>@[^ ]+|)".format(p=PREFIX)))
+@events.register(events.NewMessage(pattern=r"{p}who(?: |)(?P<pack>-p|-r|)(?: |)(?P<name>[^ ]+|)".format(p=PREFIX)))
 async def who_cmd(event):
     if not event.out and not is_allowed(event.sender_id):
         return
