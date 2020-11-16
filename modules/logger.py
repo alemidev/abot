@@ -155,7 +155,7 @@ async def log_cmd(event):
     await set_offline(event.client)
 
 # Get edit history of a message
-@events.register(events.NewMessage(pattern=r"{p}hist".format(p=PREFIX)))
+@events.register(events.NewMessage(pattern=r"{p}hist(?:ory|)".format(p=PREFIX)))
 async def hist_cmd(event):
     if not event.out and not is_allowed(event.sender_id):
         return
@@ -190,6 +190,6 @@ class LoggerModules:
         self.helptext += "`→ .query [-c] [-l] [-f] [query] ` interact with db\n"
 
         client.add_event_handler(hist_cmd)
-        self.helptext += "`→ .hist` get edit history of a message *\n"
+        self.helptext += "`→ .history` get edit history of a message *\n"
 
         print(" [ Registered Logger Modules ]")
