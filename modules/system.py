@@ -144,7 +144,7 @@ async def runit(event):
         else:
             await event.message.edit(f"```$ {args}\n" + output + "```")
     except Exception as e:
-        await event.message.reply("`[!] → ` " + str(e))
+        await event.message.edit(f"`$ {args}`\n`[!] → ` " + str(e))
     await set_offline(event.client)
 
 # Eval python line
