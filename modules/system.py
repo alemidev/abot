@@ -161,7 +161,7 @@ async def evalit(event):
         else:
             await event.message.edit(f"```>>> {args}\n" + result + "```")
     except Exception as e:
-        await event.message.reply("`[!] → ` " + str(e))
+        await event.message.edit(f"`>>> {args}`\n`[!] → ` " + str(e))
     await set_offline(event.client)
 
 class SystemModules:
