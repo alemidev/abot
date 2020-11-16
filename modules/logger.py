@@ -16,6 +16,7 @@ from util.parse import cleartermcolor
 from util.globals import PREFIX
 from util.user import get_username
 from util.text import split_for_window
+from util.permission import is_allowed
 
 last_group = "N/A"
 
@@ -153,6 +154,28 @@ async def log_cmd(event):
         await event.message.edit(event.raw_text + "\n`[!] → ` " + str(e))
     await set_offline(event.client)
 
+# Get edit history of a message
+@events.register(events.NewMessage(pattern=r"{p}hist".format(p=PREFIX)))
+async def hist_cmd(event):
+    if not event.out and not is_allowed(event.sender_id):
+        return
+    if not event.is_reply:
+        if event.out:
+            await event.message.edit(event.raw_text + "\n`[!] → ` You must reply to a message")
+        else:
+            await event.message.reply("`[!] → ` You must reply to a message")
+    else:
+        m_id = event.message.id
+        cursor = EVENTS.find('{"id":' + str(m_id) + '}', '{"message":1}').sort("_id", -1)
+        out = ""
+        for doc in cursor:
+            out += f"` → ` {doc['message']}\n"
+        if event.out:
+            await event.message.edit(event.raw_text + "\n" + out)
+        else:
+            await event.message.reply(out)
+    await set_offline(event.client)
+
 class LoggerModules:
     def __init__(self, client, limit=False):
         self.helptext = "`━━┫ LOG `\n"
@@ -164,5 +187,8 @@ class LoggerModules:
 
         client.add_event_handler(log_cmd)
         self.helptext += "`→ .query [-c] [-l] [-f] [query] ` interact with db\n"
+
+        client.add_event_handler(hist_cmd)
+        self.helptext += "`→ .hist` get edit history of a message *\n"
 
         print(" [ Registered Logger Modules ]")
