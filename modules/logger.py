@@ -187,9 +187,9 @@ async def hist_cmd(event):
     for doc in cursor:
         if show_time:
             if doc['edit_date'] is None:
-                out += f"[{str(doc['date']}] "    
+                out += f"[{str(doc['date'])}] "    
             else:
-                out += f"[{str(doc['edit_date']}] "    
+                out += f"[{str(doc['edit_date'])}] "    
         out += f"` → ` {doc['message']}\n"
     if event.out:
         await event.message.edit(event.raw_text + "\n" + out)
