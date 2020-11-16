@@ -8,3 +8,4 @@ pyfiglet
 pillow
 sympy
 matplotlib
+pymongo

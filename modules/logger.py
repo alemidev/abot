@@ -2,6 +2,8 @@ import asyncio
 import subprocess
 import time
 
+from pymongo import MongoClient
+
 from termcolor import colored
 
 from telethon import events
@@ -13,6 +15,10 @@ from util.user import get_username
 from util.text import split_for_window
 
 last_group = "N/A"
+
+M_CLIENT = MongoClient('localhost', 27017)
+DB = M_CLIENT.telegram
+EVENTS = DB.events
 
 class MessageEntry:
     def __init__(self, channel, author, message, media):
@@ -58,6 +64,7 @@ async def parse_event(event, edit=False):
 # Print in terminal received edits
 @events.register(events.MessageEdited)
 async def editlogger(event):
+    EVENTS.insert_one(event.message.to_dict())
     msg = await parse_event(event, edit=True)
     msg.print_formatted()
 
@@ -66,6 +73,7 @@ async def editlogger(event):
 # Print in terminal received chats
 @events.register(events.NewMessage)
 async def msglogger(event):
+    EVENTS.insert_one(event.message.to_dict())
     msg = await parse_event(event)
     msg.print_formatted()
 
