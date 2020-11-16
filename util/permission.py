@@ -1,6 +1,7 @@
 import json
 
 ALLOWED = {}
+# Damn JSON won't allow integer keys, so we str() everything
 
 with open("perms.json") as f:
     ALLOWED = json.load(f)
@@ -11,19 +12,19 @@ def list_allowed():
 def is_allowed(sender_id):
     if sender_id is None:
         return False
-    return sender_id in ALLOWED
+    return str(sender_id) in ALLOWED
 
-def allow(uid):
-    if uid in ALLOWED and ALLOWED[uid]:
+def allow(uid, val=True):
+    if uid in ALLOWED and ALLOWED[uid] == val:
         return False
-    ALLOWED[uid] = True
+    ALLOWED[str(uid)] = username # this is handy when editing manually the file
     serialize()
     return True
 
 def disallow(uid):
-    if uid not in ALLOWED:
+    if str(uid) not in ALLOWED:
         return False
-    ALLOWED.pop(uid, None)
+    ALLOWED.pop(str(uid), None)
     serialize()
     return True
 
