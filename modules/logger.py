@@ -18,6 +18,7 @@ from util.globals import PREFIX
 from util.user import get_username
 from util.text import split_for_window
 from util.permission import is_allowed
+from util.message import get_channel
 
 last_group = "N/A"
 
@@ -97,10 +98,15 @@ async def dellogger(event):
     entry["original_update"] = entry["original_update"].to_dict()
     entry["WHO"] = "UNKNOWN" # Delete event doesn't tell you who deleted, but msgs are unique
     entry["WHAT"] = "Delete"
-    if (entry["original_update"]["channel_id"] is not None):
+    elif ("channel_id" in entry["original_update"] and 
+            entry["original_update"]["channel_id"] is not None):
         entry["WHERE"] = entry["original_update"]["channel_id"]
     else:
-        entry["WHERE"] = (await get_channel(await event.client.get_entity(entry["deleted_id"]))).id
+        orig_msg = EVENTS.find_one({"id": entry["deleted_id"]})
+        if orig_msg is not None:
+            entry["WHERE"] = orig_msg["WHERE"]
+        else:
+            entry["WHERE"] = "UNKNOWN"
     entry["WHEN"] = datetime.datetime.now()
     EVENTS.insert_one(entry)
 
