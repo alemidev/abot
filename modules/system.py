@@ -129,13 +129,29 @@ async def runit(event):
         result = subprocess.run(args, shell=True, capture_output=True, timeout=60)
         output = f"$ {args}\n" + cleartermcolor(result.stdout.decode())
         if len(output) > 4080:
-            with open("output", "w") as f:
-                f.write(output) # lmaoooo there must be a better way
             out = io.BytesIO(output.encode("utf-8"))
             out.name = "output.txt"
             await event.message.reply("``` → Output too long to display```", file=out)
         else:
             await event.message.reply("```" + output + "```")
+    except Exception as e:
+        await event.message.reply("`[!] → ` " + str(e))
+    await set_offline(event.client)
+
+# Eval python line
+@events.register(events.NewMessage(pattern=r"{p}eval (?P<cmd>.*)".format(p=PREFIX), outgoing=True))
+async def evalit(event):
+    try:
+        args = event.pattern_match.group("cmd")
+        print(f" [ evaluating \"{args}\" ]")
+        result = ">>> " + args + "\n"
+        result += eval(args)
+        if len(output) > 4080:
+            out = io.BytesIO(result.encode("utf-8"))
+            out.name = "output.txt"
+            await event.message.reply("``` → Output too long to display```", file=out)
+        else:
+            await event.message.reply("```" + result + "```")
     except Exception as e:
         await event.message.reply("`[!] → ` " + str(e))
     await set_offline(event.client)
@@ -147,6 +163,9 @@ class SystemModules:
         if not limit:
             client.add_event_handler(runit)
             self.helptext += "`→ .run <cmd> ` execute command on server\n"
+
+            client.add_event_handler(evalit)
+            self.helptext += "`→ .eval <cmd> ` execute python expr\n"
 
         client.add_event_handler(ping)
         self.helptext += "`→ .asd ` a sunny day (+ get latency)\n"
