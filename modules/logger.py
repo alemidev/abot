@@ -71,7 +71,7 @@ async def editlogger(event):
     entry = event.message.to_dict()
     entry["WHO"] = event.sender_id
     entry["WHAT"] = "Edit"
-    entry["WHERE"] = event.chat_id
+    entry["WHERE"] = (await event.client.get_entity(event.chat_id)).id
     EVENTS.insert_one(entry)
     msg = await parse_event(event, edit=True)
     msg.print_formatted()
@@ -84,7 +84,7 @@ async def msglogger(event):
     entry = event.message.to_dict()
     entry["WHO"] = event.sender_id
     entry["WHAT"] = "New"
-    entry["WHERE"] = event.chat_id
+    entry["WHERE"] = (await event.client.get_entity(event.chat_id)).id
     EVENTS.insert_one(entry)
     msg = await parse_event(event)
     msg.print_formatted()
@@ -114,7 +114,7 @@ async def actionlogger(event):
     else:
         entry["WHO"] = "UNKNOWN"
     entry["WHAT"] = "Action"
-    entry["WHERE"] = event.chat_id
+    entry["WHERE"] = (await event.client.get_entity(event.chat_id)).id
     EVENTS.insert_one(entry)
 
 def order_suffix(num, measure='B'):
@@ -239,7 +239,7 @@ class LoggerModules:
         self.helptext += "`→ .query [-c] [-l] [-f] [query] ` interact with db\n"
 
         client.add_event_handler(hist_cmd)
-        self.helptext += "`→ .history` get edit history of a message *\n"
+        self.helptext += "`→ .history [id] ` get edit history of a message *\n"
 
         client.add_event_handler(deleted_cmd)
         self.helptext += "`→ .peek [n] ` get last (n) deleted msgs *\n"
