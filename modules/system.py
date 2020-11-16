@@ -5,6 +5,15 @@ import io
 import traceback
 import json
 
+# handy libs to have for eval()
+import requests
+import sympy
+import os
+import re
+import random
+import math
+import datetime
+
 from termcolor import colored
 
 from telethon import events
