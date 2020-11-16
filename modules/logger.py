@@ -117,6 +117,13 @@ async def actionlogger(event):
     entry["WHERE"] = event.chat_id
     EVENTS.insert_one(entry)
 
+def order_suffix(num, measure='B'):
+    for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+        if abs(num) < 1024.0:
+            return "{n.3.1f}{u}{m}%s".format(n=num, u=unit, m=measure)
+        num /= 1024.0
+    return "{n.1f}Yi{m}".format(n=num, m=measure)
+
 # Get data off database
 @events.register(events.NewMessage(
     pattern=r"{p}(?:log|query|q)(?: |)(?P<count>-c|)(?: |)(?P<limit>-l [0-9]+|)(?: |)(?P<filter>-f [^ ]+|)(?: |)(?P<query>[^ ]+|)".format(p=PREFIX),
@@ -127,8 +134,11 @@ async def log_cmd(event):
     args = event.pattern_match.groupdict()
     try:
         if args["count"] == "-c":
-            c = EVENTS.count_documents({})
-            await event.message.edit(event.raw_text + f"\n` → ` **{c}**")
+            count = EVENTS.count_documents({})
+            size = DB.command("dbstats")['totalSize']
+            await event.message.edit(event.raw_text +
+                            f"\n` → ` **{c}** events logged" +
+                            f"\n` → ` size **{order_suffix(size)}**")
         elif args["query"] != "":
             buf = []
             q = json.loads(args["query"])
