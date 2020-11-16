@@ -68,8 +68,9 @@ async def parse_event(event, edit=False):
 @events.register(events.MessageEdited)
 async def editlogger(event):
     entry = event.message.to_dict()
-    entry["_"] = "EditMessage"
-    entry["sender_id"] = event.sender_id
+    entry["WHO"] = event.sender_id
+    entry["WHAT"] = "MessageEdit"
+    entry["WHERE"] = event.chat_id
     EVENTS.insert_one(entry)
     msg = await parse_event(event, edit=True)
     msg.print_formatted()
@@ -80,7 +81,9 @@ async def editlogger(event):
 @events.register(events.NewMessage)
 async def msglogger(event):
     entry = event.message.to_dict()
-    entry["sender_id"] = event.sender_id
+    entry["WHO"] = event.sender_id
+    entry["WHAT"] = "NewMessage"
+    entry["WHERE"] = event.chat_id
     EVENTS.insert_one(entry)
     msg = await parse_event(event)
     msg.print_formatted()
@@ -89,8 +92,10 @@ async def msglogger(event):
 @events.register(events.MessageDeleted)
 async def dellogger(event):
     entry = event.to_dict()
-    entry["sender_id"] = event.sender_id
     entry["original_update"] = entry["original_update"].to_dict()
+    entry["WHO"] = event.sender_id
+    entry["WHAT"] = "Delete"
+    entry["WHERE"] = event.chat_id
     EVENTS.insert_one(entry)
 
 # Log Chat Actions
@@ -99,7 +104,9 @@ async def actionlogger(event):
     entry = event.to_dict()
     entry.pop("original_update", None)
     entry["action_message"] = entry["action_message"].to_dict()
-    entry["sender_id"] = event.sender_id
+    entry["WHO"] = event.sender_id
+    entry["WHAT"] = "ChatAction"
+    entry["WHERE"] = event.chat_id
     EVENTS.insert_one(entry)
 
 # Get data off database
