@@ -109,7 +109,10 @@ async def actionlogger(event):
     entry = event.to_dict()
     entry.pop("original_update", None)
     entry["action_message"] = entry["action_message"].to_dict()
-    entry["WHO"] = event.sender_id
+    if event.users is not None:
+        entry["WHO"] = event.user_id
+    else:
+        entry["WHO"] = "UNKNOWN"
     entry["WHAT"] = "Action"
     entry["WHERE"] = event.chat_id
     EVENTS.insert_one(entry)
