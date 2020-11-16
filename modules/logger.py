@@ -182,7 +182,8 @@ async def hist_cmd(event):
         m_id = int(event.pattern_match.group("id"))
     if m_id is None:
         return
-    cursor = EVENTS.find( {"id": m_id, "WHERE": chat.id}, {"message": 1} ).sort("_id", -1)
+    cursor = EVENTS.find( {"id": m_id, "WHERE": chat.id},
+            {"message": 1, "date": 1, "edit_date": 1} ).sort("_id", -1)
     out = ""
     for doc in cursor:
         if show_time:
