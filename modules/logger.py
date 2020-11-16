@@ -93,7 +93,7 @@ async def msglogger(event):
 async def dellogger(event):
     entry = event.to_dict()
     entry["original_update"] = entry["original_update"].to_dict()
-    entry["WHO"] = event.sender_id
+    entry["WHO"] = "UNKNOWN" # Delete event doesn't tell you who deleted, but msgs are unique
     entry["WHAT"] = "Delete"
     if ("channel_id" in entry["original_update"] and
             entry["original_update"]["channel_id"] is not None):
