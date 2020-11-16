@@ -71,6 +71,7 @@ async def allow_cmd(event):
     elif event.pattern_match.group("name") in [ "@here", "@everyone" ]:
         users_to_allow += await event.client.get_participants(await event.get_chat())
     else:
+        user = None
         try:
             user = await event.client.get_entity(event.pattern_match.group('name'))
         except ValueError:
@@ -98,6 +99,7 @@ async def revoke_cmd(event):
     elif event.pattern_match.group("name") in [ "@here", "@everyone" ]:
         users_to_disallow += await event.client.get_participants(await event.get_chat())
     else:
+        user = None
         try:
             user = await event.client.get_entity(event.pattern_match.group('name'))
         except ValueError:
