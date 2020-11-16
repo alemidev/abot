@@ -98,7 +98,7 @@ async def log_cmd(event):
             cursor = None
             if args["filter"] != "":
                 filt = json.loads(args["filter"].replace("-f ", ""))
-                cursor = EVENTS.find(q), filt)
+                cursor = EVENTS.find(q, filt)
             else:
                 cursor = EVENTS.find(q)
             for doc in cursor:
