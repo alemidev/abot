@@ -112,11 +112,8 @@ async def revoke_cmd(event):
             return await event.message.edit(event.raw_text + "\n`[!] → ` No user matched")
         users_to_disallow.append(user)
     out = ""
-    print([ u.stringify() for u in users_to_disallow ] )
     for u in users_to_disallow:
-        print(u.stringify())
         if disallow(u.id):
-            print("made change")
             out += f"` → ` Disallowed **{get_username(u)}**\n"
     if out != "":
         await event.message.edit(event.raw_text + "\n" + out)
@@ -127,12 +124,10 @@ async def revoke_cmd(event):
 # List trusted
 @events.register(events.NewMessage(pattern=r"{p}trusted".format(p=PREFIX), outgoing=True))
 async def trusted_list(event):
-    print(ALLOWED)
     users = list_allowed()
     text = "[ "
     for u in users:
         try:
-            print(u)
             text += f"{get_username(await event.client.get_entity(int(u)))}[{u}] "
         except ValueError: # Users which lack an username need to be cached before or something
             text += "~~[UNKN]~~ "
