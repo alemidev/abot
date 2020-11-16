@@ -80,7 +80,6 @@ async def editlogger(event):
 @events.register(events.NewMessage)
 async def msglogger(event):
     entry = event.message.to_dict()
-    entry["_"] = "NewMessage"
     entry["sender_id"] = event.sender_id
     EVENTS.insert_one(entry)
     msg = await parse_event(event)
@@ -89,16 +88,17 @@ async def msglogger(event):
 # Log Message deletions
 @events.register(events.MessageDeleted)
 async def dellogger(event):
-    entry = event.message.to_dict()
-    entry["_"] = "DeletedMessage"
+    entry = event.to_dict()
     entry["sender_id"] = event.sender_id
+    entry["original_update"] = entry["original_update"].to_dict()
     EVENTS.insert_one(entry)
 
 # Log Chat Actions
 @events.register(events.ChatAction)
 async def actionlogger(event):
-    entry = event.message.to_dict()
-    entry["_"] = "ChatAction"
+    entry = event.to_dict()
+    entry.pop("original_update", None)
+    entry["action_message"] = entry["action_message"].to_dict()
     entry["sender_id"] = event.sender_id
     EVENTS.insert_one(entry)
 
