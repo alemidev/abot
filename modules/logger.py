@@ -137,7 +137,7 @@ async def log_cmd(event):
             count = EVENTS.count_documents({})
             size = DB.command("dbstats")['totalSize']
             await event.message.edit(event.raw_text +
-                            f"\n` → ` **{c}** events logged" +
+                            f"\n` → ` **{count}** events logged" +
                             f"\n` → ` size **{order_suffix(size)}**")
         elif args["query"] != "":
             buf = []
