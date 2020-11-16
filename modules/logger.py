@@ -67,7 +67,10 @@ async def parse_event(event, edit=False):
 # Print in terminal received edits
 @events.register(events.MessageEdited)
 async def editlogger(event):
-    EVENTS.insert_one(event.message.to_dict())
+    entry = event.message.to_dict()
+    entry["_"] = "EditMessage"
+    entry["sender_id"] = event.sender_id
+    EVENTS.insert_one(entry)
     msg = await parse_event(event, edit=True)
     msg.print_formatted()
 
@@ -76,9 +79,28 @@ async def editlogger(event):
 # Print in terminal received chats
 @events.register(events.NewMessage)
 async def msglogger(event):
-    EVENTS.insert_one(event.message.to_dict())
+    entry = event.message.to_dict()
+    entry["_"] = "NewMessage"
+    entry["sender_id"] = event.sender_id
+    EVENTS.insert_one(entry)
     msg = await parse_event(event)
     msg.print_formatted()
+
+# Log Message deletions
+@events.register(events.MessageDeleted)
+async def dellogger(event):
+    entry = event.message.to_dict()
+    entry["_"] = "DeletedMessage"
+    entry["sender_id"] = event.sender_id
+    EVENTS.insert_one(entry)
+
+# Log Chat Actions
+@events.register(events.ChatAction)
+async def dellogger(event):
+    entry = event.message.to_dict()
+    entry["_"] = "ChatAction"
+    entry["sender_id"] = event.sender_id
+    EVENTS.insert_one(entry)
 
 # Get data off database
 @events.register(events.NewMessage(
