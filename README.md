@@ -47,7 +47,7 @@ Ye, pwd in plaintext, ugh. I plan to make `pass` integrateable with it
 ### Core
 * `telethon`
 * `requests`
-### Python
+### Non-Essential
 * `termcolor` : for colored terminal printing. Only in `logger` module.
 * `wikipedia`, `italian-dictionary`, `PyDictionary` : used for dictionary searching. Only in `search` module.
 * `pyfiglet` : for figlet art, only in `text`
