@@ -197,9 +197,10 @@ async def deleted_cmd(event):
         return
     limit = 1
     try:
+        chat = await event.get_chat()
         if event.pattern_match.group("number") != "":
             limit = int(event.pattern_match.group("number"))
-        cursor = EVENTS.find( {"WHAT": "Delete"}, {"deleted_id": 1} ).sort("_id", -1).limit(limit)
+        cursor = EVENTS.find( {"WHAT": "Delete", "WHERE": chat.id }, {"deleted_id": 1} ).sort("_id", -1).limit(limit)
         out = ""
         for doc in cursor:
             m_id = doc["deleted_id"]
@@ -213,6 +214,8 @@ async def deleted_cmd(event):
                 out += f"`UNKN → ` {msg['message']}"
                 continue
             out += f"`{get_username(author)} → ` {msg['message']}\n"
+        if out == "":
+            out = "` → ` Nothing to display"
         if event.out:
             await event.message.edit(event.raw_text + "\n" + out)
         else:
