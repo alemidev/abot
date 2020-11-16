@@ -95,7 +95,11 @@ async def dellogger(event):
     entry["original_update"] = entry["original_update"].to_dict()
     entry["WHO"] = event.sender_id
     entry["WHAT"] = "Delete"
-    entry["WHERE"] = event.chat_id
+    if ("channel_id" in entry["original_update"] and
+            entry["original_update"]["channel_id"] is not None):
+        entry["WHERE"] = entry["original_update"]["channel_id"]
+    else:
+        entry["WHERE"] = "UNKNOWN"
     EVENTS.insert_one(entry)
 
 # Log Chat Actions
