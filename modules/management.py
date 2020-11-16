@@ -131,7 +131,7 @@ async def trusted_list(event):
         try:
             e = await event.client.get_entity(int(u))
             if show_ids:
-                text += f"{u}`|`{get_username(e)} "
+                text += f"({u}`|`{get_username(e)}) "
             else:
                 text += f"{get_username(e)}, "
         except ValueError: # Users which lack an username need to be cached before or something
