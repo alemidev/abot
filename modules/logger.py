@@ -1,6 +1,7 @@
 import asyncio
 import subprocess
 import time
+import json
 
 from pymongo import MongoClient
 
@@ -77,11 +78,33 @@ async def msglogger(event):
     msg = await parse_event(event)
     msg.print_formatted()
 
+# Get data off database
+@events.register(events.NewMessage(pattern=r"{p}log(?: |)(?P<count>-c|)(?: |)(?P<query>.*)".format(p=PREFIX), outgoing=True))
+async def log_cmd(event):
+    if not event.out and not is_allowed(event.sender_id):
+        return
+    args = event.pattern_match.groupdict()
+    try:
+        if args["count"] == "-c":
+            c = EVENTS.count_documents({})
+            await event.message.edit(event.raw_text + f"\n` → ` **{c}**")
+        else:
+            res = " → \n" + str(EVENTS.find(json.loads(args["query"]))
+            for m in batchify(res, 4080):
+                await event.message.reply("```" + m + "```")
+    except Exception as e:
+        traceback.print_exc()
+        await event.message.edit(event.raw_text + "\n`[!] → ` " + str(e))
+    await set_offline(event.client)
+
 class LoggerModules:
     def __init__(self, client, limit=False):
-        self.helptext = ""
+        self.helptext = "`━━┫ LOG `\n"
 
         client.add_event_handler(editlogger)
         client.add_event_handler(msglogger)
+
+        client.add_event_handler(log_cmd)
+        self.helptext += "`→ .log [-c] ` get data off db (WIP)\n"
 
         print(" [ Registered Logger Modules ]")
