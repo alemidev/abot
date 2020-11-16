@@ -96,7 +96,7 @@ async def dellogger(event):
 
 # Log Chat Actions
 @events.register(events.ChatAction)
-async def dellogger(event):
+async def actionlogger(event):
     entry = event.message.to_dict()
     entry["_"] = "ChatAction"
     entry["sender_id"] = event.sender_id
@@ -104,7 +104,7 @@ async def dellogger(event):
 
 # Get data off database
 @events.register(events.NewMessage(
-    pattern=r"{p}log(?: |)(?P<count>-c|)(?: |)(?P<filter>-f [^ ]+|)(?: |)(?P<query>[^ ]+|)".format(p=PREFIX),
+    pattern=r"{p}(?:log|query|q)(?: |)(?P<count>-c|)(?: |)(?P<limit>-l [0-9]+|)(?: |)(?P<filter>-f [^ ]+|)(?: |)(?P<query>[^ ]+|)".format(p=PREFIX),
     outgoing=True))
 async def log_cmd(event):
     if not event.out and not is_allowed(event.sender_id):
@@ -118,6 +118,9 @@ async def log_cmd(event):
             buf = [ { "query" : args["query"] } ]
             q = json.loads(args["query"])
             cursor = None
+            lim = None
+            if args["limit"] != "":
+                lim = int(args["limit"].replace("-l ", ""))
             if args["filter"] != "":
                 filt = json.loads(args["filter"].replace("-f ", ""))
                 cursor = EVENTS.find(q, filt)
@@ -125,6 +128,8 @@ async def log_cmd(event):
                 cursor = EVENTS.find(q)
             for doc in cursor:
                 buf.append(doc)
+                if len(buf) >= lim:
+                    break
             f = io.BytesIO(json.dumps(buf, indent=2, default=str).encode("utf-8"))
             f.name = "query.json"
             await event.message.reply("``` → Query result```", file=f)
@@ -139,8 +144,10 @@ class LoggerModules:
 
         client.add_event_handler(editlogger)
         client.add_event_handler(msglogger)
+        client.add_event_handler(dellogger)
+        client.add_event_handler(actionlogger)
 
         client.add_event_handler(log_cmd)
-        self.helptext += "`→ .log [-c] [-f] [query] ` interact with db\n"
+        self.helptext += "`→ .query [-c] [-l] [-f] [query] ` interact with db\n"
 
         print(" [ Registered Logger Modules ]")
