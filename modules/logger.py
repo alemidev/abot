@@ -136,7 +136,7 @@ async def log_cmd(event):
                 f.name = "query.json"
                 await event.message.reply("``` → Query result```", file=f)
             else:
-                await event.message.edit(event.raw_text + "\n```" + raw + "```")
+                await event.message.edit(event.raw_text + "\n``` → " + raw + "```")
     except Exception as e:
         traceback.print_exc()
         await event.message.edit(event.raw_text + "\n`[!] → ` " + str(e))
