@@ -82,7 +82,7 @@ async def msglogger(event):
 
 # Get data off database
 @events.register(events.NewMessage(
-    pattern=r"{p}log(?: |)(?P<count>-c|)(?: |)(?P<filter>-f [^ ]+|)(?: |)(?P<query>[^ ]+)".format(p=PREFIX),
+    pattern=r"{p}log(?: |)(?P<count>-c|)(?: |)(?P<filter>-f [^ ]+|)(?: |)(?P<query>[^ ]+|)".format(p=PREFIX),
     outgoing=True))
 async def log_cmd(event):
     if not event.out and not is_allowed(event.sender_id):
@@ -92,7 +92,7 @@ async def log_cmd(event):
         if args["count"] == "-c":
             c = EVENTS.count_documents({})
             await event.message.edit(event.raw_text + f"\n` → ` **{c}**")
-        else:
+        elif args["query"] != "":
             buf = [ { "query" : args["query"] } ]
             filt = {}
             if args["filter"] != "":
