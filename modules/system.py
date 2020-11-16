@@ -142,7 +142,7 @@ async def runit(event):
             out.name = "output.txt"
             await event.message.reply("``` → Output too long to display```", file=out)
         else:
-            await event.message.edit(f"```$ {args}\n" + output + "```")
+            await event.message.edit(f"```$ {args}\n\n" + output + "```")
     except Exception as e:
         await event.message.edit(f"`$ {args}`\n`[!] → ` " + str(e))
     await set_offline(event.client)
@@ -159,7 +159,7 @@ async def evalit(event):
             out.name = "output.txt"
             await event.message.reply("``` → Output too long to display```", file=out)
         else:
-            await event.message.edit(f"```>>> {args}\n" + result + "```")
+            await event.message.edit(f"```>>> {args}\n\n" + result + "```")
     except Exception as e:
         await event.message.edit(f"`>>> {args}`\n`[!] → ` " + str(e))
     await set_offline(event.client)
