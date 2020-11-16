@@ -97,11 +97,10 @@ async def dellogger(event):
     entry["original_update"] = entry["original_update"].to_dict()
     entry["WHO"] = "UNKNOWN" # Delete event doesn't tell you who deleted, but msgs are unique
     entry["WHAT"] = "Delete"
-    if ("channel_id" in entry["original_update"] and
-            entry["original_update"]["channel_id"] is not None):
+    if (entry["original_update"]["channel_id"] is not None):
         entry["WHERE"] = entry["original_update"]["channel_id"]
     else:
-        entry["WHERE"] = "UNKNOWN"
+        entry["WHERE"] = (await get_channel(await event.client.get_entity(entry["deleted_id"]))).id
     entry["WHEN"] = datetime.datetime.now()
     EVENTS.insert_one(entry)
 
@@ -110,7 +109,8 @@ async def dellogger(event):
 async def actionlogger(event):
     entry = event.to_dict()
     entry.pop("original_update", None)
-    entry["action_message"] = entry["action_message"].to_dict()
+    if entry["action_message"] is not None:
+        entry["action_message"] = entry["action_message"].to_dict()
     if event.users is not None:
         entry["WHO"] = event.user_id
     else:
@@ -202,7 +202,7 @@ async def hist_cmd(event):
 
 # Get last N deleted messages
 @events.register(events.NewMessage(
-        pattern=r"{p}(?:peek|deld|deleted|removed)(?: |)(?P<number>[0-9]+|)(?: |)(?P<time>-t|)".format(p=PREFIX)))
+        pattern=r"{p}(?:peek|deld|deleted|removed)(?: |)(?P<time>-t|)(?: |)(?P<number>[0-9]+|)".format(p=PREFIX)))
 async def deleted_cmd(event):
     if not event.out and not is_allowed(event.sender_id):
         return
