@@ -81,7 +81,7 @@ async def msglogger(event):
 
 # Get data off database
 @events.register(events.NewMessage(
-    pattern=r"{p}log(?: |)(?P<count>-c|)(?: |)(?P<file>-f|)(?: |)(?P<query>.*)".format(p=PREFIX),
+    pattern=r"{p}log(?: |)(?P<count>-c|)(?: |)(?P<query>.*)".format(p=PREFIX),
     outgoing=True))
 async def log_cmd(event):
     if not event.out and not is_allowed(event.sender_id):
@@ -92,17 +92,13 @@ async def log_cmd(event):
             c = EVENTS.count_documents({})
             await event.message.edit(event.raw_text + f"\n` → ` **{c}**")
         else:
+            buf = [ { "query" : args["query"] } ]
             cursor = EVENTS.find(json.loads(args["query"]))
-            out = f" → {args['query']}\n"
             for doc in cursor:
-                out += str(doc) + "\n"
-            if args["file"] == "-f":
-                f = io.BytesIO(out.encode("utf-8"))
-                f.name = "query.txt"
-                await event.message.reply("``` → Query result```", file=f)
-            else:
-                for m in batchify(out, 4080):
-                    await event.message.reply("```" + m + "```")
+                buf.append(doc)
+            f = io.BytesIO(json.dumps(buf, indent=2).encode("utf-8"))
+            f.name = "query.json"
+            await event.message.reply("``` → Query result```", file=f)
     except Exception as e:
         traceback.print_exc()
         await event.message.edit(event.raw_text + "\n`[!] → ` " + str(e))
