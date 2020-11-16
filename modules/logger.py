@@ -1,5 +1,6 @@
 import asyncio
 import subprocess
+import datetime
 import time
 import json
 import io
@@ -101,6 +102,7 @@ async def dellogger(event):
         entry["WHERE"] = entry["original_update"]["channel_id"]
     else:
         entry["WHERE"] = "UNKNOWN"
+    entry["WHEN"] = datetime.datetime.now()
     EVENTS.insert_one(entry)
 
 # Log Chat Actions
@@ -199,11 +201,13 @@ async def hist_cmd(event):
     await set_offline(event.client)
 
 # Get last N deleted messages
-@events.register(events.NewMessage(pattern=r"{p}(?:peek|deld|deleted|removed)(?: |)(?P<number>[0-9]+|)".format(p=PREFIX)))
+@events.register(events.NewMessage(
+        pattern=r"{p}(?:peek|deld|deleted|removed)(?: |)(?P<number>[0-9]+|)(?: |)(?P<time>-t|)".format(p=PREFIX)))
 async def deleted_cmd(event):
     if not event.out and not is_allowed(event.sender_id):
         return
     limit = 1
+    show_time = event.pattern_match.group("time") == "-t"
     try:
         chat = await event.get_chat()
         if event.pattern_match.group("number") != "":
@@ -211,17 +215,20 @@ async def deleted_cmd(event):
         cursor = EVENTS.find( {"WHAT": "Delete", "WHERE": chat.id }, {"deleted_id": 1} ).sort("_id", -1).limit(limit)
         out = ""
         for doc in cursor:
+            if show_time and "WHEN" in doc:
+                out += f"[{str(doc['WHEN'])}] "
             m_id = doc["deleted_id"]
+            out += f"**[**`{m_id}`**]** "
             msg = EVENTS.find_one({"id": m_id})
             peer = msg["WHO"]
             if peer is None:
-                out += f"`UNKN → ` {msg['message']}"
+                out += f"`UNKN →` {msg['message']}"
                 continue
             author = await event.client.get_entity(peer)
             if author is None:
-                out += f"`UNKN → ` {msg['message']}"
+                out += f"`UNKN →` {msg['message']}"
                 continue
-            out += f"**[**`{m_id}`**]** `{get_username(author)} → ` {msg['message']}\n\n"
+            out += f"`{get_username(author)} →` {msg['message']}\n\n"
         if out == "":
             out = "` → ` Nothing to display"
         if event.out:
@@ -249,6 +256,6 @@ class LoggerModules:
         self.helptext += "`→ .history [-t] [id] ` get edits to a message *\n"
 
         client.add_event_handler(deleted_cmd)
-        self.helptext += "`→ .peek [n] ` get last (n) deleted msgs *\n"
+        self.helptext += "`→ .peek [n] [-t] ` get last (n) deleted msgs *\n"
 
         print(" [ Registered Logger Modules ]")
