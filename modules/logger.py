@@ -186,7 +186,7 @@ async def hist_cmd(event):
     out = ""
     for doc in cursor:
         if show_time:
-            if doc['edit_date'] is None:
+            if "edit_date" not in doc or doc['edit_date'] is None:
                 out += f"[{str(doc['date'])}] "    
             else:
                 out += f"[{str(doc['edit_date'])}] "    
