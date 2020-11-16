@@ -122,19 +122,24 @@ async def revoke_cmd(event):
     await set_offline(event.client)
 
 # List trusted
-@events.register(events.NewMessage(pattern=r"{p}trusted".format(p=PREFIX), outgoing=True))
+@events.register(events.NewMessage(pattern=r"{p}trusted(?: |)(?P<id>-i|)".format(p=PREFIX), outgoing=True))
 async def trusted_list(event):
     users = list_allowed()
-    text = "[ "
+    text = "`[` "
+    show_ids = event.pattern_match.group("id") == "-i"
     for u in users:
         try:
-            text += f"{get_username(await event.client.get_entity(int(u)))}[{u}] "
+            e = await event.client.get_entity(int(u))
+            if show_ids:
+                text += f"{u}`|`{get_username(e)} "
+            else:
+                text += f"{get_username(e)}, "
         except ValueError: # Users which lack an username need to be cached before or something
-            text += "~~[UNKN]~~ "
+            text += "~~UNKN~~ "
         except:
             traceback.print_exc()
-            text += "{???} "
-    text += "]"
+            text += "`???` "
+    text += "`]`"
     await event.message.edit(event.raw_text + f"\n` → Allowed Users : `\n{text}") 
     await set_offline(event.client)
 
