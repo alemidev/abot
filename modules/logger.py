@@ -191,21 +191,26 @@ async def hist_cmd(event):
     await set_offline(event.client)
 
 # Get last N deleted messages
-@events.register(events.NewMessage(pattern=r"{p}del(?:eted|)(?: |)(?P<number>[0-9]+|)".format(p=PREFIX)))
+@events.register(events.NewMessage(pattern=r"{p}(?:peek|deld|deleted|removed)(?: |)(?P<number>[0-9]+|)".format(p=PREFIX)))
 async def deleted_cmd(event):
     if not event.out and not is_allowed(event.sender_id):
         return
     limit = 1
     try:
         if event.pattern_match.group("number") != "":
-            limit = int(event.pattern_match.group("number")
+            limit = int(event.pattern_match.group("number"))
         cursor = EVENTS.find( {"WHAT": "Delete"}, {"deleted_id": 1} ).sort("_id", -1).limit(limit)
         out = ""
         for doc in cursor:
             m_id = doc["deleted_id"]
             msg = EVENTS.find_one({"id": m_id})
-            author = await event.client.get_entity(msg["from_id"]["user_id"])
+            peer = msg["from_id"]
+            if peer is None:
+                out += f"`UNKN → ` {msg['message']}"
+                continue
+            author = await event.client.get_entity(peer["user_id"])
             if author is None:
+                out += f"`UNKN → ` {msg['message']}"
                 continue
             out += f"`{get_username(author)} → ` {msg['message']}\n"
         if event.out:
@@ -233,6 +238,6 @@ class LoggerModules:
         self.helptext += "`→ .history` get edit history of a message *\n"
 
         client.add_event_handler(deleted_cmd)
-        self.helptext += "`→ .deleted [n] ` get last (n) deleted msgs *\n"
+        self.helptext += "`→ .peek [n] ` get last (n) deleted msgs *\n"
 
         print(" [ Registered Logger Modules ]")
