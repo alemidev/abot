@@ -93,11 +93,11 @@ async def log_cmd(event):
             c = EVENTS.count_documents({})
             await event.message.edit(event.raw_text + f"\n` → ` **{c}**")
         else:
-            buf = [ ]
+            buf = [ { "query" : args["query"] } ]
             cursor = EVENTS.find(json.loads(args["query"]))
             for doc in cursor:
                 buf.append(doc)
-            f = io.BytesIO(json.dumps(buf, indent=2).encode("utf-8"))
+            f = io.BytesIO(json.dumps(buf, indent=2, default=str).encode("utf-8"))
             f.name = "query.json"
             await event.message.reply("``` → Query result```", file=f)
     except Exception as e:
