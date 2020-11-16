@@ -126,7 +126,7 @@ async def log_cmd(event):
             c = EVENTS.count_documents({})
             await event.message.edit(event.raw_text + f"\n` → ` **{c}**")
         elif args["query"] != "":
-            buf = [ args["query"] ]
+            buf = [ args["query"].replace("\\", "") ]
             q = json.loads(args["query"])
             cursor = None
             lim = None
