@@ -2,6 +2,7 @@ import asyncio
 import subprocess
 import time
 import json
+import io
 
 from pymongo import MongoClient
 
@@ -79,7 +80,9 @@ async def msglogger(event):
     msg.print_formatted()
 
 # Get data off database
-@events.register(events.NewMessage(pattern=r"{p}log(?: |)(?P<count>-c|)(?: |)(?P<query>.*)".format(p=PREFIX), outgoing=True))
+@events.register(events.NewMessage(
+    pattern=r"{p}log(?: |)(?P<count>-c|)(?: |)(?P<file>-f|)(?: |)(?P<query>.*)".format(p=PREFIX),
+    outgoing=True))
 async def log_cmd(event):
     if not event.out and not is_allowed(event.sender_id):
         return
@@ -90,11 +93,16 @@ async def log_cmd(event):
             await event.message.edit(event.raw_text + f"\n` → ` **{c}**")
         else:
             cursor = EVENTS.find(json.loads(args["query"]))
-            out = " → \n"
+            out = f" → {args['query']}\n"
             for doc in cursor:
                 out += str(doc) + "\n"
-            for m in batchify(out, 4080):
-                await event.message.reply("```" + m + "```")
+            if args["file"] == "-f":
+                f = io.BytesIO(out.encode("utf-8"))
+                f.name = "query.txt"
+                await event.message.reply("``` → Query result```", file=f)
+            else:
+                for m in batchify(out, 4080):
+                    await event.message.reply("```" + m + "```")
     except Exception as e:
         traceback.print_exc()
         await event.message.edit(event.raw_text + "\n`[!] → ` " + str(e))
@@ -108,6 +116,6 @@ class LoggerModules:
         client.add_event_handler(msglogger)
 
         client.add_event_handler(log_cmd)
-        self.helptext += "`→ .log [-c] ` get data off db (WIP)\n"
+        self.helptext += "`→ .log [-c] [-f] [query] ` interact with db\n"
 
         print(" [ Registered Logger Modules ]")
