@@ -82,7 +82,7 @@ async def msglogger(event):
 
 # Get data off database
 @events.register(events.NewMessage(
-    pattern=r"{p}log(?: |)(?P<count>-c|)(?: |)(?P<query>.*)".format(p=PREFIX),
+    pattern=r"{p}log(?: |)(?P<count>-c|)(?: |)(?P<query>.*)(?: |)(?P<filter>-f .*|)".format(p=PREFIX),
     outgoing=True))
 async def log_cmd(event):
     if not event.out and not is_allowed(event.sender_id):
@@ -94,7 +94,10 @@ async def log_cmd(event):
             await event.message.edit(event.raw_text + f"\n` → ` **{c}**")
         else:
             buf = [ { "query" : args["query"] } ]
-            cursor = EVENTS.find(json.loads(args["query"]))
+            filt = {}
+            if args["filter"] != "":
+                filt = json.loads(args["filter"].replace("-f ", ""))
+            cursor = EVENTS.find(json.loads(args["query"]), filt)
             for doc in cursor:
                 buf.append(doc)
             f = io.BytesIO(json.dumps(buf, indent=2, default=str).encode("utf-8"))
