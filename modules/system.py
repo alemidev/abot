@@ -127,31 +127,30 @@ async def runit(event):
         args = event.pattern_match.group("cmd")
         print(f" [ running command \"{args}\" ]")
         result = subprocess.run(args, shell=True, capture_output=True, timeout=60)
-        output = f"$ {args}\n" + cleartermcolor(result.stdout.decode())
-        if len(output) > 4080:
-            out = io.BytesIO(output.encode("utf-8"))
+        output = cleartermcolor(result.stdout.decode())
+        if len(args) + len(output) > 4080:
+            out = io.BytesIO((f"$ {args}\n" + output).encode("utf-8"))
             out.name = "output.txt"
             await event.message.reply("``` → Output too long to display```", file=out)
         else:
-            await event.message.reply("```" + output + "```")
+            await event.message.edit(f"```$ {args}\n" + output + "```")
     except Exception as e:
         await event.message.reply("`[!] → ` " + str(e))
     await set_offline(event.client)
 
 # Eval python line
-@events.register(events.NewMessage(pattern=r"{p}eval (?P<cmd>.*)".format(p=PREFIX), outgoing=True))
+@events.register(events.NewMessage(pattern=r"{p}(?:eval|e) (?P<cmd>.*)".format(p=PREFIX), outgoing=True))
 async def evalit(event):
     try:
         args = event.pattern_match.group("cmd")
         print(f" [ evaluating \"{args}\" ]")
-        result = ">>> " + args + "\n"
-        result += eval(args)
-        if len(output) > 4080:
-            out = io.BytesIO(result.encode("utf-8"))
+        result = str(eval(args))
+        if len(args) + len(result) > 4080:
+            out = io.BytesIO((f">>> {args}\n" + result).encode("utf-8"))
             out.name = "output.txt"
             await event.message.reply("``` → Output too long to display```", file=out)
         else:
-            await event.message.reply("```" + result + "```")
+            await event.message.edit(f"```>>> {args}\n" + result + "```")
     except Exception as e:
         await event.message.reply("`[!] → ` " + str(e))
     await set_offline(event.client)
