@@ -25,12 +25,12 @@ def tokenize_json(text):
     res = re.subn(
         r'("[^\"]+"|[0-9.\-]+)',
         '``\g<1>``', text)
-    if res[1] > 100:
+    if res[1] * 2 > 100: # we generate 2 entities for every replace we do (kinda)
         return "```" + text + "```"
     return "`" + res[0] + "`"
 
 def tokenize_lines(text):
     res =  re.subn(r'(.+)', '`\g<1>`', text)
-    if res[1] > 100:
+    if res[1] * 2 > 100: # we generate 2 entities for every replace we do (kinda)
         return "```" + text + "```"
     return res[0]
