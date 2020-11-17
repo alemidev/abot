@@ -1,18 +1,21 @@
+from pyrogram import filters
+
 import json
 
 ALLOWED = {}
-# Damn JSON won't allow integer keys, so we str() everything
 
 with open("perms.json") as f:
     ALLOWED = json.load(f)
 
+def check_allowed(_, __, message):
+    if message.from_user is None:
+        return False
+    return str(message.from_user.id) in ALLOWED
+
+is_allowed = filters.create(check_allowed)
+
 def list_allowed():
     return list(ALLOWED.keys())
-
-def is_allowed(sender_id):
-    if sender_id is None:
-        return False
-    return str(sender_id) in ALLOWED
 
 def allow(uid, val=True):
     if uid in ALLOWED and ALLOWED[uid] == val:

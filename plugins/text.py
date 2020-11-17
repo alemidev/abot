@@ -2,6 +2,7 @@ import asyncio
 import secrets
 import subprocess
 import time
+import re
 import traceback
 
 from collections import Counter
@@ -11,7 +12,7 @@ from pyrogram import filters
 from util import set_offline, batchify
 # from util.globals import PREFIX
 # from util.parse import cleartermcolor
-# from util.permission import is_allowed
+from util.permission import is_allowed
 
 from bot import alemiBot
 
@@ -21,7 +22,7 @@ FIGLET_FONTS = pyfiglet.FigletFont.getFonts()
 
 # edit message adding characters one at a time
 @alemiBot.on_message(filters.me & filters.regex(pattern=
-    r"[\.\/](?:sl|slow)(?: |)(?P<timer>-t [0-9.]+|)(?: |)(?P<batch>-b [0-9]+|)(?P<text>.*)"
+    r"^[\.\/](?:sl|slow)(?: |)(?P<timer>-t [0-9.]+|)(?: |)(?P<batch>-b [0-9]+|)(?P<text>.*)"
 ))
 async def slowtype(_, message):
     args = message.matches[0]
@@ -58,12 +59,12 @@ def interval(delta):
     return 0.25
 
 # Display a countdown
-@alemiBot.on_message(filters.command(["countdown", "cd"], prefixes="."))
+@alemiBot.on_message(is_allowed & filters.command(["countdown", "cd"], prefixes="."))
 async def countdown(_, message):
     if message.outgoing:
         tgt_msg = message
     else:
-        tgt_msg = await message.reply_text("` → `")
+        tgt_msg = await message.reply("` → `")
     end = time.time() + 5
     if len(message.command) > 1:
         try:
@@ -106,17 +107,17 @@ async def randomcase(_, message):
     await message.edit(msg)
 
 # make character random case (lIkE tHiS)
-@alemiBot.on_message(filters.command(["shrug"], prefixes="."))
+@alemiBot.on_message(is_allowed & filters.command(["shrug"], prefixes="."))
 async def shrug(_, message):
     print(f" [ ¯\_(ツ)_/¯ ]")
     if message.outgoing:
         await message.edit(r'¯\_(ツ)_/¯')
     else:
-        await message.reply_text(r'¯\_(ツ)_/¯')
+        await message.reply(r'¯\_(ツ)_/¯')
 
 # Replace or reply with figlet art
-@alemiBot.on_message(filters.regex(pattern=
-    r"[\.\/]figlet(?: |)(?:(?P<list>-l)|(?P<font>-f [^ ]+)|(?P<random>-r)|)(?: |)(?P<text>.*)"
+@alemiBot.on_message(is_allowed & filters.regex(pattern=
+    r"^[\.\/]figlet(?: |)(?:(?P<list>-l)|(?P<font>-f [^ ]+)|(?P<random>-r)|)(?: |)(?P<text>.*)"
 ))
 async def figlettext(_, message):
     print(f" [ figlet ]")
@@ -126,7 +127,7 @@ async def figlettext(_, message):
         msg += " ".join(FIGLET_FONTS)
         msg += " ]```"
         for m in batchify(msg, 4090):
-            await event.message.reply_text(m)
+            await event.message.reply(m)
         return
     font = "slant"
     if args["random"] == "-r":
@@ -144,7 +145,7 @@ async def figlettext(_, message):
         await message.reply("<code>→\n" + result + "</code>", parse_mode='html')
 
 # Run fortune
-@alemiBot.on_message(filters.command(["fortune"], prefixes="."))
+@alemiBot.on_message(is_allowed & filters.command(["fortune"], prefixes="."))
 async def fortune(_, message):
     try:
         print(f" [ running command \"fortune\" ]")
@@ -153,14 +154,14 @@ async def fortune(_, message):
         if message.outgoing:
             await message.edit(message.text + "\n``` → " + output + "```")
         else:
-            await message.reply_text("``` → " + output + "```")
+            await message.reply("``` → " + output + "```")
     except Exception as e:
-        await message.reply_text("`[!] → ` " + str(e))
+        await message.reply("`[!] → ` " + str(e))
 
 # Roll dice
 # Replace or reply with figlet art
-@alemiBot.on_message(filters.regex(pattern=
-    r"[\.\/](?:random|rand|roll)(?: |)(?:(?:(?P<num>[0-9]+|)d(?P<max>[0-9]+))|(?:(?P<batch>-n [0-9]+|)(?: |)(?P<values>.*)))"
+@alemiBot.on_message(is_allowed & filters.regex(pattern=
+    r"^[\.\/](?:random|rand|roll)(?: |)(?:(?:(?P<num>[0-9]+|)d(?P<max>[0-9]+))|(?:(?P<batch>-n [0-9]+|)(?: |)(?P<values>.*)))"
 ))
 async def rand(_, message):
     args = message.matches[0]
@@ -200,10 +201,10 @@ async def rand(_, message):
         if message.outgoing:
             await message.edit(message.text + "\n" + out)
         else:
-            await message.reply_text(out)
+            await message.reply(out)
     except Exception as e:
         traceback.print_exc()
-        await message.reply_text("`[!] → ` " + str(e))
+        await message.reply("`[!] → ` " + str(e))
 
 # class TextModules:
 #     def __init__(self, client):
