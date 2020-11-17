@@ -95,7 +95,7 @@ async def who_cmd(event):
         else:
             return
         print(f" [ getting info of user ]")
-        out = " → Data : \n"
+        out = "` → ` Data : \n"
         if event.pattern_match.group("pack") == "-p":
             out += tokenize_json(str(peer.to_dict()))
         elif event.pattern_match.group("pack") == "-r":
