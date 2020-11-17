@@ -213,7 +213,7 @@ async def hist_cmd(event):
 
 # Get last N deleted messages
 @events.register(events.NewMessage(
-        pattern=r"{p}(?:peek|deld|deleted|removed)(?: |)(?P<time>-t|)(?: |)(?P<global>-g|)(?: |)((?P<number>[0-9]+|)".format(p=PREFIX)))
+        pattern=r"{p}(?:peek|deld|deleted|removed)(?: |)(?P<time>-t|)(?: |)(?P<global>-g|)(?: |)(?P<number>[0-9]+|)".format(p=PREFIX)))
 async def deleted_cmd(event):
     if not event.out and not is_allowed(event.sender_id):
         return
@@ -271,6 +271,6 @@ class LoggerModules:
         self.helptext += "`→ .history [-t] [id] ` get edits to a message *\n"
 
         client.add_event_handler(deleted_cmd)
-        self.helptext += "`→ .peek [n] [-t] ` get last (n) deleted msgs *\n"
+        self.helptext += "`→ .peek [-t] [-g] [n] ` get (n) deleted msgs *\n"
 
         print(" [ Registered Logger Modules ]")
