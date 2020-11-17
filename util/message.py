@@ -15,7 +15,7 @@ async def get_channel(message):
 
 def tokenize_json(text):
     keys = re.sub(r'"([^\"]+)"', '"``\g<1>``"', text)
-    numbers = re.sub(r'([0-9.]+)', '``\g<1>``', keys)
+    numbers = re.sub(r'([0-9.\-:]+)', '``\g<1>``', keys)
     keywords = re.sub(r'(null|true|false)', '``\g<1>``', numbers)
     return "`" + keywords + "`"
 
