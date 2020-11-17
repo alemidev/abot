@@ -166,7 +166,7 @@ async def fortune(event):
 
 # Roll dice
 @events.register(events.NewMessage(
-    pattern=r"{p}(?:rand|roll)(?: |)(?:(?:(?P<num>[0-9]+|)d(?P<max>[0-9]+))|(?:(?P<batch>-n [0-9]+|)(?: |)(?P<values>.*)))".format(p=PREFIX)))
+    pattern=r"{p}(?:random|rand|roll)(?: |)(?:(?:(?P<num>[0-9]+|)d(?P<max>[0-9]+))|(?:(?P<batch>-n [0-9]+|)(?: |)(?P<values>.*)))".format(p=PREFIX)))
 async def rand(event):
     if not event.out and not is_allowed(event.sender_id):
         return
