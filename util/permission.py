@@ -17,7 +17,7 @@ def is_allowed(sender_id):
 def allow(uid, val=True):
     if uid in ALLOWED and ALLOWED[uid] == val:
         return False
-    ALLOWED[str(uid)] = username # this is handy when editing manually the file
+    ALLOWED[str(uid)] = val # this is handy when editing manually the file
     serialize()
     return True
 
