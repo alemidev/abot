@@ -19,4 +19,6 @@ def tokenize_json(text):
         '``\g<1>``', text) + "`"
 
 def tokenize_lines(text):
-    return "`" + text.replace("\n", "`\n`") + "`"
+    asd =  re.sub(r'(.+)', '`\g<1>`', text)
+    print(asd)
+    return asd
