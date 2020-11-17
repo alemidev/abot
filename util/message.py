@@ -1,4 +1,4 @@
-
+import re
 
 async def get_channel(message):
     peer = await message.get_input_peer()
@@ -12,3 +12,12 @@ async def get_channel(message):
     else:
         return await message.client.get_entity(
                     await message.get_input_sender())
+
+def tokenize_json(text):
+    keys = re.sub(r'"([^\"]+)"', '"``\g<1>``"', text)
+    numbers = re.sub(r'([0-9.]+)', '``\g<1>``', keys)
+    keywords = re.sub(r'(null|true|false)', '``\g<1>``', numbers)
+    return "`" + keywords + "`"
+
+def tokenize_lines(text):
+    return "`" + text.replace("\n", "`\n`") + "`"

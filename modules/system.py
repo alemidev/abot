@@ -22,6 +22,7 @@ from util import set_offline, batchify
 from util.parse import cleartermcolor
 from util.globals import PREFIX
 from util.permission import is_allowed
+from util.message import tokenize_json, tokenize_lines
 
 # Repy to .asd with "a sunny day" (and calculate ping)
 @events.register(events.NewMessage(pattern=r"{p}asd".format(p=PREFIX), outgoing=True))
@@ -61,13 +62,13 @@ async def where_cmd(event):
         print(f" [ getting info of chat ]")
         out = " → Data : \n"
         if event.pattern_match.group("pack") == "-p":
-            out += str(chat.to_dict())
+            out += tokenize_json(str(chat.to_dict()))
         elif event.pattern_match.group("pack") == "-r":
-            out += chat.stringify()
+            out += tokenize_json(chat.stringify())
         else:
-            out += json.dumps(chat.to_dict(), indent=2, default=str)
-        for m in batchify(out, 4080):
-            await event.message.reply("```" + m + "```")
+            out += tokenize_json(json.dumps(chat.to_dict(), indent=2, default=str))
+        for m in batchify(out, 4090):
+            await event.message.reply(m)
     except Exception as e:
         traceback.print_exc()
         await event.message.edit(event.raw_text + "\n`[!] → ` " + str(e))
@@ -96,13 +97,13 @@ async def who_cmd(event):
         print(f" [ getting info of user ]")
         out = " → Data : \n"
         if event.pattern_match.group("pack") == "-p":
-            out += str(peer.to_dict())
+            out += tokenize_json(str(peer.to_dict()))
         elif event.pattern_match.group("pack") == "-r":
-            out += peer.stringify()
+            out += tokenize_json(peer.stringify())
         else:
-            out += json.dumps(peer.to_dict(), indent=2, default=str)
-        for m in batchify(out, 4080):
-            await event.message.reply("```" + m + "```")
+            out += tokenize_json(json.dumps(peer.to_dict(), indent=2, default=str))
+        for m in batchify(out, 4090):
+            await event.message.reply(m)
     except Exception as e:
         traceback.print_exc()
         await event.message.edit(event.raw_text + "\n`[!] → ` " + str(e))
@@ -120,13 +121,13 @@ async def what_cmd(event):
     try:
         out = " → Data : \n"
         if event.pattern_match.group("pack") == "-p":
-            out += str(msg.to_dict())
+            out += tokenize_json(str(msg.to_dict()))
         elif event.pattern_match.group("pack") == "-r":
-            out += msg.stringify()
+            out += tokenize_json(msg.stringify())
         else:
-            out += json.dumps(msg.to_dict(), indent=2, default=str)
+            out += tokenize_json(json.dumps(msg.to_dict(), indent=2, default=str))
         for m in batchify(out, 4080):
-            await event.message.reply("```" + m + "```")
+            await event.message.reply(m)
     except Exception as e:
         traceback.print_exc()
         await event.message.edit(event.raw_text + "\n`[!] → ` " + str(e))
@@ -145,7 +146,7 @@ async def runit(event):
             out.name = "output.txt"
             await event.message.reply("``` → Output too long to display```", file=out)
         else:
-            await event.message.edit(f"```$ {args}\n\n" + output + "```")
+            await event.message.edit(tokenize_lines(f"$ {args}\n\n" + output))
     except Exception as e:
         await event.message.edit(f"`$ {args}`\n`[!] → ` " + str(e))
     await set_offline(event.client)
@@ -162,7 +163,7 @@ async def evalit(event):
             out.name = "output.txt"
             await event.message.reply("``` → Output too long to display```", file=out)
         else:
-            await event.message.edit(f"```>>> {args}\n\n" + result + "```")
+            await event.message.edit(tokenize_lines(f">>> {args}\n\n" + result))
     except Exception as e:
         await event.message.edit(f"`>>> {args}`\n`[!] → ` " + str(e))
     await set_offline(event.client)
