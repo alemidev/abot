@@ -87,7 +87,10 @@ async def who_cmd(event):
                 return
             peer = await event.client.get_entity(peer)
         elif event.pattern_match.group("name") != "":
-            peer = await event.client.get_entity(event.pattern_match.group("name"))
+            try:
+                peer = await event.client.get_entity(int(event.pattern_match.group("name")))
+            except ValueError:
+                peer = await event.client.get_entity(event.pattern_match.group("name"))
         else:
             return
         print(f" [ getting info of user ]")
