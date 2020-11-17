@@ -18,7 +18,7 @@ from util.globals import PREFIX
 from util.user import get_username
 from util.text import split_for_window
 from util.permission import is_allowed
-from util.message import get_channel
+from util.message import get_channel, tokenize_json
 
 last_group = "N/A"
 
@@ -169,12 +169,12 @@ async def query_cmd(event):
                 if lim is not None and len(buf) >= lim:
                     break
             raw = json.dumps(buf, indent=2, default=str)
-            if len(event.raw_text) + len(raw) > 4080:
+            if len(event.raw_text) + len(tokenize_json(raw)) > 4090:
                 f = io.BytesIO(raw.encode("utf-8"))
                 f.name = "query.json"
                 await event.message.reply("``` → Query result```", file=f)
             else:
-                await event.message.edit(event.raw_text + "\n``` → " + raw + "```")
+                await event.message.edit(event.raw_text + "\n` → `" + tokenize_json(raw))
     except Exception as e:
         traceback.print_exc()
         await event.message.edit(event.raw_text + "\n`[!] → ` " + str(e))
@@ -213,7 +213,7 @@ async def hist_cmd(event):
 
 # Get last N deleted messages
 @events.register(events.NewMessage(
-        pattern=r"{p}(?:peek|deld|deleted|removed)(?: |)(?P<time>-t|)(?: |)(?P<global>-g|)(?: |)(?P<number>[0-9]+|)".format(p=PREFIX)))
+        pattern=r"{p}(?:peek|deld|deleted|removed)(?: |)(?P<time>-t|)(?: |)(?P<global>-g|)(?: |)(?P<number>[0-9]+|)(?: |)(?P<json>-json|)".format(p=PREFIX)))
 async def deleted_cmd(event):
     if not event.out and not is_allowed(event.sender_id):
         return
@@ -227,33 +227,46 @@ async def deleted_cmd(event):
         q = { "WHAT": "Delete" }
         if args["global"] != "-g" or not event.out:
             q["WHERE"] = chat.id
-        cursor = EVENTS.find(q, {"deleted_id": 1, "WHEN": 1} ).sort("_id", -1).limit(limit)
-        out = ""
+        cursor = EVENTS.find(q, {"deleted_id": 1, "WHEN": 1} ).sort("_id", -1)
+        res = []
         for doc in cursor:
-            if show_time and "WHEN" in doc:
-                out += f"[{str(doc['WHEN'])}] "
-            m_id = doc["deleted_id"]
-            out += f"**[**`{m_id}`**]** "
+            match = {}
+            match["date"] = doc["WHEN"]
+            match["id"] = doc["deleted_id"]
             try:
-                msg = EVENTS.find({"id": m_id}).sort("_id", -1).next()
-            except StopIteration: # nothing was found
-                out += "\n\n"
+                msg = EVENTS.find({"id": match["id"]}).sort("_id", -1).next()
+            except StopIteration: # no message was found, maybe it's a ChatAction
                 continue
             peer = msg["WHO"]
             if peer is None:
-                out += f"`UNKN →` {msg['message']}"
-                continue
-            author = await event.client.get_entity(peer)
-            if author is None:
-                out += f"`UNKN →` {msg['message']}"
-                continue
-            out += f"`{get_username(author)} →` {msg['message']}\n\n"
-        if out == "":
-            out = "` → ` Nothing to display"
-        if event.out:
-            await event.message.edit(event.raw_text + "\n" + out)
+                match["author"] = "UNKNOWN"
+            else:
+                author = await event.client.get_entity(peer)
+                if author is None:
+                    match["author"] = "UNKNOWN"
+                else:
+                    match["author"] = get_username(author)
+            match["message"] = msg["message"]
+            res.append(match)
+            limit -= 1
+            if limit <= 0:
+                break
+        if args["json"] == "-json":
+            f = io.BytesIO(json.dumps(res, indent=2, default=str).encode('utf-8'))
+            f.name = "peek.json"
+            await event.message.reply("``` → Peek result```", file=f)
         else:
-            await event.message.reply(out)
+            out = ""
+            for doc in res:
+                if show_time:
+                    out += f"[{str(doc['date'])}] "
+                out += f"**[**`{doc['id']}`**]** `{doc['author']} →` {doc['message']}\n\n"
+            if out == "":
+                out = "` → ` Nothing to display"
+            if event.out:
+                await event.message.edit(event.raw_text + "\n" + out)
+            else:
+                await event.message.reply(out)
     except Exception as e:
         traceback.print_exc()
         await event.message.reply("`[!] → ` " + str(e))
@@ -275,6 +288,6 @@ class LoggerModules:
         self.helptext += "`→ .history [-t] [id] ` get edits to a message *\n"
 
         client.add_event_handler(deleted_cmd)
-        self.helptext += "`→ .peek [-t] [-g] [n] ` get (n) deleted msgs *\n"
+        self.helptext += "`→ .peek [-t] [-g] [n] [-json] ` show deletions *\n"
 
         print(" [ Registered Logger Modules ]")
