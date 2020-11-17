@@ -14,12 +14,12 @@ async def get_channel(message):
                     await message.get_input_sender())
 
 def tokenize_json(text):
-    res = "`" + re.subn(
+    res = re.subn(
         r'("[^\"]+"|[0-9.\-]+)',
-        '``\g<1>``', text) + "`"
+        '``\g<1>``', text)
     if res[1] > 100:
         return "```" + text + "```"
-    return res[0]
+    return "`" + res[0] + "`"
 
 def tokenize_lines(text):
     res =  re.subn(r'(.+)', '`\g<1>`', text)
