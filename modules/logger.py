@@ -234,7 +234,11 @@ async def deleted_cmd(event):
                 out += f"[{str(doc['WHEN'])}] "
             m_id = doc["deleted_id"]
             out += f"**[**`{m_id}`**]** "
-            msg = EVENTS.find({"id": m_id}).sort("_id", -1).next()
+            try:
+                msg = EVENTS.find({"id": m_id}).sort("_id", -1).next()
+            except StopIteration: # nothing was found
+                out += "\n\n"
+                continue
             peer = msg["WHO"]
             if peer is None:
                 out += f"`UNKN →` {msg['message']}"
