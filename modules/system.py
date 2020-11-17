@@ -22,7 +22,7 @@ from util import set_offline, batchify
 from util.parse import cleartermcolor
 from util.globals import PREFIX
 from util.permission import is_allowed
-from util.message import tokenize_json, tokenize_lines
+from util.message import tokenize_json, tokenize_lines, edit_or_reply
 
 # Repy to .asd with "a sunny day" (and calculate ping)
 @events.register(events.NewMessage(pattern=r"{p}asd".format(p=PREFIX), outgoing=True))
@@ -67,11 +67,10 @@ async def where_cmd(event):
             out += tokenize_json(chat.stringify())
         else:
             out += tokenize_json(json.dumps(chat.to_dict(), indent=2, default=str))
-        for m in batchify(out, 4090):
-            await event.message.reply(m)
+        await edit_or_reply(event, out)
     except Exception as e:
         traceback.print_exc()
-        await event.message.edit(event.raw_text + "\n`[!] → ` " + str(e))
+        await edit_or_reply(event,"`[!] → ` " + str(e))
     await set_offline(event.client)
 
 # Get info about a user
@@ -102,11 +101,10 @@ async def who_cmd(event):
             out += tokenize_json(peer.stringify())
         else:
             out += tokenize_json(json.dumps(peer.to_dict(), indent=2, default=str))
-        for m in batchify(out, 4090):
-            await event.message.reply(m)
+        await edit_or_reply(event, out)
     except Exception as e:
         traceback.print_exc()
-        await event.message.edit(event.raw_text + "\n`[!] → ` " + str(e))
+        await edit_or_reply(event,"`[!] → ` " + str(e))
     await set_offline(event.client)
 
 # Get info about a message
@@ -126,11 +124,10 @@ async def what_cmd(event):
             out += tokenize_json(msg.stringify())
         else:
             out += tokenize_json(json.dumps(msg.to_dict(), indent=2, default=str))
-        for m in batchify(out, 4080):
-            await event.message.reply(m)
+        await edit_or_reply(event, out)
     except Exception as e:
         traceback.print_exc()
-        await event.message.edit(event.raw_text + "\n`[!] → ` " + str(e))
+        await edit_or_reply(event,"`[!] → ` " + str(e))
     await set_offline(event.client)
 
 # Run command
