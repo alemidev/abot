@@ -213,25 +213,28 @@ async def hist_cmd(event):
 
 # Get last N deleted messages
 @events.register(events.NewMessage(
-        pattern=r"{p}(?:peek|deld|deleted|removed)(?: |)(?P<time>-t|)(?: |)(?P<number>[0-9]+|)".format(p=PREFIX)))
+        pattern=r"{p}(?:peek|deld|deleted|removed)(?: |)(?P<time>-t|)(?: |)(?P<global>-g|)(?: |)((?P<number>[0-9]+|)".format(p=PREFIX)))
 async def deleted_cmd(event):
     if not event.out and not is_allowed(event.sender_id):
         return
     limit = 1
-    show_time = event.pattern_match.group("time") == "-t"
+    args = event.pattern_match.groupdict()
+    show_time = args["time"] == "-t"
     try:
         chat = await event.get_chat()
-        if event.pattern_match.group("number") != "":
-            limit = int(event.pattern_match.group("number"))
-        cursor = EVENTS.find( {"WHAT": "Delete", "WHERE": chat.id },
-                {"deleted_id": 1, "WHEN": 1} ).sort("_id", -1).limit(limit)
+        if args["number"] != "":
+            limit = int(args["number"])
+        q = { "WHAT": "Delete" }
+        if args["global"] == "-g":
+            q["WHERE"] = chat.id
+        cursor = EVENTS.find(q, {"deleted_id": 1, "WHEN": 1} ).sort("_id", -1).limit(limit)
         out = ""
         for doc in cursor:
             if show_time and "WHEN" in doc:
                 out += f"[{str(doc['WHEN'])}] "
             m_id = doc["deleted_id"]
             out += f"**[**`{m_id}`**]** "
-            msg = EVENTS.find_one({"id": m_id})
+            msg = EVENTS.find({"id": m_id}).sort("_id", -1).next()
             peer = msg["WHO"]
             if peer is None:
                 out += f"`UNKN →` {msg['message']}"
