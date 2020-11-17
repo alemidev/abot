@@ -225,7 +225,7 @@ async def deleted_cmd(event):
         if args["number"] != "":
             limit = int(args["number"])
         q = { "WHAT": "Delete" }
-        if args["global"] == "-g":
+        if args["global"] != "-g":
             q["WHERE"] = chat.id
         cursor = EVENTS.find(q, {"deleted_id": 1, "WHEN": 1} ).sort("_id", -1).limit(limit)
         out = ""
