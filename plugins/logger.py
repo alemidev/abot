@@ -55,8 +55,8 @@ async def msglogger(_, message):
 @alemiBot.on_deleted_messages(group=8)
 async def dellogger(_, message):
     data = json.loads(str(message))
-    data["_"] = "Delete"
     for d in data:
+        d["_"] = "Delete"
         print(colored("[DELETED]", 'red', attrs=['bold']) + " " + str(d["message_id"]))
         EVENTS.insert_one(d)
 
