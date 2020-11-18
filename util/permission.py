@@ -15,7 +15,7 @@ def check_allowed(_, __, message):
 is_allowed = filters.create(check_allowed)
 
 def list_allowed():
-    return list(ALLOWED.keys())
+    return list(int(k) for k in ALLOWED.keys())
 
 def allow(uid, val=True):
     if uid in ALLOWED and ALLOWED[uid] == val:
