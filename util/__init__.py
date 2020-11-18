@@ -4,9 +4,6 @@ import json
 recent_reacts = {}
 config = None
 
-with open("config.json") as f:
-    config = json.load(f)
-
 def batchify(str_in, size):
     if len(str_in) < size:
         return [str_in]
