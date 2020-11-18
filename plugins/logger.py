@@ -45,9 +45,9 @@ def print_formatted(chat, user, message):
 # Print in terminal received chats
 @alemiBot.on_message(group=8)
 async def msglogger(_, message):
-    data = json.loads(str(message)) # LMAOOO I literally could not find a better way
-    EVENTS.insert_one(entry)
     print_formatted(message.chat, message.from_user, message)
+    data = json.loads(str(message)) # LMAOOO I literally could not find a better way
+    EVENTS.insert_one(data)
 
 # Log Message deletions
 @alemiBot.on_deleted_messages(group=8)
@@ -56,7 +56,7 @@ async def dellogger(_, message):
     data["_"] = "Delete"
     for d in data:
         print(colored("[DELETED]", 'red', attrs=['bold']) + " " + str(d["message_id"]))
-        EVENTS.insert_one(entry)
+        EVENTS.insert_one(d)
 
 def order_suffix(num, measure='B'):
     for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
