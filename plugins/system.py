@@ -24,7 +24,7 @@ from pyrogram.types import InputMediaDocument
 from util import batchify
 from util.parse import cleartermcolor
 from util.permission import is_allowed
-from util.message import tokenize_json, tokenize_lines, edit_or_reply
+from util.message import tokenize_json, tokenize_lines, edit_or_reply, is_me
 from util.serialization import convert_to_dict
 
 # Repy to .asd with "a sunny day" (and calculate ping)
@@ -57,17 +57,14 @@ async def ping(_, message):
 
 # Get info about a chat
 @alemiBot.on_message(is_allowed & filters.command("where", prefixes="."))
-async def where_cmd(_, message):
+async def where_cmd(client, message):
     try:
         print(f" [ getting info of chat ]")
-        out = " → Data : \n"
-        data = convert_to_dict(message.chat)
-        if len(message.command) > 1 and message.command[1] == "-p":
-            out += tokenize_json(str(data))
-        else:
-            out += tokenize_json(str(message.chat))
-            # out += tokenize_json(json.dumps(data, indent=2, default=str, ensure_ascii=False))
-        await edit_or_reply(message, out)
+        if is_me(message):
+            await message.edit(message.text + f"\n` → ` Getting data of chat `{message.chat.id}`")
+        out = io.BytesIO((str(message.chat)).encode('utf-8'))
+        out.name = f"chat-{message.chat.id}.json"
+        await client.send_document(message.chat.id, out)
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message,"`[!] → ` " + str(e))
@@ -91,14 +88,11 @@ async def who_cmd(client, message):
         else:
             return
         print(f" [ getting info of user ]")
-        out = "` → ` Data : \n"
-        data = convert_to_dict(peer)
-        if message.matches[0]["pack"] == "-p":
-            out += tokenize_json(str(data))
-        else:
-            out += tokenize_json(str(message))
-            # out += tokenize_json(json.dumps(data, indent=2, default=str, ensure_ascii=False))
-        await edit_or_reply(message, out)
+        if is_me(message):
+            await message.edit(message.text + f"\n` → ` Getting data of user `{peer.id}`")
+        out = io.BytesIO((str(peer)).encode('utf-8'))
+        out.name = f"user-{peer.id}.json"
+        await client.send_document(message.chat.id, out)
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
@@ -111,14 +105,11 @@ async def what_cmd(client, message):
         msg = await client.get_messages(message.chat.id, message.message_id)
     print(f" [ getting info of msg ]")
     try:
-        out = " → Data : \n"
-        data = convert_to_dict(msg)
-        if len(message.command) > 1 and message.command[1] == "-p":
-            out += tokenize_json(str(data))
-        else:
-            out += tokenize_json(str(message))
-            # out += tokenize_json(json.dumps(data, indent=2, default=str, ensure_ascii=False))
-        await edit_or_reply(message, out)
+        if is_me(message):
+            await message.edit(message.text + f"\n` → ` Getting data of msg `{msg.message_id}`")
+        out = io.BytesIO((str(msg)).encode('utf-8'))
+        out.name = f"msg-{msg.message_id}.json"
+        await client.send_document(message.chat.id, out)
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message,"`[!] → ` " + str(e))

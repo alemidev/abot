@@ -1,6 +1,10 @@
 import re
 from . import batchify
 
+def is_me(message):
+    return message.from_user is not None \
+    and message.from_user.is_self
+
 def get_text(message):
     if message.text is not None:
         return message.text
