@@ -64,6 +64,7 @@ async def dellogger(_, message):
     data = convert_to_dict(message)
     for d in data:
         d["_"] = "Delete"
+        d["date"] = datetime.datetime.now()
         print(colored("[DELETED]", 'red', attrs=['bold']) + " " + str(d["message_id"]))
         EVENTS.insert_one(d)
 
@@ -166,7 +167,10 @@ async def deleted_cmd(client, message):
         res = []
         for doc in cursor:
             match = {}
-            match["date"] = doc["date"]
+            if date in doc:
+                match["date"] = doc["date"]
+            else:
+                match["date"] = "N/A"
             match["id"] = doc["deleted_id"]
             try:
                 msg = EVENTS.find({"id": match["id"]}).sort("_id", -1).next()
