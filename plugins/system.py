@@ -108,7 +108,7 @@ async def who_cmd(client, message):
 
 HELP.add_help("what", "get info about message",
                 "Get the complete information about a message (replied to, from specified id or "+
-                "the sent message) and attach as json", args="[id]" public=True)
+                "the sent message) and attach as json", args="[id]", public=True)
 @alemiBot.on_message(is_allowed & filters.command("what", list(alemiBot.prefixes)))
 async def what_cmd(client, message):
     msg = message
