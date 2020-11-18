@@ -18,7 +18,7 @@ from util import batchify
 from util.parse import cleartermcolor
 from util.text import split_for_window
 from util.permission import is_allowed
-from util.message import tokenize_json, edit_or_reply
+from util.message import tokenize_json, edit_or_reply, get_text
 from util.user import get_username, get_channel
 
 last_group = "N/A"
@@ -36,7 +36,7 @@ def print_formatted(chat, user, message):
     last_group = chat.id
     u_name = get_username(user)
     pre = len(u_name) + 3
-    text = message.text.replace("\n", "\n" + " "*pre)
+    text = get_text(message).replace("\n", "\n" + " "*pre)
     if message.media:
         text = "[+MEDIA] " + text
     if message.edit_date is not None:
