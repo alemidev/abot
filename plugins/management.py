@@ -10,6 +10,8 @@ from termcolor import colored
 
 from util.permission import is_allowed, allow, disallow, serialize, list_allowed, ALLOWED
 from util.user import get_username
+from util.message import edit_or_reply
+from util.text import split_for_window
 
 # Delete message immediately after it being sent
 @alemiBot.on_message(filters.me & filters.regex(pattern=
@@ -26,7 +28,7 @@ async def deleteme(_, message):
 @alemiBot.on_message(is_allowed & filters.regex(pattern=
     r"^[\.\/](?:purge|wipe|clear)(?: |)(?P<target>@[^ ]+|)(?: |)(?P<number>[0-9]+|)"
 ))
-async def purge(_, message):
+async def purge(client, message):
     try:
         args = message.matches[0]
         number = 1
@@ -41,20 +43,19 @@ async def purge(_, message):
             if args["target"] == "@all" or args["target"] == "@everyone":
                 target = None
             else:
-                target = (await alemiBot.get_users(args["target"])).id
+                target = (await client.get_users(args["target"])).id
         print(f" [ purging last {number} message from {args['target']} ]")
         n = 0
-        async for message in alemiBot.iter_history(message.chat.id):
-            if target is None or message.sender_id == target:
-                print(colored("[DELETING] → ", "red", attrs=["bold"]) + split_for_window(message.message, offset=13))
+        async for message in client.iter_history(message.chat.id):
+            if target is None or message.from_user.id == target:
+                print(colored("[DELETING] → ", "red", attrs=["bold"]) + split_for_window(message.text, offset=13))
                 await message.delete()
                 n += 1
             if n >= number:
                 break
     except Exception as e:
         traceback.print_exc()
-        message.reply("`[!] → ` " + str(e))
-    await set_offline(event.client)
+        await edit_or_reply(message, "`[!] → ` " + str(e))
 
 # Allow someone
 @alemiBot.on_message(filters.me & filters.command(["allow", "disallow", "revoke"], prefixes="."))
@@ -72,9 +73,9 @@ async def manage_allowed_cmd(_, message):
         try:
             user = await alemiBot.get_users(message.command[1])
         except ValueError:
-            return await event.message.edit(message.text + "\n`[!] → ` No user matched")
+            return await message.edit(message.text + "\n`[!] → ` No user matched")
         if user is None:
-            return await event.message.edit(message.text + "\n`[!] → ` No user matched")
+            return await message.edit(message.text + "\n`[!] → ` No user matched")
         users_to_manage.append(user)
     else:
         return await message.edit(message.text + "\n`[!] → ` Provide an ID or reply to a msg")
@@ -94,33 +95,34 @@ async def manage_allowed_cmd(_, message):
         await message.edit(message.text + "\n` → ` No changes")
 
 # List trusted
+# broken af lmaooo TODO
 @alemiBot.on_message(filters.me & filters.command(["trusted", "plist", "permlist"], prefixes="."))
 async def trusted_list(c, message):
     user_ids = list_allowed()
     text = "`[` "
-    users = await c.get_users([ int(u) for u in user_ids ])
+    users = await c.get_users([ int(u) for u in user_ids ]) # this thing gives a PeerIdInvalid exc???
     for u in users:
         text += f"{get_username(e)}, "
     text += "`]`"
     await message.edit(message.text + f"\n` → Allowed Users : `\n{text}") 
 
-class ManagementModules:
-    def __init__(self, client):
-        self.helptext = "`━━┫ MANAGE `\n"
-
-        client.add_event_handler(purge)
-        self.helptext += "`→ .purge [target] [number] ` delete last <n> messages\n"
-
-        client.add_event_handler(allow_cmd)
-        self.helptext += "`→ .allow [user] ` add an user as allowed to use bot\n"
-
-        client.add_event_handler(revoke_cmd)
-        self.helptext += "`→ .revoke [user] ` remove user permissions to use bot\n"
-
-        client.add_event_handler(trusted_list)
-        self.helptext += "`→ .trusted [-i] ` list users allowed to run pub cmds\n"
-
-        client.add_event_handler(deleteme)
-        self.helptext += "`→ ... -delme [time] ` delete msg ending with `-delme`\n"
-
-        print(" [ Registered Management Modules ]")
+# class ManagementModules:
+#     def __init__(self, client):
+#         self.helptext = "`━━┫ MANAGE `\n"
+# 
+#         client.add_event_handler(purge)
+#         self.helptext += "`→ .purge [target] [number] ` delete last <n> messages\n"
+# 
+#         client.add_event_handler(allow_cmd)
+#         self.helptext += "`→ .allow [user] ` add an user as allowed to use bot\n"
+# 
+#         client.add_event_handler(revoke_cmd)
+#         self.helptext += "`→ .revoke [user] ` remove user permissions to use bot\n"
+# 
+#         client.add_event_handler(trusted_list)
+#         self.helptext += "`→ .trusted [-i] ` list users allowed to run pub cmds\n"
+# 
+#         client.add_event_handler(deleteme)
+#         self.helptext += "`→ ... -delme [time] ` delete msg ending with `-delme`\n"
+# 
+#         print(" [ Registered Management Modules ]")

@@ -14,12 +14,13 @@ async def get_channel(message):
         return await message.client.get_entity(
                     await message.get_input_sender())
 
-async def edit_or_reply(event, message):
-    if event.out and len(event.raw_text + message) < 4090: 
-        await event.message.edit(event.raw_text + "\n" + message)
+async def edit_or_reply(message, text):
+    if message.from_user is not None and message.from_user.is_self \
+    and len(message.text + text) < 4090: 
+        await message.edit(message.text + "\n" + text)
     else:
-        for m in batchify(message, 4080):
-            await event.message.reply(m)
+        for m in batchify(text, 4090):
+            await message.reply(m)
 
 def tokenize_json(text):
     res = re.subn(

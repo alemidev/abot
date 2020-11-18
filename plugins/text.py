@@ -10,9 +10,9 @@ from collections import Counter
 from pyrogram import filters
 
 from util import set_offline, batchify
-# from util.globals import PREFIX
-# from util.parse import cleartermcolor
+from util.parse import cleartermcolor
 from util.permission import is_allowed
+from util.message import edit_or_reply
 
 from bot import alemiBot
 
@@ -110,10 +110,7 @@ async def randomcase(_, message):
 @alemiBot.on_message(is_allowed & filters.command(["shrug"], prefixes="."))
 async def shrug(_, message):
     print(f" [ ¯\_(ツ)_/¯ ]")
-    if message.outgoing:
-        await message.edit(r'¯\_(ツ)_/¯')
-    else:
-        await message.reply(r'¯\_(ツ)_/¯')
+    await edit_or_reply(r'¯\_(ツ)_/¯')
 
 # Replace or reply with figlet art
 @alemiBot.on_message(is_allowed & filters.regex(pattern=
@@ -126,8 +123,7 @@ async def figlettext(_, message):
         msg = f"` → ` **Figlet fonts : ({len(FIGLET_FONTS)})\n```[ "
         msg += " ".join(FIGLET_FONTS)
         msg += " ]```"
-        for m in batchify(msg, 4090):
-            await event.message.reply(m)
+        await edit_or_reply(msg)
         return
     font = "slant"
     if args["random"] == "-r":
@@ -139,10 +135,7 @@ async def figlettext(_, message):
     if args["text"] == "":
         return
     result = pyfiglet.figlet_format(args["text"], font=font)
-    if message.outgoing:
-        await message.edit("<code> →\n" + result + "</code>", parse_mode='html')
-    else:
-        await message.reply("<code>→\n" + result + "</code>", parse_mode='html')
+    await edit_or_reply("<code> →\n" + result + "</code>")
 
 # Run fortune
 @alemiBot.on_message(is_allowed & filters.command(["fortune"], prefixes="."))
@@ -151,12 +144,9 @@ async def fortune(_, message):
         print(f" [ running command \"fortune\" ]")
         result = subprocess.run("fortune", capture_output=True)
         output = cleartermcolor(result.stdout.decode())
-        if message.outgoing:
-            await message.edit(message.text + "\n``` → " + output + "```")
-        else:
-            await message.reply("``` → " + output + "```")
+        await edit_or_reply("``` → " + output + "```")
     except Exception as e:
-        await message.reply("`[!] → ` " + str(e))
+        await edit_or_reply(message, "`[!] → ` " + str(e))
 
 # Roll dice
 # Replace or reply with figlet art
@@ -198,13 +188,10 @@ async def rand(_, message):
                 res = [] # so it won't do the thing below
         for r in res:
             out += f"` → ` **{r}**\n"
-        if message.outgoing:
-            await message.edit(message.text + "\n" + out)
-        else:
-            await message.reply(out)
+        await edit_or_reply(out)
     except Exception as e:
         traceback.print_exc()
-        await message.reply("`[!] → ` " + str(e))
+        await edit_or_reply(message, "`[!] → ` " + str(e))
 
 # class TextModules:
 #     def __init__(self, client):
