@@ -41,23 +41,23 @@ async def ping(_, message):
     latency = (after - before) * 1000
     await message.edit(msg + f"\n` → ` a sunny day `({latency:.0f}ms)`")
 
-# TODO
-# Update userbot (git pull + restart)
-# @events.register(events.NewMessage(pattern=r"{p}update".format(p=PREFIX), outgoing=True))
-# async def update(event):
-#     msg = event.raw_text
-#     try:
-#         print(f" [ Updating bot ]")
-#         msg += "\n` → ` Updating"
-#         await event.message.edit(msg) 
-#         result = subprocess.run(["git", "pull"], capture_output=True, timeout=60)
-#         msg += " [OK]\n` → ` Bot will now restart"
-#         await event.message.edit(msg) 
-#         await event.client.disconnect()
-#     except Exception as e:
-#         msg += " [FAIL]\n`[!] → ` " + str(e)
-#         await event.message.edit(msg) 
-#     await set_offline(event.client)
+HELP.add_help("update", "update and restart",
+                "will pull changes from git (`git pull`) and then restart " +
+                "itself with an `execv` call.")
+@alemiBot.on_message(filters.me & filters.command("update", prefixes="."))
+async def update(_, message):
+    msg = message.text.markdown
+    try:
+        print(f" [ Updating bot ]")
+        msg += "\n` → ` Updating"
+        await message.edit(msg) 
+        result = subprocess.run(["git", "pull"], capture_output=True, timeout=60)
+        msg += " [OK]\n` → ` Bot will now restart"
+        await message.edit(msg) 
+        await alemiBot.restart()
+    except Exception as e:
+        msg += " [FAIL]\n`[!] → ` " + str(e)
+        await message.edit(msg) 
 
 HELP.add_help("where", "get info about chat",
                 "Get the complete information about current chat and attach as json",

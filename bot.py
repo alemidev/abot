@@ -2,13 +2,13 @@
 """
 WOOOT a pyrogram rewrite im crazyyy
 """
-
-from pyrogram import Client
+import os
+from pyrogram import Client, idle
 from configparser import ConfigParser
 
 class alemiBot(Client):
-    config = ConfigParser() # uggh doing it like this is not
-    config.read("config.ini") # super nice but it'll do for now
+    config = ConfigParser() # uggh doing it like this kinda
+    config.read("config.ini") #     ugly but it'll do for now
 
     def __init__(self, name):
         super().__init__(
@@ -17,14 +17,20 @@ class alemiBot(Client):
             workdir="./",
             app_version="alemibot v0.1",)
 
-    async def start(self):
-        await super().start()
-        print("> Bot started")
+    def start(self):
+        super().start()
+        print("> Bot started\n")
 
-    async def stop(self, *args):
+    async def stop(self):
         await super().stop()
-        print("> Bot stopped")
+        print("\n> Bot stopped")
+    
+    async def restart(self):
+        await self.stop()
+        os.execv(__file__, sys.argv) # This will replace current process
 
 if __name__ == "__main__":
     app = alemiBot("debug")
-    app.run()
+    app.start()
+    app.send_message("me", "`ᚨᛚᛖᛗᛁᛒᛟᛏ → ` **Online**")
+    idle()
