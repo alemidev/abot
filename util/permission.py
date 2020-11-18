@@ -4,7 +4,7 @@ import json
 
 ALLOWED = {}
 
-with open("perms.json") as f:
+with open("data/perms.json") as f:
     ALLOWED = json.load(f)
 
 def check_allowed(_, __, message):
@@ -32,5 +32,5 @@ def disallow(uid):
     return True
 
 def serialize():
-    with open("perms.json", "w") as f:
+    with open("data/perms.json", "w") as f:
         json.dump(ALLOWED, f)
