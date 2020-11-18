@@ -65,7 +65,7 @@ async def where_cmd(_, message):
         if len(message.command) > 1 and message.command[1] == "-p":
             out += tokenize_json(str(data))
         else:
-            out += str(chat)
+            out += tokenize_json(str(message.chat))
             # out += tokenize_json(json.dumps(data, indent=2, default=str, ensure_ascii=False))
         await edit_or_reply(message, out)
     except Exception as e:
@@ -83,10 +83,11 @@ async def who_cmd(client, message):
         and message.reply_to_message.from_user is not None:
             peer = message.reply_to_message.from_user
         elif message.matches[0]["name"] != "":
+            name = message.matches[0]["name"]
             try:
-                peer = await client.get_users(int(message.matches[0]["name"]))
+                peer = await client.get_users(int(name))
             except:
-                peer = await client.get_users(message.matches[0]["name"])
+                peer = await client.get_users(name)
         else:
             return
         print(f" [ getting info of user ]")
@@ -95,7 +96,7 @@ async def who_cmd(client, message):
         if message.matches[0]["pack"] == "-p":
             out += tokenize_json(str(data))
         else:
-            out += str(message)
+            out += tokenize_json(str(message))
             # out += tokenize_json(json.dumps(data, indent=2, default=str, ensure_ascii=False))
         await edit_or_reply(message, out)
     except Exception as e:
@@ -112,13 +113,10 @@ async def what_cmd(client, message):
     try:
         out = " → Data : \n"
         data = convert_to_dict(msg)
-        if "reply_to_message" in data:
-            data["reply_to_message"] = extract(data["reply_to_message"])
-            data["reply_to_message"].pop("chat", None) # it's in the same chat anyway, useless data
         if len(message.command) > 1 and message.command[1] == "-p":
             out += tokenize_json(str(data))
         else:
-            out += str(message)
+            out += tokenize_json(str(message))
             # out += tokenize_json(json.dumps(data, indent=2, default=str, ensure_ascii=False))
         await edit_or_reply(message, out)
     except Exception as e:
