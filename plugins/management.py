@@ -10,7 +10,7 @@ from termcolor import colored
 
 from util.permission import is_allowed, allow, disallow, serialize, list_allowed, ALLOWED
 from util.user import get_username
-from util.message import edit_or_reply
+from util.message import edit_or_reply, get_text
 from util.text import split_for_window
 from plugins.help import HelpCategory
 
@@ -59,7 +59,7 @@ async def purge(client, message):
         n = 0
         async for message in client.iter_history(message.chat.id):
             if target is None or message.from_user.id == target:
-                print(colored("[DELETING] → ", "red", attrs=["bold"]) + split_for_window(message.text, offset=13))
+                print(colored("[DELETING] → ", "red", attrs=["bold"]) + split_for_window(get_text(message), offset=13))
                 await message.delete()
                 n += 1
             if n >= number:
