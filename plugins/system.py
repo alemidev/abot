@@ -69,7 +69,7 @@ async def where_cmd(_, message):
         if len(message.command) > 1 and message.command[1] == "-p":
             out += tokenize_json(str(data))
         else:
-            out += str(message)
+            out += str(chat)
             # out += tokenize_json(json.dumps(data, indent=2, default=str, ensure_ascii=False))
         await edit_or_reply(message, out)
     except Exception as e:

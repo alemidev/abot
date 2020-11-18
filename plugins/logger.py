@@ -19,7 +19,7 @@ from util.parse import cleartermcolor
 from util.text import split_for_window
 from util.permission import is_allowed
 from util.message import get_channel, tokenize_json, edit_or_reply
-from util.user import get_username
+from util.user import get_username, get_channel
 
 last_group = "N/A"
 
@@ -32,7 +32,7 @@ EVENTS = DB.events
 def print_formatted(chat, user, message):
     global last_group
     if chat.id != last_group:
-        print(colored("━━━━━━━━━━┫ " + chat.title, 'cyan', attrs=['bold']))
+        print(colored("━━━━━━━━━━┫ " + get_channel(chat), 'cyan', attrs=['bold']))
     last_group = chat.id
     u_name = get_username(user)
     pre = len(u_name) + 3

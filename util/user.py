@@ -8,3 +8,9 @@ def get_username(user):
             return user.first_name + ' ' + user.last_name
     else:
         return "@" + user.username
+
+def get_channel(chat):
+    if chat.title is None:
+        return get_username(chat)
+    else:
+        return chat.title
