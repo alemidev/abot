@@ -116,12 +116,12 @@ async def randomcase(_, message):
                 upper = True
     await message.edit(msg)
 
-HELP.add_help("shrug", "¯\_(ツ)_/¯", "will replace `.shrug` or `/shrug` anywhere "+
-                "in yor message with the composite emoji.")
+HELP.add_help("shrug", "¯\_(ツ)_/¯", "will replace `.shrug` or `/shrug` or `!shrug` anywhere "+
+                "in yor message with the composite emoji. (this will ignore your custom prefixes)")
 @alemiBot.on_message(filters.me & filters.regex(pattern="[" + "\\".join(list(alemiBot.prefixes)) + "]shrug"), group=2)
 async def shrug(_, message):
     print(f" [ ¯\_(ツ)_/¯ ]")
-    await message.edit(re.sub(r"[\.\/]shrug","¯\_(ツ)_/¯", message.text.markdown))
+    await message.edit(re.sub(r"[\.\/\!]shrug","¯\_(ツ)_/¯", message.text.markdown))
 
 HELP.add_help("figlet", "make a figlet art",
                 "run figlet and make a text art. You can specify a font (`-f`), or request a random one (`-r`). " +
