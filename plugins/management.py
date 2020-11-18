@@ -88,7 +88,7 @@ async def manage_allowed_cmd(client, message):
         elif len(message.command) > 1:
             user = None
             try:
-                user = await alemiBot.get_users(message.command[1])
+                user = await client.get_users(message.command[1])
             except ValueError:
                 return await message.edit(message.text.markdown + "\n`[!] → ` No user matched")
             if user is None:
@@ -132,7 +132,7 @@ async def trusted_list(client, message):
                 except:
                     issues += f"~~[{uid}]~~ "
         else:
-            users = await cclient.get_users([ int(u) for u in user_ids ]) # this thing gives a PeerIdInvalid exc???
+            users = await client.get_users([ int(u) for u in user_ids ]) # this thing gives a PeerIdInvalid exc???
         for u in users:
             text += f"{get_username(u)}, "
         text += "`]`"
