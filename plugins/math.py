@@ -14,7 +14,7 @@ import sympy
 from sympy.solvers import solve
 from sympy.plotting import plot3d, plot3d_parametric_line
 from sympy.parsing.sympy_parser import parse_expr
-from sympy import preview
+from sympy import preview, plot
 from plugins.help import HelpCategory
 
 HELP = HelpCategory("MATH")
