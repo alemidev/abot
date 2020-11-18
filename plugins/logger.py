@@ -163,7 +163,7 @@ async def deleted_cmd(client, message):
         q = { "_": "Delete" }
         if args["global"] != "-g" or message.from_user is None or not message.from_user.is_self:
             q["chat.id"] = message.chat.id
-        cursor = EVENTS.find(q, {"deleted_id": 1, "date": 1} ).sort("_id", -1)
+        cursor = EVENTS.find(q, {"message_id": 1, "date": 1} ).sort("_id", -1)
         res = []
         for doc in cursor:
             match = {}
