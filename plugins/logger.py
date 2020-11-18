@@ -20,7 +20,7 @@ from util.parse import cleartermcolor
 from util.text import split_for_window
 from util.permission import is_allowed
 from util.message import tokenize_json, edit_or_reply, get_text
-from util.user import get_username, get_channel
+from util.user import get_username, get_channel, get_username_dict # lmaoo bad
 from util.serialization import convert_to_dict
 
 last_group = "N/A"
@@ -126,7 +126,7 @@ async def hist_cmd(_, message):
         m_id = int(args["id"])
     if m_id is None:
         return
-    cursor = EVENTS.find( {"message_id": m_id}, # TODO search only messages in this chat
+    cursor = EVENTS.find( {"message_id": m_id, "chat.id": message.chat.id},
             {"message": 1, "date": 1, "edit_date": 1} ).sort("_id", -1)
     out = ""
     for doc in cursor:
@@ -135,7 +135,7 @@ async def hist_cmd(_, message):
                 out += f"[{str(doc['date'])}] "    
             else:
                 out += f"[{str(doc['edit_date'])}] "
-        out += f"` → ` {doc['message']}\n"
+        out += f"` → ` {doc['message']['markdown']}\n"
     await edit_or_reply(message, out)
 
 # Get last N deleted messages
@@ -151,7 +151,7 @@ async def deleted_cmd(client, message):
             limit = int(args["number"])
         q = { "_": "Delete" }
         if args["global"] != "-g" or message.from_user is None or not message.from_user.is_self:
-            q["chat"] = { "id" : message.chat.id } # this breaks searching actually TODO
+            q["chat"] = { "chat.id" : message.chat.id }
         cursor = EVENTS.find(q, {"deleted_id": 1, "date": 1} ).sort("_id", -1)
         res = []
         for doc in cursor:
@@ -162,10 +162,10 @@ async def deleted_cmd(client, message):
                 msg = EVENTS.find({"id": match["id"]}).sort("_id", -1).next()
             except StopIteration: # no message was found, maybe it's a ChatAction
                 continue
-            peer = get_username(msg["from_user"])
+            peer = get_username_dict(msg["from_user"])
             if peer is None:
                 match["author"] = "UNKNOWN"
-            match["message"] = msg["message"]
+            match["message"] = msg["text"]["markdown"]
             res.append(match)
             limit -= 1
             if limit <= 0:
