@@ -30,7 +30,7 @@ HELP.add_help(["slow", "sl"], "make text appear slowly",
                 args="[-t] [-b] <text>")
 @alemiBot.on_message(filters.me & filters.regex(pattern=
     r"^[\.\/](?:sl|slow)(?: |)(?P<timer>-t [0-9.]+|)(?: |)(?P<batch>-b [0-9]+|)(?P<text>.*)"
-))
+, group=2))
 async def slowtype(_, message):
     args = message.matches[0]
     print(f" [ making text appear slowly ]")
@@ -68,7 +68,7 @@ def interval(delta):
 HELP.add_help(["cd", "countdown"], "count down",
                 "will edit message to show a countdown. If no time is given, it will be 5s.",
                 args="[time]", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["countdown", "cd"], prefixes="."))
+@alemiBot.on_message(is_allowed & filters.command(["countdown", "cd"], prefixes="."), group=2)
 async def countdown(_, message):
     if message.outgoing:
         tgt_msg = message
@@ -89,7 +89,7 @@ async def countdown(_, message):
 
 HELP.add_help(["rc", "randomcase"], "make text randomly capitalized",
                 "will edit message applying random capitalization to every letter, like the spongebob meme.")
-@alemiBot.on_message(filters.me & filters.command(["rc", "randomcase"], prefixes="."))
+@alemiBot.on_message(filters.me & filters.command(["rc", "randomcase"], prefixes="."), group=2)
 async def randomcase(_, message):
     print(f" [ making message randomly capitalized ]")
     text = re.sub("[\.\/](?:rc|randomcase)(?: |)", "", message.text.markdown)
@@ -118,7 +118,7 @@ async def randomcase(_, message):
 
 HELP.add_help("shrug", "¯\_(ツ)_/¯", "will replace `.shrug` or `/shrug` anywhere "+
                 "in yor message with the composite emoji.")
-@alemiBot.on_message(filters.me & filters.regex(pattern=r"[\.\/]shrug"))
+@alemiBot.on_message(filters.me & filters.regex(pattern=r"[\.\/]shrug"), group=2)
 async def shrug(_, message):
     print(f" [ ¯\_(ツ)_/¯ ]")
     await message.edit(re.sub(r"[\.\/]shrug","¯\_(ツ)_/¯", message.text.markdown))
