@@ -198,7 +198,7 @@ async def deleted_cmd(client, message):
             for doc in res:
                 if show_time:
                     out += f"[{str(doc['date'])}] "
-                out += f"**[**`{doc['id']}`**]** `{doc['author']} →` {doc['message']}\n\n"
+                out += f"**[**`{doc['id']}`**]** `{doc['author']} →` {doc['text']['markdown']}\n\n"
             if out == "":
                 out = "` → ` Nothing to display"
             await edit_or_reply(message, out)
