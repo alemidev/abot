@@ -86,7 +86,7 @@ async def manage_allowed_cmd(client, message):
             async for u in client.iter_chat_members(message.chat.id):
                 if u.user.is_bot:
                     continue
-                users_to_allow.append(u.user)
+                users_to_manage.append(u.user)
         elif len(message.command) > 1:
             user = None
             try:
