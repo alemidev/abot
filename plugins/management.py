@@ -16,7 +16,7 @@ from util.text import split_for_window
 # Delete message immediately after it being sent
 @alemiBot.on_message(filters.me & filters.regex(pattern=
     r"(?:.*|)(?:-delme|-delete|-d)(?: |)(?P<time>[0-9]+|)$"
-))
+), group=5)
 async def deleteme(_, message):
     print(" [ deleting sent message ]")
     t = message.matches[0]["time"]

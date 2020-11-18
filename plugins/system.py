@@ -69,7 +69,8 @@ async def where_cmd(_, message):
         if len(message.command) > 1 and message.command[1] == "-p":
             out += tokenize_json(str(data))
         else:
-            out += tokenize_json(json.dumps(data, indent=2, default=str, ensure_ascii=False))
+            out += str(message)
+            # out += tokenize_json(json.dumps(data, indent=2, default=str, ensure_ascii=False))
         await edit_or_reply(message, out)
     except Exception as e:
         traceback.print_exc()
@@ -98,7 +99,8 @@ async def who_cmd(client, message):
         if message.matches[0]["pack"] == "-p":
             out += tokenize_json(str(data))
         else:
-            out += tokenize_json(json.dumps(data, indent=2, default=str, ensure_ascii=False))
+            out += str(message)
+            # out += tokenize_json(json.dumps(data, indent=2, default=str, ensure_ascii=False))
         await edit_or_reply(message, out)
     except Exception as e:
         traceback.print_exc()
@@ -120,7 +122,8 @@ async def what_cmd(client, message):
         if len(message.command) > 1 and message.command[1] == "-p":
             out += tokenize_json(str(data))
         else:
-            out += tokenize_json(json.dumps(data, indent=2, default=str, ensure_ascii=False))
+            out += str(message)
+            # out += tokenize_json(json.dumps(data, indent=2, default=str, ensure_ascii=False))
         await edit_or_reply(message, out)
     except Exception as e:
         traceback.print_exc()
