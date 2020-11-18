@@ -113,10 +113,14 @@ HELP.add_help(["trusted", "plist", "permlist"], "list allowed users",
 # broken af lmaooo TODO
 @alemiBot.on_message(filters.me & filters.command(["trusted", "plist", "permlist"], prefixes="."))
 async def trusted_list(c, message):
-    user_ids = list_allowed()
-    text = "`[` "
-    users = await c.get_users([ int(u) for u in user_ids ]) # this thing gives a PeerIdInvalid exc???
-    for u in users:
-        text += f"{get_username(e)}, "
-    text += "`]`"
-    await message.edit(message.text.markdown + f"\n` → Allowed Users : `\n{text}") 
+    try:
+        user_ids = list_allowed()
+        text = "`[` "
+        users = await c.get_users([ int(u) for u in user_ids ]) # this thing gives a PeerIdInvalid exc???
+        for u in users:
+            text += f"{get_username(e)}, "
+        text += "`]`"
+        await message.edit(message.text.markdown + f"\n` → Allowed Users : `\n{text}") 
+    except Exception as e:
+        traceback.print_exc()
+        await message.edit(message.text.markdown + f"\n`[!] → ` __{str(e)}__")
