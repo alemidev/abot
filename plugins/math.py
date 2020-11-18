@@ -5,7 +5,7 @@ from pyrogram import filters
 
 from bot import alemiBot
 
-from util import set_offline, batchify
+from util import batchify
 from util.globals import PREFIX
 from util.permission import is_allowed
 from util.message import edit_or_reply
