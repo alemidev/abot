@@ -113,7 +113,7 @@ HELP.add_help(["trusted", "plist", "permlist"], "list allowed users",
                 "the users individually if a batch request fails with 'InvalidPeerId'.", args="[-s]")
 # broken af lmaooo TODO
 @alemiBot.on_message(filters.me & filters.command(["trusted", "plist", "permlist"], prefixes="."))
-async def trusted_list(c, message):
+async def trusted_list(client, message):
     try:
         user_ids = list_allowed()
         text = "`[` "
@@ -126,7 +126,7 @@ async def trusted_list(c, message):
                 except:
                     issues += f"~~[{uid}]~~ "
         else:
-            users = await c.get_users([ int(u) for u in user_ids ]) # this thing gives a PeerIdInvalid exc???
+            users = await cclient.get_users([ int(u) for u in user_ids ]) # this thing gives a PeerIdInvalid exc???
         for u in users:
             text += f"{get_username(e)}, "
         text += "`]`"
