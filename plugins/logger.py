@@ -87,7 +87,7 @@ async def query_cmd(client, message):
         if args["count"] == "-c":
             count = EVENTS.count_documents({})
             size = DB.command("dbstats")['totalSize']
-            await message.edit(message.text +
+            await message.edit(message.text.markdown +
                             f"\n` → ` **{count}** events logged" +
                             f"\n` → ` size **{order_suffix(size)}**")
         elif args["query"] != "":
@@ -107,16 +107,16 @@ async def query_cmd(client, message):
                 if lim is not None and len(buf) >= lim:
                     break
             raw = json.dumps(buf, indent=2, default=str)
-            if len(message.text) + len(tokenize_json(raw)) > 4090:
+            if len(message.text.markdown) + len(tokenize_json(raw)) > 4090:
                 f = io.BytesIO(raw.encode("utf-8"))
                 f.name = "query.json"
                 await client.send_document(message.chat.id, f, reply_to_message_id=message.message_id,
                                         caption=f"` → Query result `")
             else:
-                await message.edit(message.text + "\n` → `" + tokenize_json(raw))
+                await message.edit(message.text.markdown + "\n` → `" + tokenize_json(raw))
     except Exception as e:
         traceback.print_exc()
-        await message.edit(message.text + "\n`[!] → ` " + str(e))
+        await message.edit(message.text.markdown + "\n`[!] → ` " + str(e))
 
 HELP.add_help(["hist", "history"], "get edit history of a message",
                 "request edit history of a message. You can specify an id or reply to a message.",

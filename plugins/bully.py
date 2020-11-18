@@ -23,7 +23,7 @@ async def bully(client, message):
         if message.from_user is not None and message.from_user.is_self \
         and message.text.startswith(".stop"):
             censoring.pop(message.chat.id, None)
-            await message.edit(message.text + "\n` → ` You can speak again")
+            await message.edit(message.text.markdown + "\n` → ` You can speak again")
             print(" [ No longer censoring a chat ]")
         else:
             if censoring[message.chat.id] is None:
@@ -53,7 +53,7 @@ async def startcensor(client, message):
         or censoring[message.chat.id] is None:
             censoring[message.chat.id] = []
         censoring[message.chat.id].append(tgt.id)
-    await message.edit(message.text + f"\n` → ` Censoring {target}")
+    await message.edit(message.text.markdown + f"\n` → ` Censoring {target}")
     print(" [ Censoring new chat ]")
 
 HELP.add_help(["spam", "flood"], "pretty self explainatory",
@@ -86,4 +86,4 @@ async def spam(client, message):
                 await client.send_message(message.chat.id, args['text'])
                 await asyncio.sleep(wait) 
     except Exception as e:
-        await message.edit(message.text + "`[!] → ` " + str(e))
+        await message.edit(message.text.markdown + "`[!] → ` " + str(e))

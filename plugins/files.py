@@ -32,12 +32,12 @@ HELP.add_help("get", "request a file from server",
 @alemiBot.on_message(filters.me & filters.command("get", prefixes="."))
 async def download(client, message):
     if len(message.command) < 2:
-        return await message.edit(message.text + "\n`[!] → ` No filename provided")
+        return await message.edit(message.text.markdown + "\n`[!] → ` No filename provided")
     try:
         name = message.command[1]
         await client.send_document(message.chat.id, name, reply_to_message_id=message.message_id, caption=f'` → {name}`')
     except Exception as e:
-        await message.edit(message.text + "\n`[!] → ` " + str(e))
+        await message.edit(message.text.markdown + "\n`[!] → ` " + str(e))
 
 # class FilesModules:
 #     def __init__(self, client):

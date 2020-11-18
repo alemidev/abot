@@ -87,12 +87,12 @@ async def manage_allowed_cmd(_, message):
         try:
             user = await alemiBot.get_users(message.command[1])
         except ValueError:
-            return await message.edit(message.text + "\n`[!] → ` No user matched")
+            return await message.edit(message.text.markdown + "\n`[!] → ` No user matched")
         if user is None:
-            return await message.edit(message.text + "\n`[!] → ` No user matched")
+            return await message.edit(message.text.markdown + "\n`[!] → ` No user matched")
         users_to_manage.append(user)
     else:
-        return await message.edit(message.text + "\n`[!] → ` Provide an ID or reply to a msg")
+        return await message.edit(message.text.markdown + "\n`[!] → ` Provide an ID or reply to a msg")
     out = ""
     action_allow = message.command[0] == "allow"
     for u in users_to_manage:
@@ -104,9 +104,9 @@ async def manage_allowed_cmd(_, message):
             if disallow(u.id, val=u_name):
                 out += f"` → ` Disallowed **{u_name}**\n"
     if out != "":
-        await message.edit(message.text + "\n" + out)
+        await message.edit(message.text.markdown + "\n" + out)
     else:
-        await message.edit(message.text + "\n` → ` No changes")
+        await message.edit(message.text.markdown + "\n` → ` No changes")
 
 HELP.add_help(["trusted", "plist", "permlist"], "list allowed users",
                 "note that users without a username may give issues. Also, this is broken as of now.")
@@ -119,4 +119,4 @@ async def trusted_list(c, message):
     for u in users:
         text += f"{get_username(e)}, "
     text += "`]`"
-    await message.edit(message.text + f"\n` → Allowed Users : `\n{text}") 
+    await message.edit(message.text.markdown + f"\n` → Allowed Users : `\n{text}") 

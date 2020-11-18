@@ -61,7 +61,7 @@ HELP.add_help("steal", "steal a meme",
 @alemiBot.on_message(filters.me & filters.command("steal", prefixes="."))
 async def steal(client, message):
     # if len(message.command) < 2:
-    #     return await message.edit(message.text + "\n`[!] → ` No meme name provided")
+    #     return await message.edit(message.text.markdown + "\n`[!] → ` No meme name provided")
     msg = message
     if message.reply_to_message is not None:
         msg = message.reply_to_message
@@ -126,16 +126,16 @@ async def deepfry(client, message):
             if message.matches[0]["count"] != "":
                 count = int(message.matches[0]["count"].replace("-c ", ""))
             if message.from_user is not None and message.from_user.is_self: # lmao these checks, just message.outgoing doesn't work in self msgs
-                await message.edit(message.text + "\n` → ` Downloading...")
+                await message.edit(message.text.markdown + "\n` → ` Downloading...")
             fpath = await client.download_media(msg, file_name="tofry")
             if message.from_user is not None and message.from_user.is_self:
-                await message.edit(message.text + "\n` → ` Downloading [OK]\n` → ` Frying...")
+                await message.edit(message.text.markdown + "\n` → ` Downloading [OK]\n` → ` Frying...")
             image = Image.open(fpath)
     
             for _ in range(count):
                 image = await fry_image(image)
             if message.from_user is not None and message.from_user.is_self:
-                await message.edit(message.text +
+                await message.edit(message.text.markdown +
                     "\n` → ` Downloading [OK]\n` → ` Frying [OK]\n` → ` Uploading...")
     
             fried_io = io.BytesIO()
@@ -145,7 +145,7 @@ async def deepfry(client, message):
             await client.send_photo(message.chat.id, fried_io, reply_to_message_id=message.message_id,
                                         caption=f"` → Fried {count} time{'s' if count > 1 else ''}`")
             if message.from_user is not None and message.from_user.is_self:
-                await message.edit(message.text +
+                await message.edit(message.text.markdown +
                     "\n` → ` Downloading [OK]\n` → ` Frying [OK]\n` → ` Uploading [OK]")
         except Exception as e:
             await message.edit(get_text(message) + "\n`[!] → ` " + str(e))

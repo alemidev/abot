@@ -34,7 +34,7 @@ HELP.add_help(["asd", "ping"], "a sunny day!",
                 "The ping command.")
 @alemiBot.on_message(filters.me & filters.command(["asd", "ping"], prefixes="."))
 async def ping(_, message):
-    msg = message.text
+    msg = message.text.markdown
     before = time.time()
     await message.edit(msg + "\n` → ` a sunny day")
     after = time.time()
@@ -67,7 +67,7 @@ async def where_cmd(client, message):
     try:
         print(f" [ getting info of chat ]")
         if is_me(message):
-            await message.edit(message.text + f"\n` → ` Getting data of chat `{message.chat.id}`")
+            await message.edit(message.text.markdown + f"\n` → ` Getting data of chat `{message.chat.id}`")
         out = io.BytesIO((str(message.chat)).encode('utf-8'))
         out.name = f"chat-{message.chat.id}.json"
         await client.send_document(message.chat.id, out)
@@ -97,7 +97,7 @@ async def who_cmd(client, message):
             return
         print(f" [ getting info of user ]")
         if is_me(message):
-            await message.edit(message.text + f"\n` → ` Getting data of user `{peer.id}`")
+            await message.edit(message.text.markdown + f"\n` → ` Getting data of user `{peer.id}`")
         out = io.BytesIO((str(peer)).encode('utf-8'))
         out.name = f"user-{peer.id}.json"
         await client.send_document(message.chat.id, out)
@@ -116,7 +116,7 @@ async def what_cmd(client, message):
     print(f" [ getting info of msg ]")
     try:
         if is_me(message):
-            await message.edit(message.text + f"\n` → ` Getting data of msg `{msg.message_id}`")
+            await message.edit(message.text.markdown + f"\n` → ` Getting data of msg `{msg.message_id}`")
         out = io.BytesIO((str(msg)).encode('utf-8'))
         out.name = f"msg-{msg.message_id}.json"
         await client.send_document(message.chat.id, out)

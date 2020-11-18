@@ -92,7 +92,7 @@ HELP.add_help(["rc", "randomcase"], "make text randomly capitalized",
 @alemiBot.on_message(filters.me & filters.command(["rc", "randomcase"], prefixes="."))
 async def randomcase(_, message):
     print(f" [ making message randomly capitalized ]")
-    text = re.sub("[\.\/](?:rc|randomcase)(?: |)", "", message.text)
+    text = re.sub("[\.\/](?:rc|randomcase)(?: |)", "", message.text.markdown)
     if text == "":
         return 
     msg = "" # omg this part is done so badly
@@ -116,11 +116,12 @@ async def randomcase(_, message):
                 upper = True
     await message.edit(msg)
 
-HELP.add_help("shrug", "¯\_(ツ)_/¯", "¯\_(ツ)_/¯", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["shrug"], prefixes="."))
+HELP.add_help("shrug", "¯\_(ツ)_/¯", "will replace `.shrug` or `/shrug` anywhere "+
+                "in yor message with the composite emoji.")
+@alemiBot.on_message(filters.me & filters.regex(patters=r"[\.\/]shrug"))
 async def shrug(_, message):
     print(f" [ ¯\_(ツ)_/¯ ]")
-    await edit_or_reply(r'¯\_(ツ)_/¯')
+    await message.edit(re.sub(r"[\.\/]shrug","¯\_(ツ)_/¯", message.text.markdown))
 
 HELP.add_help("figlet", "make a figlet art",
                 "run figlet and make a text art. You can specify a font (`-f`), or request a random one (`-r`). " +
