@@ -54,8 +54,9 @@ async def update(client, message):
         result = subprocess.run(["git", "pull"], capture_output=True, timeout=60)
         msg += " [OK]\n` → ` Bot will now restart"
         await message.edit(msg) 
-        await client.restart()
+        asyncio.get_event_loop().create_task(client.restart())
     except Exception as e:
+        traceback.print_exc()
         msg += " [FAIL]\n`[!] → ` " + str(e)
         await message.edit(msg) 
 
