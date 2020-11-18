@@ -54,7 +54,7 @@ async def update(_, message):
         result = subprocess.run(["git", "pull"], capture_output=True, timeout=60)
         msg += " [OK]\n` → ` Bot will now restart"
         await message.edit(msg) 
-        await alemiBot.restart()
+        alemiBot.restart()
     except Exception as e:
         msg += " [FAIL]\n`[!] → ` " + str(e)
         await message.edit(msg) 
