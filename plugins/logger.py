@@ -24,8 +24,8 @@ from util.user import get_username, get_channel
 last_group = "N/A"
 
 M_CLIENT = MongoClient('localhost', 27017, # ye TODO
-                        "HARDCODE ME IN", #user
-                        "AT RUNTIME") #pass
+                        username=alemiBot.config.get("database", "username", fallback=""),
+                        password=alemiBot.config.get("database", "password", fallback=""))
 DB = M_CLIENT.alemibot
 EVENTS = DB.events
 
