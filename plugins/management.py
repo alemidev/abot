@@ -128,7 +128,7 @@ async def trusted_list(client, message):
         else:
             users = await cclient.get_users([ int(u) for u in user_ids ]) # this thing gives a PeerIdInvalid exc???
         for u in users:
-            text += f"{get_username(e)}, "
+            text += f"{get_username(u)}, "
         text += "`]`"
         await message.edit(message.text.markdown + f"\n` → Allowed Users : `\n{text}\n{issues}") 
     except Exception as e:
