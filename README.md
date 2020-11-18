@@ -1,4 +1,4 @@
-# alemibot / ᚨᛚᛖᛗᛁᛒᛟᛏ  v0.1
+# alemibot / ᚨᛚᛖᛗᛁᛒᛟᛏ  v0.2
 ### Join the bot telegram group on https://t.me/alemibothelp
 
 My personal Telegram userbot. This bot can provide, out of the box, some 
@@ -23,7 +23,7 @@ will receive much more work on.
 
 # How to deploy
 You just need Python 3.7+ and a PC always on to run this. More dependancies will depend on modules.
-* Clone this repo : `git clone -b pyrogram https://github.com/alemigliardi/alemibot.git"
+* Clone this repo : `git clone -b pyrogram https://github.com/alemigliardi/alemibot.git`
 * Make a `venv` with `python3 -m venv <anyfolder>`
 * Activate `venv` with `source <venvfolder>/bin/activate`
 * Install required libraries with `pip install -r requirements.txt`
