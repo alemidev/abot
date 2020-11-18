@@ -74,41 +74,45 @@ HELP.add_help(["allow", "disallow", "revoke"], "allow/disallow to use bot",
                 "all users in this chat.", args="<target>")
 @alemiBot.on_message(filters.me & filters.command(["allow", "disallow", "revoke"], prefixes="."))
 async def manage_allowed_cmd(client, message):
-    users_to_manage = []
-    if message.reply_to_message is not None:
-        peer = message.reply_to_message.from_user
-        if peer is None:
-            return
-        users_to_manage.append(peer)
-    elif len(message.command) > 1 and message.command[1] == "@here" \
-    or message.command[1] == "@everyone":
-        for u in client.iter_chat_members(message.chat.id):
-            users_to_allow.append(u)
-    elif len(message.command) > 1:
-        user = None
-        try:
-            user = await alemiBot.get_users(message.command[1])
-        except ValueError:
-            return await message.edit(message.text.markdown + "\n`[!] → ` No user matched")
-        if user is None:
-            return await message.edit(message.text.markdown + "\n`[!] → ` No user matched")
-        users_to_manage.append(user)
-    else:
-        return await message.edit(message.text.markdown + "\n`[!] → ` Provide an ID or reply to a msg")
-    out = ""
-    action_allow = message.command[0] == "allow"
-    for u in users_to_manage:
-        u_name = get_username(u)
-        if action_allow:
-            if allow(u.id, val=u_name):
-                out += f"` → ` Allowed **{u_name}**\n"
+    try:
+        users_to_manage = []
+        if message.reply_to_message is not None:
+            peer = message.reply_to_message.from_user
+            if peer is None:
+                return
+            users_to_manage.append(peer)
+        elif len(message.command) > 1 and message.command[1] == "@here" \
+        or message.command[1] == "@everyone":
+            for u in client.iter_chat_members(message.chat.id):
+                users_to_allow.append(u)
+        elif len(message.command) > 1:
+            user = None
+            try:
+                user = await alemiBot.get_users(message.command[1])
+            except ValueError:
+                return await message.edit(message.text.markdown + "\n`[!] → ` No user matched")
+            if user is None:
+                return await message.edit(message.text.markdown + "\n`[!] → ` No user matched")
+            users_to_manage.append(user)
         else:
-            if disallow(u.id, val=u_name):
-                out += f"` → ` Disallowed **{u_name}**\n"
-    if out != "":
-        await message.edit(message.text.markdown + "\n" + out)
-    else:
-        await message.edit(message.text.markdown + "\n` → ` No changes")
+            return await message.edit(message.text.markdown + "\n`[!] → ` Provide an ID or reply to a msg")
+        out = ""
+        action_allow = message.command[0] == "allow"
+        for u in users_to_manage:
+            u_name = get_username(u)
+            if action_allow:
+                if allow(u.id, val=u_name):
+                    out += f"` → ` Allowed **{u_name}**\n"
+            else:
+                if disallow(u.id, val=u_name):
+                    out += f"` → ` Disallowed **{u_name}**\n"
+        if out != "":
+            await message.edit(message.text.markdown + "\n" + out)
+        else:
+            await message.edit(message.text.markdown + "\n` → ` No changes")
+    except Exception as e:
+        traceback.print_exc()
+        await message.edit(message.text.markdown + f"\n`[!] → ` __{str(e)}__")
 
 HELP.add_help(["trusted", "plist", "permlist"], "list allowed users",
                 "note that users without a username may give issues. Use `-s` to get " +
