@@ -103,7 +103,7 @@ async def query_cmd(client, message):
                 await client.send_document(message.chat.id, f, reply_to_message_id=message.message_id,
                                         caption=f"` → Query result `")
             else:
-                await message.edit(event.raw_text + "\n` → `" + tokenize_json(raw))
+                await message.edit(message.text + "\n` → `" + tokenize_json(raw))
     except Exception as e:
         traceback.print_exc()
         await message.edit(message.text + "\n`[!] → ` " + str(e))
