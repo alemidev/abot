@@ -68,7 +68,7 @@ def interval(delta):
 HELP.add_help(["cd", "countdown"], "count down",
                 "will edit message to show a countdown. If no time is given, it will be 5s.",
                 args="[time]", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["countdown", "cd"], prefixes="."), group=2)
+@alemiBot.on_message(is_allowed & filters.command(["countdown", "cd"], list(alemiBot.prefixes)), group=2)
 async def countdown(_, message):
     if message.outgoing:
         tgt_msg = message
@@ -89,7 +89,7 @@ async def countdown(_, message):
 
 HELP.add_help(["rc", "randomcase"], "make text randomly capitalized",
                 "will edit message applying random capitalization to every letter, like the spongebob meme.")
-@alemiBot.on_message(filters.me & filters.command(["rc", "randomcase"], prefixes="."), group=2)
+@alemiBot.on_message(filters.me & filters.command(["rc", "randomcase"], list(alemiBot.prefixes)), group=2)
 async def randomcase(_, message):
     print(f" [ making message randomly capitalized ]")
     text = re.sub("[\.\/](?:rc|randomcase)(?: |)", "", message.text.markdown)
@@ -152,7 +152,7 @@ async def figlettext(_, message):
 
 HELP.add_help("fortune", "do you feel fortunate!?",
                 "run `fortune` to get a random sentence. Like fortune bisquits!", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["fortune"], prefixes="."))
+@alemiBot.on_message(is_allowed & filters.command(["fortune"], list(alemiBot.prefixes)))
 async def fortune(_, message):
     try:
         print(f" [ running command \"fortune\" ]")
@@ -166,7 +166,7 @@ HELP.add_help(["rand", "random", "roll"], "get random choices",
                 "this can be used as a dice roller (`.roll 3d6`). If a list of choices is given, a random one " +
                 "will be chosen from that. If a number is given, it will choose a value from 1 to <n>, both included. " +
                 "You can specify how many extractions to make", args="[-n] [choices]", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["rand", "random", "roll"], prefixes=".") & filters.regex(pattern=
+@alemiBot.on_message(is_allowed & filters.command(["rand", "random", "roll"], list(alemiBot.prefixes)) & filters.regex(pattern=
     r"^.(?:random|rand|roll)(?: |)(?:(?:(?P<num>[0-9]+|)d(?P<max>[0-9]+))|(?:(?P<batch>-n [0-9]+|)(?: |)(?P<values>.*)))"
 ))
 async def rand(_, message):

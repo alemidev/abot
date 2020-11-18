@@ -38,7 +38,7 @@ HELP.add_help(["censor", "bully"], "start censoring a chat",
             "will delete any message sent in this chat from target. If no target " +
             "is specified, all messages will be deleted as soon as they arrive",
             args="[target]")
-@alemiBot.on_message(filters.me & filters.command(["censor","bully"], prefixes=".") &
+@alemiBot.on_message(filters.me & filters.command(["censor","bully"], list(alemiBot.prefixes)) &
     filters.regex(pattern=r"^.(?:censor|bully)(?: |)(?P<target>@[^ ]+|)"
 ))
 async def startcensor(client, message):
@@ -62,7 +62,7 @@ HELP.add_help(["spam", "flood"], "pretty self explainatory",
             "messages will be sent as soon as possible. You can reply to a message and " +
             "all spammed msgs will reply to that one too",
             args="[-n] [-t]")
-@alemiBot.on_message(filters.me & filters.command("spam", prefixes=".") & filters.regex(
+@alemiBot.on_message(filters.me & filters.command("spam", list(alemiBot.prefixes)) & filters.regex(
         pattern=r"^.spam(?: |)(?P<number>(?:-n |)[0-9]+|)(?: |)(?P<time>-t [0-9.]+|)(?P<text>.*)"
 ))
 async def spam(client, message):

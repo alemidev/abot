@@ -12,7 +12,7 @@ HELP = HelpCategory("FILES")
 HELP.add_help("put", "save file to server",
                 "reply to a media message or attach a media to this command to " +
                 "store a file on the bot root folder.")
-@alemiBot.on_message(filters.me & filters.command("put", prefixes="."))
+@alemiBot.on_message(filters.me & filters.command("put", list(alemiBot.prefixes)))
 async def upload(client, message):
     msg = message
     if message.reply_to_message is not None:
@@ -29,7 +29,7 @@ async def upload(client, message):
 HELP.add_help("get", "request a file from server",
                 "will upload a file from server to this chat. The path can be " +
                 "global.", args="<path>")
-@alemiBot.on_message(filters.me & filters.command("get", prefixes="."))
+@alemiBot.on_message(filters.me & filters.command("get", list(alemiBot.prefixes)))
 async def download(client, message):
     if len(message.command) < 2:
         return await message.edit(message.text.markdown + "\n`[!] → ` No filename provided")

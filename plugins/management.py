@@ -72,7 +72,7 @@ HELP.add_help(["allow", "disallow", "revoke"], "allow/disallow to use bot",
                 "this command will work differently if invoked with `allow` or with `disallow`. Target user " +
                 "will be given/revoked access to public bot commands. ~~Use `@here` or `@everyone` to allow " +
                 "all users in this chat.", args="<target>")
-@alemiBot.on_message(filters.me & filters.command(["allow", "disallow", "revoke"], prefixes="."))
+@alemiBot.on_message(filters.me & filters.command(["allow", "disallow", "revoke"], list(alemiBot.prefixes)))
 async def manage_allowed_cmd(client, message):
     try:
         users_to_manage = []
@@ -120,7 +120,7 @@ HELP.add_help(["trusted", "plist", "permlist"], "list allowed users",
                 "note that users without a username may give issues. Use `-s` to get " +
                 "the users individually if a batch request fails with 'InvalidPeerId'.", args="[-s]")
 # broken af lmaooo TODO
-@alemiBot.on_message(filters.me & filters.command(["trusted", "plist", "permlist"], prefixes="."))
+@alemiBot.on_message(filters.me & filters.command(["trusted", "plist", "permlist"], list(alemiBot.prefixes)))
 async def trusted_list(client, message):
     try:
         user_ids = list_allowed()

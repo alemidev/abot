@@ -21,7 +21,7 @@ HELP = HelpCategory("MEME")
 HELP.add_help("meme", "get a meme",
                 "get a specific meme is a name is given, otherwise a random one. " +
                 "Use argument `-list` to gett all meme names.", public=True, args="[-list] [name]")
-@alemiBot.on_message(is_allowed & filters.command("meme", prefixes=".") & filters.regex(pattern=
+@alemiBot.on_message(is_allowed & filters.command("meme", list(alemiBot.prefixes)) & filters.regex(pattern=
     r"meme(?: |$)(?P<list>-list|)(?: |$ |)(?P<name>[^ ]*)"
 ))
 async def getmeme(client, message):
@@ -58,7 +58,7 @@ async def getmeme(client, message):
 HELP.add_help("steal", "steal a meme",
                 "save a meme to collection. Either attach an image or reply to one. " +
                 "A name should be given but I'm waiting a PR on pyrogram for that.")
-@alemiBot.on_message(filters.me & filters.command("steal", prefixes="."))
+@alemiBot.on_message(filters.me & filters.command("steal", list(alemiBot.prefixes)))
 async def steal(client, message):
     # if len(message.command) < 2:
     #     return await message.edit(message.text.markdown + "\n`[!] → ` No meme name provided")
@@ -112,7 +112,7 @@ async def fry_image(img: Image) -> Image:
 HELP.add_help("fry", "fry a meme",
                 "fry a meme. Sadly, no stars on eyes (yet!). Code comes from `https://github.com/Ovyerus/deeppyer`. " +
                 "The number of frying rounds can be specified, will default to 1.", args="[-c]", public=True)
-@alemiBot.on_message(is_allowed & filters.command("fry", prefixes=".") & filters.regex(pattern=
+@alemiBot.on_message(is_allowed & filters.command("fry", list(alemiBot.prefixes)) & filters.regex(pattern=
     r"fry(?: |)(?P<count>-c [0-9]+|)"
 ))
 async def deepfry(client, message):
@@ -181,7 +181,7 @@ def ascii_image(img:Image) -> str:
 HELP.add_help("ascii", "make ascii art of picture",
                 "roughly convert a picture into ascii art. Code comes from `https://github.com/anuragrana/Python-Scripts/blob/master/image_to_ascii.py`. " +
                 "Result will be attached as `.txt`.", public=True)
-@alemiBot.on_message(is_allowed & filters.command("ascii", prefixes="."))
+@alemiBot.on_message(is_allowed & filters.command("ascii", list(alemiBot.prefixes)))
 async def ascii_cmd(client, message):
     msg = message
     if message.reply_to_message is not None:

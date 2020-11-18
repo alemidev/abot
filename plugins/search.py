@@ -40,7 +40,7 @@ def ud_define(word):
 HELP.add_help(["diz", "dizionario"], "search in ita dict",
                 "get definition from italian dictionary of given word.",
                 args="[word]", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["diz", "dizionario"], prefixes="."))
+@alemiBot.on_message(is_allowed & filters.command(["diz", "dizionario"], list(alemiBot.prefixes)))
 async def diz(_, message):
     if len(message.command) < 2:
         return await edit_or_reply(message, "`[!] → ` No query given")
@@ -60,7 +60,7 @@ async def diz(_, message):
 HELP.add_help(["dic", "dictionary"], "search in eng dict",
                 "get definition from english dictionary of given word.",
                 args="[word]", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["dic", "dictionary"], prefixes="."))
+@alemiBot.on_message(is_allowed & filters.command(["dic", "dictionary"], list(alemiBot.prefixes)))
 async def dic(_, message):
     if len(message.command) < 2:
         return await edit_or_reply(message, "`[!] → ` No query given")
@@ -83,7 +83,7 @@ async def dic(_, message):
 HELP.add_help(["ud", "urban"], "search in urban dict",
                 "get definition from urban dictionary of given word.",
                 args="[word]", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["ud", "urban"], prefixes="."))
+@alemiBot.on_message(is_allowed & filters.command(["ud", "urban"], list(alemiBot.prefixes)))
 async def urbandict(_, message):
     if len(message.command) < 2:
         return await edit_or_reply(message, "`[!] → ` No query given")
@@ -105,7 +105,7 @@ async def urbandict(_, message):
 HELP.add_help("wiki", "search on wikipedia",
                 "search on wikipedia, attaching initial text and a link.",
                 args="[query]", public=True)
-@alemiBot.on_message(is_allowed & filters.command("wiki", prefixes="."))
+@alemiBot.on_message(is_allowed & filters.command("wiki", list(alemiBot.prefixes)))
 async def wiki(_, message):
     if len(message.command) < 2:
         return await edit_or_reply(message, "`[!] → ` No query given")
@@ -131,7 +131,7 @@ async def wiki(_, message):
 HELP.add_help("lmgtfy", "let me google that for you",
                 "generates a `Let Me Google That For You` link.",
                 args="[query]", public=True)
-@alemiBot.on_message(is_allowed & filters.command("lmgtfy", prefixes="."))
+@alemiBot.on_message(is_allowed & filters.command("lmgtfy", list(alemiBot.prefixes)))
 async def lmgtfy(event):
     if len(message.command) < 2:
         return await edit_or_reply(message, "`[!] → ` No query given")

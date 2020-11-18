@@ -22,7 +22,7 @@ HELP = HelpCategory("MATH")
 HELP.add_help(["expr", "math"], "convert to LaTeX formula",
                 "this command accepts sympy syntax and will spit out a LaTeX formula as image. " +
                 "You can add the `-latex` argument and pass LaTeX directly.", args="[-latex] <expr>", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["expr", "math"], prefixes=".") & filters.regex(
+@alemiBot.on_message(is_allowed & filters.command(["expr", "math"], list(alemiBot.prefixes)) & filters.regex(
     pattern=r"^.(?:expr|math)(?: |)(?P<opt>-latex|)(?: |)(?P<query>.*)"
 ))
 async def expr(client, message):
@@ -44,7 +44,7 @@ async def expr(client, message):
 HELP.add_help(["plot", "graph"], "plot provided function",
                 "this command will run sympy `plot` and return result as image. Foruma passing is wonky. " +
                 "You can add the `-3d` argument to plot in 3d.", args="[-3d] <expr>", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["plot", "graph"], prefixes=".") & filters.regex(
+@alemiBot.on_message(is_allowed & filters.command(["plot", "graph"], list(alemiBot.prefixes)) & filters.regex(
     pattern=r"^.(?:plot|graph)(?: |)(?P<opt>-3d|-par|)(?: |)(?P<query>.*)"
 ))
 async def graph(client, message):
@@ -70,7 +70,7 @@ async def graph(client, message):
 HELP.add_help("solve", "attempt to solve equation",
                 "this command will run sympy `solve` and attempt to find roots of the " +
                 "equation. You can pass systems too!", args="<expr>", public=True)
-@alemiBot.on_message(is_allowed & filters.command("solve", prefixes=".") & filters.regex(
+@alemiBot.on_message(is_allowed & filters.command("solve", list(alemiBot.prefixes)) & filters.regex(
     pattern=r"^.solve(?: |)(?P<query>.*)"
 ))
 async def solve_cmd(_, message):

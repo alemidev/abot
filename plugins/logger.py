@@ -78,7 +78,7 @@ def order_suffix(num, measure='B'):
 HELP.add_help(["query", "q", "log"], "interact with db",
                 "make queries to the underlying database (MongoDB) to request documents. " +
                 "Filters, limits and fields can be configured with arguments.", args="[-c] [-l] [-f] <query>")
-@alemiBot.on_message(filters.me & filters.command(["query", "q", "log"], prefixes=".") & filters.regex(pattern=
+@alemiBot.on_message(filters.me & filters.command(["query", "q", "log"], list(alemiBot.prefixes)) & filters.regex(pattern=
     r"^.(?:log|query|q)(?: |)(?P<count>-c|)(?: |)(?P<limit>-l [0-9]+|)(?: |)(?P<filter>-f [^ ]+|)(?: |)(?P<query>[^ ]+|)"
 ))
 async def query_cmd(client, message):
@@ -121,7 +121,7 @@ async def query_cmd(client, message):
 HELP.add_help(["hist", "history"], "get edit history of a message",
                 "request edit history of a message. You can specify an id or reply to a message.",
                 public=True, args="[-t] [id]")
-@alemiBot.on_message(is_allowed & filters.command(["history", "hist"], prefixes=".") & filters.regex(
+@alemiBot.on_message(is_allowed & filters.command(["history", "hist"], list(alemiBot.prefixes)) & filters.regex(
     pattern=r"^.hist(?:ory|)(?: |)(?P<time>-t|)(?: |)(?P<id>[0-9]+|)"
 ))
 async def hist_cmd(_, message):
@@ -150,7 +150,7 @@ HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
                 "request last edited messages, from channel or globally (-g, reserved to owner). A number of " +
                 "messages to peek can be specified. You can append `-json` at the end to get a json with all message data.",
                 public=True, args="[-t] [-g] [num] [-json]")
-@alemiBot.on_message(filters.me & filters.command(["peek", "deld", "deleted", "removed"], prefixes=".") & filters.regex(
+@alemiBot.on_message(filters.me & filters.command(["peek", "deld", "deleted", "removed"], list(alemiBot.prefixes)) & filters.regex(
     pattern=r"^.(?:peek|deld|deleted|removed)(?: |)(?P<time>-t|)(?: |)(?P<global>-g|)(?: |)(?P<number>[0-9]+|)(?: |)(?P<json>-json|)"
 ))
 async def deleted_cmd(client, message):

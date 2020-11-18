@@ -32,7 +32,7 @@ HELP = HelpCategory("SYSTEM")
 
 HELP.add_help(["asd", "ping"], "a sunny day!",
                 "The ping command.")
-@alemiBot.on_message(filters.me & filters.command(["asd", "ping"], prefixes="."))
+@alemiBot.on_message(filters.me & filters.command(["asd", "ping"], list(alemiBot.prefixes)))
 async def ping(_, message):
     msg = message.text.markdown
     before = time.time()
@@ -44,7 +44,7 @@ async def ping(_, message):
 HELP.add_help("update", "update and restart",
                 "will pull changes from git (`git pull`) and then restart " +
                 "itself with an `execv` call.")
-@alemiBot.on_message(filters.me & filters.command("update", prefixes="."))
+@alemiBot.on_message(filters.me & filters.command("update", list(alemiBot.prefixes)))
 async def update(client, message):
     msg = message.text.markdown
     try:
@@ -63,7 +63,7 @@ async def update(client, message):
 HELP.add_help("where", "get info about chat",
                 "Get the complete information about current chat and attach as json",
                 public=True)
-@alemiBot.on_message(is_allowed & filters.command("where", prefixes="."))
+@alemiBot.on_message(is_allowed & filters.command("where", list(alemiBot.prefixes)))
 async def where_cmd(client, message):
     try:
         print(f" [ getting info of chat ]")
@@ -79,7 +79,7 @@ async def where_cmd(client, message):
 HELP.add_help("who", "get info about user",
                 "Get the complete information about an user (replied to or "+
                 "id given) and attach as json", public=True, args="[target]")
-@alemiBot.on_message(is_allowed & filters.command("who", prefixes=".") &
+@alemiBot.on_message(is_allowed & filters.command("who", list(alemiBot.prefixes)) &
     filters.regex(pattern=r"^.who(?: |)(?P<name>[^ ]+|)"
 ))
 async def who_cmd(client, message):
@@ -109,7 +109,7 @@ async def who_cmd(client, message):
 HELP.add_help("what", "get info about message",
                 "Get the complete information about a message (replied to or "+
                 "the sent message) and attach as json", public=True)
-@alemiBot.on_message(is_allowed & filters.command("what", prefixes="."))
+@alemiBot.on_message(is_allowed & filters.command("what", list(alemiBot.prefixes)))
 async def what_cmd(client, message):
     msg = message
     if message.reply_to_message is not None:
@@ -128,7 +128,7 @@ async def what_cmd(client, message):
 HELP.add_help(["run", "r"], "run command on server",
                 "runs a command on server. Shell will be from user running bot. " +
                 "Every command starts in bot root folder.", args="<cmd>")
-@alemiBot.on_message(filters.me & filters.command(["run", "r"], prefixes="."))
+@alemiBot.on_message(filters.me & filters.command(["run", "r"], list(alemiBot.prefixes)))
 async def runit(client, message):
     args = re.sub("^[\.\/](?:run|r)(?: |)", "", message.text)
     try:
@@ -149,7 +149,7 @@ async def runit(client, message):
 HELP.add_help(["eval", "e"], "eval a python expression",
                 "eval a python expression. No imports can be made nor variables can be " +
                 "assigned. Some common libs are already imported.", args="<expr>")
-@alemiBot.on_message(filters.me & filters.command(["eval", "e"], prefixes="."))
+@alemiBot.on_message(filters.me & filters.command(["eval", "e"], list(alemiBot.prefixes)))
 async def evalit(client, message):
     args = re.sub("^[\.\/](?:eval|e)(?: |)", "", message.text)
     try:
