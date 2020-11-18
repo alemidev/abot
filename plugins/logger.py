@@ -54,8 +54,6 @@ def print_formatted(chat, user, message):
 async def msglogger(_, message):
     print_formatted(message.chat, message.from_user, message)
     data = convert_to_dict(message)
-    if "edit_date" in data: # Edits come as new messages
-        data["_"] = "EditMessage"
     EVENTS.insert_one(data)
 
 # Log Message deletions
@@ -182,9 +180,7 @@ async def deleted_cmd(client, message):
             if "from_user" not in msg:
                 match["author"] = "UNKNOWN"
             else:
-                peer = get_username_dict(msg["from_user"])
-                if peer is None:
-                    match["author"] = "UNKNOWN"
+                match["author"] = get_username_dict(msg["from_user"])
             if "text" in msg:
                 match["message"] = msg["text"]["markdown"]
             else:

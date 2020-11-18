@@ -1,6 +1,6 @@
 def get_username(user):
     if user is None:
-        return "N/A"
+        return "UNKNOWN"
     elif user.username is None:
         if user.last_name is None:
             return user.first_name
@@ -11,7 +11,7 @@ def get_username(user):
 
 def get_username_dict(user):
     if user is None:
-        return "N/A"
+        return "UNKNOWN"
     elif "username" in user:
         return "@" + user['username']
     else:
