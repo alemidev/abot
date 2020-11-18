@@ -171,7 +171,7 @@ async def deleted_cmd(client, message):
                 match["date"] = doc["date"]
             else:
                 match["date"] = "N/A"
-            match["id"] = doc["deleted_id"]
+            match["id"] = doc["message_id"]
             try:
                 msg = EVENTS.find({"id": match["id"]}).sort("_id", -1).next()
             except StopIteration: # no message was found, maybe it's a ChatAction
