@@ -3,6 +3,7 @@
 WOOOT a pyrogram rewrite im crazyyy
 """
 import os
+import sys
 from pyrogram import Client, idle
 from configparser import ConfigParser
 
