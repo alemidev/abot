@@ -4,7 +4,7 @@ WOOOT a pyrogram rewrite im crazyyy
 """
 
 from pyrogram import Client
-
+from configparser import ConfigParser
 
 class alemiBot(Client):
     def __init__(self, name):
@@ -13,6 +13,11 @@ class alemiBot(Client):
             plugins=dict(root=f"plugins/"),
             workdir="./",
             app_version="alemibot v0.1",)
+
+    def load_config(self):
+        super().load_config()
+        self.config = ConfigParser()
+        self.config.read(str(self.config_file))
 
     async def start(self):
         await super().start()
