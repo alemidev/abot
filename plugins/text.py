@@ -123,6 +123,14 @@ async def shrug(_, message):
     print(f" [ ¯\_(ツ)_/¯ ]")
     await message.edit(re.sub(r"[\.\/\!]shrug","¯\_(ツ)_/¯", message.text.markdown))
 
+@alemiBot.on_message(filters.me & filters.regex(pattern=r"<-|->|=>|<="), group=3)
+async def replace_arrows(_, message):
+    await message.edit(message.text.markdown.replace("<-", "←")
+                                            .replace("->", "→")
+                                            .replace("=>", "⇨")
+                                            .replace("<=", "⇦"))
+
+
 HELP.add_help("figlet", "make a figlet art",
                 "run figlet and make a text art. You can specify a font (`-f`), or request a random one (`-r`). " +
                 "Get list of available fonts with `-list`.", args="[-l] [-f] [-r]", public=True)
