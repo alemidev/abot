@@ -71,17 +71,18 @@ async def purge(client, message):
 HELP.add_help(["allow", "disallow", "revoke"], "allow/disallow to use bot",
                 "this command will work differently if invoked with `allow` or with `disallow`. Target user " +
                 "will be given/revoked access to public bot commands. ~~Use `@here` or `@everyone` to allow " +
-                "all users in this chat~~ (broken since pyrogram port, TODO!)", args="<target>")
+                "all users in this chat.", args="<target>")
 @alemiBot.on_message(filters.me & filters.command(["allow", "disallow", "revoke"], prefixes="."))
-async def manage_allowed_cmd(_, message):
+async def manage_allowed_cmd(client, message):
     users_to_manage = []
-    if event.reply_to_message is not None:
-        peer = event.reply_to_message.from_user
+    if message.reply_to_message is not None:
+        peer = message.reply_to_message.from_user
         if peer is None:
             return
         users_to_manage.append(peer)
-    # elif event.pattern_match.group("name") in [ "@here", "@everyone" ]:
-    #     users_to_allow += await event.client.get_participants(await event.get_chat())
+    elif message.matches["name"] == "@here" or message.matches["name"] == "@everyone":
+        for u in client.iter_chat_members(message.chat.id):
+            users_to_allow.append(u)
     elif len(message.command) > 1:
         user = None
         try:
