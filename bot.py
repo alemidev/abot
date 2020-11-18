@@ -17,26 +17,19 @@ class alemiBot(Client):
             workdir="./",
             app_version="alemibot v0.1",)
 
-    def start(self):
-        super().start()
+    async def start(self):
+        await super().start()
         print("> Bot started\n")
 
-    def stop(self):
-        super().stop()
+    async def stop(self):
+        await super().stop()
         print("\n> Bot stopped")
     
-    def restart(self):
-        self.stop()
+    async def restart(self):
+        await self.stop()
         os.execv(__file__, sys.argv) # This will replace current process
 
 if __name__ == "__main__":
     app = alemiBot("debug")
-
-    app.start()
-    app.send_message("me", "`ᚨᛚᛖᛗᛁᛒᛟᛏ → ` **Online**")
-
-    idle()
-
-    app.stop()
-
+    app.run()
 
