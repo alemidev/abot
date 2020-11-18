@@ -143,7 +143,10 @@ async def hist_cmd(_, message):
                 out += f"[{str(doc['date'])}] "    
             else:
                 out += f"[{str(doc['edit_date'])}] "
-        out += f"` → ` {doc['text']['markdown']}\n"
+        if "text" in doc:
+            out += f"` → ` {doc['text']['markdown']}\n"
+        else:
+            out += f"` → ` N/A\n"
     await edit_or_reply(message, out)
 
 HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
@@ -173,7 +176,7 @@ async def deleted_cmd(client, message):
                 match["date"] = "N/A"
             match["id"] = doc["message_id"]
             try:
-                msg = EVENTS.find({"message_id": match["id"]}).sort("_id", -1).next()
+                msg = EVENTS.find({"_": "Message", "message_id": match["id"]}).sort("_id", -1).next()
             except StopIteration: # no message was found, maybe it's a ChatAction
                 continue
             if "from_user" not in msg:
