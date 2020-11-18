@@ -6,8 +6,9 @@ math/moderation/meme/textediting commands. The most relevant features come
 with access to a MongoDB, where messages can be stored. With message caching, 
 the bot can provide edit history and show deleted messages.
 
-Right now modules are added inside `bot.py`. You can comment out and add any. 
-A more proper module loader will be done eventually to allow easier module configuration.
+This project started using Telethon but I migrated to Pyrogram. You can find a `telethon` branch, 
+but it won't receive any more support. All features work and it's pretty polished, but the pyro branch 
+will receive much more work on.
 
 ## Features
 * get deleted messages, show edit history
@@ -22,30 +23,20 @@ A more proper module loader will be done eventually to allow easier module confi
 
 # How to deploy
 You just need Python 3.7+ and a PC always on to run this. More dependancies will depend on modules.
-* `git clone` this repo
+* Clone this repo : `git clone -b pyrogram https://github.com/alemigliardi/alemibot.git"
 * Make a `venv` with `python3 -m venv <anyfolder>`
 * Activate `venv` with `source <venvfolder>/bin/activate`
 * Install required libraries with `pip install -r requirements.txt`
-* Make a file `config.json` with your API hash and ID (visit https://my.telegram.org/)
+* Edit the `config.ini` file with your API hash and ID (visit https://my.telegram.org/)
 * Run bot : `./bot.py` or `python bot.py`
 
 ## config file
-You need to make a config file similar to this and drop it next to the bot file :
-```json
-{
-	"NAME" : "alemibot",
-	"ID" : 1234,
-	"HASH" : "l00k4tm31m4nh45h",
-	"cooldown" : 3,
-	"USER_DB" : "username",
-	"PASS_DB" : "password"
-}
-```
-Ye, pwd in plaintext, ugh. I plan to make `pass` integrateable with it
+The defualt config contains the usable fields already. You just need to fill in `api_id` and `api_hash`.
+You can add a section `[database]` with `username` and `password` for your MongoBD (if you run one)
 
 # Dependancies
 ### Core
-* `telethon`
+* `pyrogram`
 * `requests`
 ### Non-Essential
 * `termcolor` : for colored terminal printing. Only in `logger` module.
