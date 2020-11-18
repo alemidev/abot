@@ -25,11 +25,7 @@ from util import batchify
 from util.parse import cleartermcolor
 from util.permission import is_allowed
 from util.message import tokenize_json, tokenize_lines, edit_or_reply
-
-def extract(obj):
-    new_dict = {k: v for k, v in obj.__dict__.items() if v is not None}
-    new_dict.pop("_client", None)
-    return new_dict
+from util.serialization import convert_to_dict
 
 # Repy to .asd with "a sunny day" (and calculate ping)
 @alemiBot.on_message(filters.me & filters.command(["asd", "ping"], prefixes="."))
@@ -65,7 +61,7 @@ async def where_cmd(_, message):
     try:
         print(f" [ getting info of chat ]")
         out = " → Data : \n"
-        data = extract(message.chat)
+        data = convert_to_dict(message.chat)
         if len(message.command) > 1 and message.command[1] == "-p":
             out += tokenize_json(str(data))
         else:
@@ -77,8 +73,8 @@ async def where_cmd(_, message):
         await edit_or_reply(message,"`[!] → ` " + str(e))
 
 # Get info about a user
-@alemiBot.on_message(is_allowed & filters.regex(pattern=
-    r"^[\.\/]who(?: |)(?P<pack>-p|-r|)(?: |)(?P<name>[^ ]+|)"
+@alemiBot.on_message(is_allowed & filters.command("who", prefixes=".") &
+    filters.regex(pattern=r"^.who(?: |)(?P<pack>-p|-r|)(?: |)(?P<name>[^ ]+|)"
 ))
 async def who_cmd(client, message):
     try:
@@ -95,7 +91,7 @@ async def who_cmd(client, message):
             return
         print(f" [ getting info of user ]")
         out = "` → ` Data : \n"
-        data = extract(peer)
+        data = convert_to_dict(peer)
         if message.matches[0]["pack"] == "-p":
             out += tokenize_json(str(data))
         else:
@@ -115,7 +111,7 @@ async def what_cmd(client, message):
     print(f" [ getting info of msg ]")
     try:
         out = " → Data : \n"
-        data = extract(msg)
+        data = convert_to_dict(msg)
         if "reply_to_message" in data:
             data["reply_to_message"] = extract(data["reply_to_message"])
             data["reply_to_message"].pop("chat", None) # it's in the same chat anyway, useless data
