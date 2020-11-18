@@ -39,6 +39,8 @@ def print_formatted(chat, user, message):
     text = message.text.replace("\n", "\n" + " "*pre)
     if message.media:
         text = "[+MEDIA] " + text
+    if message.edit_date is not None:
+        text = "[EDIT] " + text
     text = split_for_window(text, offset=pre)
     print(f"{colored(u_name, 'cyan')} {colored('→', 'grey')} {text}")
 
