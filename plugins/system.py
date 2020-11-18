@@ -45,7 +45,7 @@ HELP.add_help("update", "update and restart",
                 "will pull changes from git (`git pull`) and then restart " +
                 "itself with an `execv` call.")
 @alemiBot.on_message(filters.me & filters.command("update", prefixes="."))
-async def update(_, message):
+async def update(client, message):
     msg = message.text.markdown
     try:
         print(f" [ Updating bot ]")
@@ -54,7 +54,7 @@ async def update(_, message):
         result = subprocess.run(["git", "pull"], capture_output=True, timeout=60)
         msg += " [OK]\n` → ` Bot will now restart"
         await message.edit(msg) 
-        alemiBot.restart()
+        client.restart()
     except Exception as e:
         msg += " [FAIL]\n`[!] → ` " + str(e)
         await message.edit(msg) 
