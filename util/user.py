@@ -15,7 +15,7 @@ def get_username_dict(user):
     elif "username" in user:
         return "@" + user['username']
     else:
-        if "last_name" in user::
+        if "last_name" in user:
             return user['first_name'] + ' ' + user['last_name']
         else:
             return user['first_name']
