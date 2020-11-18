@@ -9,6 +9,17 @@ def get_username(user):
     else:
         return "@" + user.username
 
+def get_username_dict(user):
+    if user is None:
+        return "N/A"
+    elif "username" in user:
+        return "@" + user['username']
+    else:
+        if "last_name" in user::
+            return user['first_name'] + ' ' + user['last_name']
+        else:
+            return user['first_name']
+
 def get_channel(chat):
     if chat.title is None:
         return get_username(chat)
