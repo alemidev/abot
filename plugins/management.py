@@ -109,18 +109,28 @@ async def manage_allowed_cmd(_, message):
         await message.edit(message.text.markdown + "\n` → ` No changes")
 
 HELP.add_help(["trusted", "plist", "permlist"], "list allowed users",
-                "note that users without a username may give issues. Also, this is broken as of now.")
+                "note that users without a username may give issues. Use `-s` to get " +
+                "the users individually if a batch request fails with 'InvalidPeerId'.", args="[-s]")
 # broken af lmaooo TODO
 @alemiBot.on_message(filters.me & filters.command(["trusted", "plist", "permlist"], prefixes="."))
 async def trusted_list(c, message):
     try:
         user_ids = list_allowed()
         text = "`[` "
-        users = await c.get_users([ int(u) for u in user_ids ]) # this thing gives a PeerIdInvalid exc???
+        issues = ""
+        users = []
+        if len(message.command) > 1 and message.command[1] == "-s":
+            for uid in list_allowed():
+                try:
+                    users.append(await client.get_users(uid))
+                except:
+                    issues += f"~~[{uid}]~~ "
+        else:
+            users = await c.get_users([ int(u) for u in user_ids ]) # this thing gives a PeerIdInvalid exc???
         for u in users:
             text += f"{get_username(e)}, "
         text += "`]`"
-        await message.edit(message.text.markdown + f"\n` → Allowed Users : `\n{text}") 
+        await message.edit(message.text.markdown + f"\n` → Allowed Users : `\n{text}\n{issues}") 
     except Exception as e:
         traceback.print_exc()
         await message.edit(message.text.markdown + f"\n`[!] → ` __{str(e)}__")
