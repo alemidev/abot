@@ -135,7 +135,7 @@ async def hist_cmd(_, message):
     if m_id is None:
         return
     cursor = EVENTS.find( {"message_id": m_id, "chat.id": message.chat.id},
-            {"message": 1, "date": 1, "edit_date": 1} ).sort("_id", -1)
+            {"text": 1, "date": 1, "edit_date": 1} ).sort("_id", -1)
     out = ""
     for doc in cursor:
         if show_time:
@@ -143,7 +143,7 @@ async def hist_cmd(_, message):
                 out += f"[{str(doc['date'])}] "    
             else:
                 out += f"[{str(doc['edit_date'])}] "
-        out += f"` → ` {doc['message']['markdown']}\n"
+        out += f"` → ` {doc['text']['markdown']}\n"
     await edit_or_reply(message, out)
 
 HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
@@ -176,10 +176,14 @@ async def deleted_cmd(client, message):
                 msg = EVENTS.find({"message_id": match["id"]}).sort("_id", -1).next()
             except StopIteration: # no message was found, maybe it's a ChatAction
                 continue
-            peer = get_username_dict(msg["from_user"])
-            if peer is None:
+            if "from_user" not in msg:
                 match["author"] = "UNKNOWN"
-            match["message"] = msg["text"]["markdown"]
+            else:
+                peer = get_username_dict(msg["from_user"])
+                if peer is None:
+                    match["author"] = "UNKNOWN"
+                else:
+                    match["message"] = msg["text"]["markdown"]
             res.append(match)
             limit -= 1
             if limit <= 0:
