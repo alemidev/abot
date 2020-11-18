@@ -11,6 +11,7 @@ from pymongo import MongoClient
 from termcolor import colored
 
 from pyrogram import filters
+from pyrogram.types import Object
 
 from bot import alemiBot
 
@@ -20,12 +21,13 @@ from util.text import split_for_window
 from util.permission import is_allowed
 from util.message import tokenize_json, edit_or_reply, get_text
 from util.user import get_username, get_channel
+from util.serialization import convert_to_dict
 
 last_group = "N/A"
 
-M_CLIENT = MongoClient('localhost', 27017, # ye TODO
-                        username=alemiBot.config.get("database", "username", fallback=""),
-                        password=alemiBot.config.get("database", "password", fallback=""))
+M_CLIENT = MongoClient('localhost', 27017,
+    username=alemiBot.config.get("database", "username", fallback=""),
+    password=alemiBot.config.get("database", "password", fallback=""))
 DB = M_CLIENT.alemibot
 EVENTS = DB.events
 
@@ -48,13 +50,15 @@ def print_formatted(chat, user, message):
 @alemiBot.on_message(group=8)
 async def msglogger(_, message):
     print_formatted(message.chat, message.from_user, message)
-    data = json.loads(str(message)) # LMAOOO I literally could not find a better way
+    data = convert_to_dict(message)
+    if "edit_date" in data: # Edits come as new messages
+        data["_"] = "EditMessage"
     EVENTS.insert_one(data)
 
 # Log Message deletions
 @alemiBot.on_deleted_messages(group=8)
 async def dellogger(_, message):
-    data = json.loads(str(message))
+    data = convert_to_dict(message)
     for d in data:
         d["_"] = "Delete"
         print(colored("[DELETED]", 'red', attrs=['bold']) + " " + str(d["message_id"]))

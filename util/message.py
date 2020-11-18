@@ -2,13 +2,13 @@ import re
 from . import batchify
 
 def get_text(message):
-    if message.text is None:
-        if message.caption is None:
+    if message.text is not None:
+        return message.text
+    else:
+        if message.caption is not None:
             return message.caption
         else:
             return ""
-    else:
-        return message.text
 
 async def edit_or_reply(message, text):
     if message.from_user is not None and message.from_user.is_self \
