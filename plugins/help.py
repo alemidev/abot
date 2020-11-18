@@ -57,7 +57,7 @@ async def help_cmd(_, message):
             if message.command[1] in cat.HELP_ENTRIES:
                 e = cat.HELP_ENTRIES[message.command[1]]
                 return await edit_or_reply(message, f"`→ {e.title} {e.args}` {e.longtext}")
-            elif message.command[1] in ALIASES:
+            elif message.command[1] in ALIASES and ALIASES[message.command[1]] in cat.HELP_ENTRIES:
                 e = cat.HELP_ENTRIES[ALIASES[message.command[1]]]
                 return await edit_or_reply(message, f"`→ {e.title} {e.args}`  {e.longtext}")
     await edit_or_reply(message, "`ᚨᛚᛖᛗᛁᛒᛟᛏ v0.2`\n" +
