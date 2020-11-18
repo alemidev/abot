@@ -9,7 +9,7 @@ from collections import Counter
 
 from pyrogram import filters
 
-from util import set_offline, batchify
+from util import batchify
 from util.parse import cleartermcolor
 from util.permission import is_allowed
 from util.message import edit_or_reply

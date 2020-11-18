@@ -21,7 +21,7 @@ from bot import alemiBot
 from pyrogram import filters
 from pyrogram.types import InputMediaDocument
 
-from util import set_offline, batchify
+from util import batchify
 from util.parse import cleartermcolor
 from util.permission import is_allowed
 from util.message import tokenize_json, tokenize_lines, edit_or_reply
