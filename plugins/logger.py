@@ -173,7 +173,7 @@ async def deleted_cmd(client, message):
                 match["date"] = "N/A"
             match["id"] = doc["message_id"]
             try:
-                msg = EVENTS.find({"id": match["id"]}).sort("_id", -1).next()
+                msg = EVENTS.find({"message_id": match["id"]}).sort("_id", -1).next()
             except StopIteration: # no message was found, maybe it's a ChatAction
                 continue
             peer = get_username_dict(msg["from_user"])
