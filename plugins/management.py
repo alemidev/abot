@@ -84,6 +84,8 @@ async def manage_allowed_cmd(client, message):
         elif len(message.command) > 1 and message.command[1] == "@here" \
         or message.command[1] == "@everyone":
             for u in client.iter_chat_members(message.chat.id):
+                if u.is_bot:
+                    continue
                 users_to_allow.append(u)
         elif len(message.command) > 1:
             user = None
