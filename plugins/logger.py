@@ -182,8 +182,10 @@ async def deleted_cmd(client, message):
                 peer = get_username_dict(msg["from_user"])
                 if peer is None:
                     match["author"] = "UNKNOWN"
-                else:
-                    match["message"] = msg["text"]["markdown"]
+            if "text" in msg:
+                match["message"] = msg["text"]["markdown"]
+            else:
+                match["message"] = ""
             res.append(match)
             limit -= 1
             if limit <= 0:
@@ -198,7 +200,7 @@ async def deleted_cmd(client, message):
             for doc in res:
                 if show_time:
                     out += f"[{str(doc['date'])}] "
-                out += f"**[**`{doc['id']}`**]** `{doc['author']} →` {doc['text']['markdown']}\n\n"
+                out += f"**[**`{doc['id']}`**]** `{doc['author']} →` {doc['message']}\n\n"
             if out == "":
                 out = "` → ` Nothing to display"
             await edit_or_reply(message, out)
