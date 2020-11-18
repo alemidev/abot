@@ -18,7 +18,7 @@ from util import batchify
 from util.parse import cleartermcolor
 from util.text import split_for_window
 from util.permission import is_allowed
-from util.message import get_channel, tokenize_json, edit_or_reply
+from util.message import tokenize_json, edit_or_reply
 from util.user import get_username, get_channel
 
 last_group = "N/A"
