@@ -34,7 +34,7 @@ HELP.add_help(["purge", "wipe", "clear"], "batch delete messages",
                 "If no target is given, only self messages will be deleted. Target can be `@all` and `@everyone`",
                 args="[target] [number]", public=True)
 @alemiBot.on_message(is_allowed & filters.regex(pattern=
-    r"^[\.\/](?:purge|wipe|clear)(?: |)(?P<target>[^ ]+|)(?: |)(?P<number>[0-9]+|)"
+    r"^[\.\/](?:purge|wipe|clear)(?: |)(?P@<target>[^ ]+|)(?: |)(?P<number>[0-9]+|)"
 ))
 async def purge(client, message):
     try:
