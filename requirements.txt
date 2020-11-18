@@ -1,4 +1,4 @@
-telethon
+pyrogram
 termcolor
 wikipedia
 italian-dictionary
