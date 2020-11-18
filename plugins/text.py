@@ -118,7 +118,7 @@ async def randomcase(_, message):
 
 HELP.add_help("shrug", "¯\_(ツ)_/¯", "will replace `.shrug` or `/shrug` anywhere "+
                 "in yor message with the composite emoji.")
-@alemiBot.on_message(filters.me & filters.regex(pattern=r"[\.\/]shrug"), group=2)
+@alemiBot.on_message(filters.me & filters.regex(pattern="[" + "\\".join(list(alemiBot.prefixes)) + "]shrug"), group=2)
 async def shrug(_, message):
     print(f" [ ¯\_(ツ)_/¯ ]")
     await message.edit(re.sub(r"[\.\/]shrug","¯\_(ツ)_/¯", message.text.markdown))
