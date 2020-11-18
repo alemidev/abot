@@ -19,7 +19,7 @@ def convert_to_dict(obj):
                 datetime.fromtimestamp(getattr(obj, attr))
                 if attr.endswith("date") else
                 [ convert_to_dict(e) for e in getattr(obj, attr) ]
-                if type(getattr(obj, attr)) == list else
+                if type(getattr(obj, attr)) is list else
                 convert_to_dict(getattr(obj, attr))
             )
             for attr in filter(lambda x: not x.startswith("_"), obj.__dict__)
