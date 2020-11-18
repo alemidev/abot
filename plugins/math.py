@@ -14,8 +14,13 @@ import sympy
 from sympy.solvers import solve
 from sympy.plotting import plot3d, plot3d_parametric_line
 from sympy.parsing.sympy_parser import parse_expr
+from plugins.help import HelpCategory
 
-# Print LaTeX formatted expression from either sympy or latex
+HELP = HelpCategory("MATH")
+
+HELP.add_help(["expr", "math"], "convert to LaTeX formula",
+                "this command accepts sympy syntax and will spit out a LaTeX formula as image. " +
+                "You can add the `-latex` argument and pass LaTeX directly.", args="[-latex] <expr>", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["expr", "math"], prefixes=".") & filters.regex(
     pattern=r"^.(?:expr|math)(?: |)(?P<opt>-latex|)(?: |)(?P<query>.*)"
 ))
@@ -35,7 +40,9 @@ async def expr(_, message):
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
 
-# Plot a matplotlib graph
+HELP.add_help(["plot", "graph"], "plot provided function",
+                "this command will run sympy `plot` and return result as image. Foruma passing is wonky. " +
+                "You can add the `-3d` argument to plot in 3d.", args="[-3d] <expr>", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["plot", "graph"], prefixes=".") & filters.regex(
     pattern=r"^.(?:plot|graph)(?: |)(?P<opt>-3d|-par|)(?: |)(?P<query>.*)"
 ))
@@ -59,7 +66,9 @@ async def graph(_, message):
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
 
-# Solve equation
+HELP.add_help("solve", "attempt to solve equation",
+                "this command will run sympy `solve` and attempt to find roots of the " +
+                "equation. You can pass systems too!", args="<expr>", public=True)
 @alemiBot.on_message(is_allowed & filters.command("solve", prefixes=".") & filters.regex(
     pattern=r"^.solve(?: |)(?P<query>.*)"
 ))
@@ -74,19 +83,3 @@ async def solve_cmd(event):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
-
-# class MathModules:
-#     def __init__(self, client):
-#         self.helptext = "`━━┫ MATH`\n"
-# 
-#         client.add_event_handler(expr)
-#         self.helptext += "`→ .expr [-latex] <expr> ` print math expr formatted *\n"
-# 
-#         client.add_event_handler(graph)
-#         self.helptext += "`→ .plot [-3d] <expr> ` print graph of expression *\n"
-# 
-#         client.add_event_handler(solve_cmd)
-#         self.helptext += "`→ .solve <expr> ` find roots of algebric equation *\n"
-# 
-#         print(" [ Registered Math Modules ]")
-

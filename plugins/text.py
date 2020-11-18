@@ -18,9 +18,16 @@ from bot import alemiBot
 
 import pyfiglet
 
+from plugins.help import HelpCategory
+
+HELP = HelpCategory("TEXT")
+
 FIGLET_FONTS = pyfiglet.FigletFont.getFonts()
 
-# edit message adding characters one at a time
+HELP.add_help(["slow", "sl"], "make text appear slowly",
+                "edit message adding batch of characters every time. If no batch size is " +
+                "given, it will default to 1. If no time is given, it will default to 0.5s.",
+                args="[-t] [-b] <text>")
 @alemiBot.on_message(filters.me & filters.regex(pattern=
     r"^[\.\/](?:sl|slow)(?: |)(?P<timer>-t [0-9.]+|)(?: |)(?P<batch>-b [0-9]+|)(?P<text>.*)"
 ))
@@ -58,7 +65,9 @@ def interval(delta):
         return 0.5
     return 0.25
 
-# Display a countdown
+HELP.add_help(["cd", "countdown"], "count down",
+                "will edit message to show a countdown. If no time is given, it will be 5s.",
+                args="[time]", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["countdown", "cd"], prefixes="."))
 async def countdown(_, message):
     if message.outgoing:
@@ -78,7 +87,8 @@ async def countdown(_, message):
         await asyncio.sleep(interval(end - time.time()))
     await tgt_msg.edit(msg.format(0))
 
-# make character random case (lIkE tHiS)
+HELP.add_help(["rc", "randomcase"], "make text randomly capitalized",
+                "will edit message applying random capitalization to every letter, like the spongebob meme.")
 @alemiBot.on_message(filters.me & filters.command(["rc", "randomcase"], prefixes="."))
 async def randomcase(_, message):
     print(f" [ making message randomly capitalized ]")
@@ -106,13 +116,15 @@ async def randomcase(_, message):
                 upper = True
     await message.edit(msg)
 
-# make character random case (lIkE tHiS)
+HELP.add_help("shrug", "¯\_(ツ)_/¯", "¯\_(ツ)_/¯", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["shrug"], prefixes="."))
 async def shrug(_, message):
     print(f" [ ¯\_(ツ)_/¯ ]")
     await edit_or_reply(r'¯\_(ツ)_/¯')
 
-# Replace or reply with figlet art
+HELP.add_help("figlet", "make a figlet art",
+                "run figlet and make a text art. You can specify a font (`-f`), or request a random one (`-r`). " +
+                "Get list of available fonts with `-list`.", args="[-l] [-f] [-r]", public=True)
 @alemiBot.on_message(is_allowed & filters.regex(pattern=
     r"^[\.\/]figlet(?: |)(?:(?P<list>-l)|(?P<font>-f [^ ]+)|(?P<random>-r)|)(?: |)(?P<text>.*)"
 ))
@@ -137,7 +149,8 @@ async def figlettext(_, message):
     result = pyfiglet.figlet_format(args["text"], font=font)
     await edit_or_reply("<code> →\n" + result + "</code>")
 
-# Run fortune
+HELP.add_help("fortune", "do you feel fortunate!?",
+                "run `fortune` to get a random sentence. Like fortune bisquits!", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["fortune"], prefixes="."))
 async def fortune(_, message):
     try:
@@ -148,10 +161,12 @@ async def fortune(_, message):
     except Exception as e:
         await edit_or_reply(message, "`[!] → ` " + str(e))
 
-# Roll dice
-# Replace or reply with figlet art
-@alemiBot.on_message(is_allowed & filters.regex(pattern=
-    r"^[\.\/](?:random|rand|roll)(?: |)(?:(?:(?P<num>[0-9]+|)d(?P<max>[0-9]+))|(?:(?P<batch>-n [0-9]+|)(?: |)(?P<values>.*)))"
+HELP.add_help(["rand", "random", "roll"], "get random choices",
+                "this can be used as a dice roller (`.roll 3d6`). If a list of choices is given, a random one " +
+                "will be chosen from that. If a number is given, it will choose a value from 1 to <n>, both included. " +
+                "You can specify how many extractions to make", args="[-n] [choices]", public=True)
+@alemiBot.on_message(is_allowed & filters.command(["rand", "random", "roll"], prefixes=".") & filters.regex(pattern=
+    r"^.(?:random|rand|roll)(?: |)(?:(?:(?P<num>[0-9]+|)d(?P<max>[0-9]+))|(?:(?P<batch>-n [0-9]+|)(?: |)(?P<values>.*)))"
 ))
 async def rand(_, message):
     args = message.matches[0]
@@ -192,30 +207,3 @@ async def rand(_, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
-
-# class TextModules:
-#     def __init__(self, client):
-#         self.helptext = "`━━┫ TEXT `\n"
-# 
-#         client.add_event_handler(slowtype)
-#         self.helptext += "`→ .slow [-t n] [-b n] <message> ` type msg slowly\n"
-# 
-#         client.add_event_handler(countdown)
-#         self.helptext += "`→ .cd <time> ` count down time *\n"
-# 
-#         client.add_event_handler(randomcase)
-#         self.helptext += "`→ .rc <message> ` maKe mEsSAgEs lIkE tHIs\n"
-# 
-#         client.add_event_handler(figlettext)
-#         self.helptext += "`→ .figlet [-l]|[-r]|[-f font] <text> ` maKe figlet art *\n"
-# 
-#         client.add_event_handler(shrug)
-#         self.helptext += "`→ .shrug ` replace or reply with shrug composite emote *\n"
-# 
-#         client.add_event_handler(fortune)
-#         self.helptext += "`→ .fortune ` you feel lucky!? *\n"
-# 
-#         client.add_event_handler(rand)
-#         self.helptext += "`→ .rand [n]d[max] | [-n <n>] [vals] ` get random stuff *\n"
-# 
-#         print(" [ Registered Text Modules ]")

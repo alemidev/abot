@@ -14,6 +14,9 @@ import requests
 from util import batchify
 from util.permission import is_allowed
 from util.message import edit_or_reply
+from plugins.help import HelpCategory
+
+HELP = HelpCategory("FILES")
 
 dictionary = PyDictionary()
 
@@ -34,7 +37,9 @@ def ud_define(word):
         traceback.print_exc()
         return None
 
-# Search on italian dictionary
+HELP.add_help(["diz", "dizionario"], "search in ita dict",
+                "get definition from italian dictionary of given word.",
+                args="[word]", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["diz", "dizionario"], prefixes="."))
 async def diz(_, message):
     if len(message.command) < 2:
@@ -52,7 +57,9 @@ async def diz(_, message):
     except Exception as e:
         await edit_or_reply(message, "`[!] → ` " + str(e) if str(e) != "" else "Not found")
 
-# Search on english dictionary
+HELP.add_help(["dic", "dictionary"], "search in eng dict",
+                "get definition from english dictionary of given word.",
+                args="[word]", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["dic", "dictionary"], prefixes="."))
 async def dic(_, message):
     if len(message.command) < 2:
@@ -73,7 +80,9 @@ async def dic(_, message):
     except Exception as e:
         await edit_or_reply(message, "`[!] → ` " + str(e))
 
-# Search on urban dictionary
+HELP.add_help(["ud", "urban"], "search in urban dict",
+                "get definition from urban dictionary of given word.",
+                args="[word]", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["ud", "urban"], prefixes="."))
 async def urbandict(_, message):
     if len(message.command) < 2:
@@ -93,7 +102,9 @@ async def urbandict(_, message):
     except Exception as e:
         await edit_or_reply(message, "`[!] → ` " + str(e))
 
-# Search on wikipedia
+HELP.add_help("wiki", "search on wikipedia",
+                "search on wikipedia, attaching initial text and a link.",
+                args="[query]", public=True)
 @alemiBot.on_message(is_allowed & filters.command("wiki", prefixes="."))
 async def wiki(_, message):
     if len(message.command) < 2:
@@ -117,7 +128,9 @@ async def wiki(_, message):
     except Exception as e:
         await edit_or_reply(message, "`[!] → ` " + str(e))
 
-# Let me google that for you
+HELP.add_help("lmgtfy", "let me google that for you",
+                "generates a `Let Me Google That For You` link.",
+                args="[query]", public=True)
 @alemiBot.on_message(is_allowed & filters.command("lmgtfy", prefixes="."))
 async def lmgtfy(event):
     if len(message.command) < 2:
@@ -128,27 +141,3 @@ async def lmgtfy(event):
         await edit_or_reply(message, f"` → ` http://letmegooglethat.com/?q={arg}")
     except Exception as e:
         await edit_or_reply(message, "`[!] → ` " + str(e))
-
-# class SearchModules:
-#     def __init__(self, client):
-#         self.helptext = "`━━┫ SEARCH `\n"
-# 
-#         client.add_event_handler(urbandict)
-#         self.helptext += "`→ .ud <something> ` look up something on urban dictionary *\n"
-# 
-#         client.add_event_handler(dic)
-#         self.helptext += "`→ .dic <something> ` look up something on english dictionary *\n"
-# 
-#         client.add_event_handler(diz)
-#         self.helptext += "`→ .diz <something> ` look up something on italian dictionary *\n"
-# 
-#         client.add_event_handler(wiki)
-#         self.helptext += "`→ .wiki <something> ` search something on wikipedia *\n"
-# 
-#         client.add_event_handler(lmgtfy)
-#         self.helptext += "`→ .lmgtfy <something> ` make a lmgtfy link *\n"
-# 
-#         print(" [ Registered Search Modules ]")
-# 
-#     def helptext(self):
-#         return self.helptext

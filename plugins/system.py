@@ -26,8 +26,12 @@ from util.parse import cleartermcolor
 from util.permission import is_allowed
 from util.message import tokenize_json, tokenize_lines, edit_or_reply, is_me
 from util.serialization import convert_to_dict
+from plugins.help import HelpCategory
 
-# Repy to .asd with "a sunny day" (and calculate ping)
+HELP = HelpCategory("SYSTEM")
+
+HELP.add_help(["asd", "ping"], "a sunny day!",
+                "The ping command.")
 @alemiBot.on_message(filters.me & filters.command(["asd", "ping"], prefixes="."))
 async def ping(_, message):
     msg = message.text
@@ -55,7 +59,9 @@ async def ping(_, message):
 #         await event.message.edit(msg) 
 #     await set_offline(event.client)
 
-# Get info about a chat
+HELP.add_help("where", "get info about chat",
+                "Get the complete information about current chat and attach as json",
+                public=True)
 @alemiBot.on_message(is_allowed & filters.command("where", prefixes="."))
 async def where_cmd(client, message):
     try:
@@ -69,9 +75,11 @@ async def where_cmd(client, message):
         traceback.print_exc()
         await edit_or_reply(message,"`[!] → ` " + str(e))
 
-# Get info about a user
+HELP.add_help("who", "get info about user",
+                "Get the complete information about an user (replied to or "+
+                "id given) and attach as json", public=True, args="[target]")
 @alemiBot.on_message(is_allowed & filters.command("who", prefixes=".") &
-    filters.regex(pattern=r"^.who(?: |)(?P<pack>-p|-r|)(?: |)(?P<name>[^ ]+|)"
+    filters.regex(pattern=r"^.who(?: |)(?P<name>[^ ]+|)"
 ))
 async def who_cmd(client, message):
     try:
@@ -97,7 +105,9 @@ async def who_cmd(client, message):
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
 
-# Get info about a message
+HELP.add_help("what", "get info about message",
+                "Get the complete information about a message (replied to or "+
+                "the sent message) and attach as json", public=True)
 @alemiBot.on_message(is_allowed & filters.command("what", prefixes="."))
 async def what_cmd(client, message):
     msg = message
@@ -114,7 +124,9 @@ async def what_cmd(client, message):
         traceback.print_exc()
         await edit_or_reply(message,"`[!] → ` " + str(e))
 
-# Run command
+HELP.add_help(["run", "r"], "run command on server",
+                "runs a command on server. Shell will be from user running bot. " +
+                "Every command starts in bot root folder.", args="<cmd>")
 @alemiBot.on_message(filters.me & filters.command(["run", "r"], prefixes="."))
 async def runit(client, message):
     args = re.sub("^[\.\/](?:run|r)(?: |)", "", message.text)
@@ -133,7 +145,9 @@ async def runit(client, message):
         traceback.print_exc()
         await message.edit(f"`$ {args}`\n`[!] → ` " + str(e))
 
-# Eval python line
+HELP.add_help(["eval", "e"], "eval a python expression",
+                "eval a python expression. No imports can be made nor variables can be " +
+                "assigned. Some common libs are already imported.", args="<expr>")
 @alemiBot.on_message(filters.me & filters.command(["eval", "e"], prefixes="."))
 async def evalit(client, message):
     args = re.sub("^[\.\/](?:eval|e)(?: |)", "", message.text)
@@ -150,31 +164,3 @@ async def evalit(client, message):
     except Exception as e:
         traceback.print_exc()
         await message.edit(f"`>>> {args}`\n`[!] → ` " + str(e))
-
-# class SystemModules:
-#     def __init__(self, client, limit=False):
-#         self.helptext = "`━━┫ SYSTEM `\n"
-# 
-#         if not limit:
-#             client.add_event_handler(runit)
-#             self.helptext += "`→ .run <cmd> ` execute command on server\n"
-# 
-#             client.add_event_handler(evalit)
-#             self.helptext += "`→ .eval <cmd> ` execute python expr\n"
-# 
-#         client.add_event_handler(ping)
-#         self.helptext += "`→ .asd ` a sunny day (+ get latency)\n"
-# 
-#         client.add_event_handler(who_cmd)
-#         self.helptext += "`→ .who [-p|-r] [@user] ` get info of user *\n"
-# 
-#         client.add_event_handler(what_cmd)
-#         self.helptext += "`→ .what [-p|-r] ` get info of message *\n"
-# 
-#         client.add_event_handler(where_cmd)
-#         self.helptext += "`→ .where [-p|-r] ` get info of chat *\n"
-# 
-#         client.add_event_handler(update)
-#         self.helptext += "`→ .update ` (git) pull changes and reboot bot\n"
-# 
-#         print(" [ Registered System Modules ]")

@@ -14,10 +14,15 @@ from bot import alemiBot
 from util import batchify
 from util.permission import is_allowed
 from util.message import edit_or_reply, get_text
+from plugins.help import HelpCategory
 
-# Get random meme from memes folder
+HELP = HelpCategory("MEME")
+
+HELP.add_help("meme", "get a meme",
+                "get a specific meme is a name is given, otherwise a random one. " +
+                "Use argument `-list` to gett all meme names.", public=True, args="[-list] [name]")
 @alemiBot.on_message(is_allowed & filters.command("meme", prefixes=".") & filters.regex(pattern=
-    r"meme(?: |$)(?P<list>-list|-l|)(?: |$ |)(?P<name>[^ ]*)"
+    r"meme(?: |$)(?P<list>-list|)(?: |$ |)(?P<name>[^ ]*)"
 ))
 async def getmeme(client, message):
     try:
@@ -50,7 +55,9 @@ async def getmeme(client, message):
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
 
-# Save a meme
+HELP.add_help("steal", "steal a meme",
+                "save a meme to collection. Either attach an image or reply to one. " +
+                "A name should be given but I'm waiting a PR on pyrogram for that.")
 @alemiBot.on_message(filters.me & filters.command("steal", prefixes="."))
 async def steal(client, message):
     # if len(message.command) < 2:
@@ -102,7 +109,9 @@ async def fry_image(img: Image) -> Image:
 
     return img
 
-# DeepFry a meme
+HELP.add_help("fry", "fry a meme",
+                "fry a meme. Sadly, no stars on eyes (yet!). Code comes from `https://github.com/Ovyerus/deeppyer`. " +
+                "The number of frying rounds can be specified, will default to 1.", args="[-c]", public=True)
 @alemiBot.on_message(is_allowed & filters.command("fry", prefixes=".") & filters.regex(pattern=
     r"fry(?: |)(?P<count>-c [0-9]+|)"
 ))
@@ -169,7 +178,9 @@ def ascii_image(img:Image) -> str:
     ascii_image = "\n".join(ascii_image)
     return ascii_image
 
-# Make ASCII art of an image
+HELP.add_help("ascii", "make ascii art of picture",
+                "roughly convert a picture into ascii art. Code comes from `https://github.com/anuragrana/Python-Scripts/blob/master/image_to_ascii.py`. " +
+                "Result will be attached as `.txt`.", public=True)
 @alemiBot.on_message(is_allowed & filters.command("ascii", prefixes="."))
 async def ascii_cmd(client, message):
     msg = message
@@ -192,21 +203,3 @@ async def ascii_cmd(client, message):
     else:
         await event.message.edit(event.raw_text + 
                 "\n`[!] → ` you need to attach or reply to a file, dummy")
-
-# class MemeModules:
-#     def __init__(self, client):
-#         self.helptext = "`━━┫ MEME `\n"
-# 
-#         client.add_event_handler(getmeme)
-#         self.helptext += "`→ .meme [-list] [name]` get a meme *\n"
-# 
-#         client.add_event_handler(steal)
-#         self.helptext += "`→ .steal <name> ` add meme to collection\n"
-# 
-#         client.add_event_handler(deepfry)
-#         self.helptext += "`→ .fry [-c n] ` fry a meme n times *\n"
-# 
-#         client.add_event_handler(ascii_cmd)
-#         self.helptext += "`→ .ascii ` make ascii art from img *\n"
-# 
-#         print(" [ Registered Meme Modules ]")

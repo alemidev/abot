@@ -22,6 +22,9 @@ from util.permission import is_allowed
 from util.message import tokenize_json, edit_or_reply, get_text
 from util.user import get_username, get_channel, get_username_dict # lmaoo bad
 from util.serialization import convert_to_dict
+from plugins.help import HelpCategory
+
+HELP = HelpCategory("LOG")
 
 last_group = "N/A"
 
@@ -71,7 +74,9 @@ def order_suffix(num, measure='B'):
         num /= 1024.0
     return "{n:.1f} Yi{m}".format(n=num, m=measure)
 
-# Get data off database
+HELP.add_help(["query", "q", "log"], "interact with db",
+                "make queries to the underlying database (MongoDB) to request documents. " +
+                "Filters, limits and fields can be configured with arguments.", args="[-c] [-l] [-f] <query>")
 @alemiBot.on_message(filters.me & filters.command(["query", "q", "log"], prefixes=".") & filters.regex(pattern=
     r"^.(?:log|query|q)(?: |)(?P<count>-c|)(?: |)(?P<limit>-l [0-9]+|)(?: |)(?P<filter>-f [^ ]+|)(?: |)(?P<query>[^ ]+|)"
 ))
@@ -112,7 +117,9 @@ async def query_cmd(client, message):
         traceback.print_exc()
         await message.edit(message.text + "\n`[!] → ` " + str(e))
 
-# Get edit history of a message
+HELP.add_help(["hist", "history"], "get edit history of a message",
+                "request edit history of a message. You can specify an id or reply to a message.",
+                public=True, args="[-t] [id]")
 @alemiBot.on_message(is_allowed & filters.command(["history", "hist"], prefixes=".") & filters.regex(
     pattern=r"^.hist(?:ory|)(?: |)(?P<time>-t|)(?: |)(?P<id>[0-9]+|)"
 ))
@@ -138,7 +145,10 @@ async def hist_cmd(_, message):
         out += f"` → ` {doc['message']['markdown']}\n"
     await edit_or_reply(message, out)
 
-# Get last N deleted messages
+HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
+                "request last edited messages, from channel or globally (-g, reserved to owner). A number of " +
+                "messages to peek can be specified. You can append `-json` at the end to get a json with all message data.",
+                public=True, args="[-t] [-g] [num] [-json]")
 @alemiBot.on_message(filters.me & filters.command(["peek", "deld", "deleted", "removed"], prefixes=".") & filters.regex(
     pattern=r"^.(?:peek|deld|deleted|removed)(?: |)(?P<time>-t|)(?: |)(?P<global>-g|)(?: |)(?P<number>[0-9]+|)(?: |)(?P<json>-json|)"
 ))
@@ -188,22 +198,3 @@ async def deleted_cmd(client, message):
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
 
-# class LoggerModules:
-#     def __init__(self, client, limit=False):
-#         self.helptext = "`━━┫ LOG `\n"
-# 
-#         client.add_event_handler(editlogger)
-#         client.add_event_handler(msglogger)
-#         client.add_event_handler(dellogger)
-#         client.add_event_handler(actionlogger)
-# 
-#         client.add_event_handler(query_cmd)
-#         self.helptext += "`→ .query [-c] [-l] [-f] [query] ` interact with db\n"
-# 
-#         client.add_event_handler(hist_cmd)
-#         self.helptext += "`→ .history [-t] [id] ` get edits to a message *\n"
-# 
-#         client.add_event_handler(deleted_cmd)
-#         self.helptext += "`→ .peek [-t] [-g] [n] [-json] ` show deletions *\n"
-# 
-#         print(" [ Registered Logger Modules ]")

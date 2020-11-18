@@ -7,10 +7,14 @@ from pyrogram import filters
 from bot import alemiBot
 
 from util.permission import is_allowed
+from plugins.help import HelpCategory
+
+HELP = HelpCategory("BULLY")
 
 censoring = {}
 
-# Delete all messages as soon as they arrive
+HELP.add_help("stop", "stop censoring a chat",
+            "typing .stop in a chat that is being censored will stop all censoring")
 @alemiBot.on_message(group=9)
 async def bully(client, message):
     if message.edit_date is not None:
@@ -30,7 +34,10 @@ async def bully(client, message):
                 if message.from_user.id in censoring[message.chat.id]:
                     await message.delete()
 
-# Start bullying a chat
+HELP.add_help(["censor", "bully"], "start censoring a chat",
+            "will delete any message sent in this chat from target. If no target " +
+            "is specified, all messages will be deleted as soon as they arrive",
+            args="[target]")
 @alemiBot.on_message(filters.me & filters.command(["censor","bully"], prefixes=".") &
     filters.regex(pattern=r"^.(?:censor|bully)(?: |)(?P<target>@[^ ]+|)"
 ))
@@ -49,7 +56,12 @@ async def startcensor(client, message):
     await message.edit(message.text + f"\n` → ` Censoring {target}")
     print(" [ Censoring new chat ]")
 
-# Spam message x times
+HELP.add_help(["spam", "flood"], "pretty self explainatory",
+            "will send many messages in this chat at a specific interval. " +
+            "If no number is given, will default to 5. If no interval is specified, " +
+            "messages will be sent as soon as possible. You can reply to a message and " +
+            "all spammed msgs will reply to that one too",
+            args="[-n] [-t]")
 @alemiBot.on_message(filters.me & filters.command("spam", prefixes=".") & filters.regex(
         pattern=r"^.spam(?: |)(?P<number>(?:-n |)[0-9]+|)(?: |)(?P<time>-t [0-9.]+|)(?P<text>.*)"
 ))
@@ -75,17 +87,3 @@ async def spam(client, message):
                 await asyncio.sleep(wait) 
     except Exception as e:
         await message.edit(message.text + "`[!] → ` " + str(e))
-
-# class BullyModules:
-#     def __init__(self, client):
-#         self.helptext = "`━━┫ BULLY`\n"
-# 
-#         client.add_event_handler(spam)
-#         self.helptext += "`→ .spam [-n] [-t] <message> ` self explainatory\n"
-# 
-#         client.add_event_handler(bully)
-#         client.add_event_handler(startcensor)
-#         self.helptext += "`→ .censor [target] ` delete msgs sent by target\n"
-#         self.helptext += "`→ .stop ` stop censoring this chat\n"
-# 
-#         print(" [ Registered Bully Modules ]")

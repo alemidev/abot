@@ -12,8 +12,13 @@ from util.permission import is_allowed, allow, disallow, serialize, list_allowed
 from util.user import get_username
 from util.message import edit_or_reply
 from util.text import split_for_window
+from plugins.help import HelpCategory
 
-# Delete message immediately after it being sent
+HELP = HelpCategory("MANAGEMENT")
+
+HELP.add_help("delme", "immediately delete message",
+                "add `-delme`, `-delete` or `-del` at the end of a message to have it deleted after a time. " +
+                "If no time is given, message will be immediately deleted", args="[time]")
 @alemiBot.on_message(filters.me & filters.regex(pattern=
     r"(?:.*|)(?:-delme|-delete|-d)(?: |)(?P<time>[0-9]+|)$"
 ), group=5)
@@ -24,9 +29,12 @@ async def deleteme(_, message):
         await asyncio.sleep(float(t))
     await message.delete()
 
-# Delete last X messages sent
+HELP.add_help(["purge", "wipe", "clear"], "batch delete messages",
+                "delete last <n> sent messages from <target>. If <n> is not given, will default to 1. " +
+                "If no target is given, only self messages will be deleted. Target can be `@all` and `@everyone`",
+                args="[target] [number]", public=True)
 @alemiBot.on_message(is_allowed & filters.regex(pattern=
-    r"^[\.\/](?:purge|wipe|clear)(?: |)(?P<target>@[^ ]+|)(?: |)(?P<number>[0-9]+|)"
+    r"^[\.\/](?:purge|wipe|clear)(?: |)(?P<target>[^ ]+|)(?: |)(?P<number>[0-9]+|)"
 ))
 async def purge(client, message):
     try:
@@ -43,7 +51,10 @@ async def purge(client, message):
             if args["target"] == "@all" or args["target"] == "@everyone":
                 target = None
             else:
-                target = (await client.get_users(args["target"])).id
+                try:
+                    target = (await client.get_users(int(args["target"]))).id
+                except ValueError:
+                    target = (await client.get_users(args["target"])).id
         print(f" [ purging last {number} message from {args['target']} ]")
         n = 0
         async for message in client.iter_history(message.chat.id):
@@ -57,7 +68,10 @@ async def purge(client, message):
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
 
-# Allow someone
+HELP.add_help(["allow", "disallow", "revoke"], "allow/disallow to use bot",
+                "this command will work differently if invoked with `allow` or with `disallow`. Target user " +
+                "will be given/revoked access to public bot commands. ~~Use `@here` or `@everyone` to allow " +
+                "all users in this chat~~ (broken since pyrogram port, TODO!)", args="<target>")
 @alemiBot.on_message(filters.me & filters.command(["allow", "disallow", "revoke"], prefixes="."))
 async def manage_allowed_cmd(_, message):
     users_to_manage = []
@@ -94,7 +108,8 @@ async def manage_allowed_cmd(_, message):
     else:
         await message.edit(message.text + "\n` → ` No changes")
 
-# List trusted
+HELP.add_help(["trusted", "plist", "permlist"], "list allowed users",
+                "note that users without a username may give issues. Also, this is broken as of now.")
 # broken af lmaooo TODO
 @alemiBot.on_message(filters.me & filters.command(["trusted", "plist", "permlist"], prefixes="."))
 async def trusted_list(c, message):
@@ -105,24 +120,3 @@ async def trusted_list(c, message):
         text += f"{get_username(e)}, "
     text += "`]`"
     await message.edit(message.text + f"\n` → Allowed Users : `\n{text}") 
-
-# class ManagementModules:
-#     def __init__(self, client):
-#         self.helptext = "`━━┫ MANAGE `\n"
-# 
-#         client.add_event_handler(purge)
-#         self.helptext += "`→ .purge [target] [number] ` delete last <n> messages\n"
-# 
-#         client.add_event_handler(allow_cmd)
-#         self.helptext += "`→ .allow [user] ` add an user as allowed to use bot\n"
-# 
-#         client.add_event_handler(revoke_cmd)
-#         self.helptext += "`→ .revoke [user] ` remove user permissions to use bot\n"
-# 
-#         client.add_event_handler(trusted_list)
-#         self.helptext += "`→ .trusted [-i] ` list users allowed to run pub cmds\n"
-# 
-#         client.add_event_handler(deleteme)
-#         self.helptext += "`→ ... -delme [time] ` delete msg ending with `-delme`\n"
-# 
-#         print(" [ Registered Management Modules ]")
