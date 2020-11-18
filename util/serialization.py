@@ -4,7 +4,8 @@ from datetime import datetime
 from pyrogram.types import List
 
 def convert_to_dict(obj):
-    if isinstance(obj, datetime):
+    if isinstance(obj, datetime) or isinstance(obj, int) \
+    or isinstance(obj, float) or isinstance(obj, bool) or obj is None:
         return obj 
     elif isinstance(obj, list) or isinstance(obj, List):
         return [ convert_to_dict(e) for e in obj ]
