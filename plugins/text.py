@@ -144,8 +144,7 @@ async def figlettext(_, message):
         msg = f"` → ` **Figlet fonts : ({len(FIGLET_FONTS)})\n```[ "
         msg += " ".join(FIGLET_FONTS)
         msg += " ]```"
-        await edit_or_reply(msg)
-        return
+        return await edit_or_reply(message, msg)
     font = "slant"
     if args["random"] == "-r":
         font = secrets.choice(FIGLET_FONTS)
@@ -156,7 +155,7 @@ async def figlettext(_, message):
     if args["text"] == "":
         return
     result = pyfiglet.figlet_format(args["text"], font=font)
-    await edit_or_reply("<code> →\n" + result + "</code>")
+    await edit_or_reply(message, "<code> →\n" + result + "</code>")
 
 HELP.add_help("fortune", "do you feel fortunate!?",
                 "run `fortune` to get a random sentence. Like fortune bisquits!", public=True)
