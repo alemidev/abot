@@ -97,7 +97,7 @@ async def query_cmd(client, message):
                 if lim is not None and len(buf) >= lim:
                     break
             raw = json.dumps(buf, indent=2, default=str)
-            if len(event.raw_text) + len(tokenize_json(raw)) > 4090:
+            if len(message.text) + len(tokenize_json(raw)) > 4090:
                 f = io.BytesIO(raw.encode("utf-8"))
                 f.name = "query.json"
                 await client.send_document(message.chat.id, f, reply_to_message_id=message.message_id,
