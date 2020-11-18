@@ -14,6 +14,15 @@ async def get_channel(message):
         return await message.client.get_entity(
                     await message.get_input_sender())
 
+def get_text(message):
+    if message.text is None:
+        if message.caption is None:
+            return message.caption
+        else:
+            return ""
+    else:
+        return message.text
+
 async def edit_or_reply(message, text):
     if message.from_user is not None and message.from_user.is_self \
     and len(message.text + text) < 4090: 
