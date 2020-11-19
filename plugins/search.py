@@ -151,9 +151,10 @@ async def lmgtfy(_, message):
 
 HELP.add_help(["location", "loc"], "send a location",
                 "send a location for specific latitude and longitude. Both has " +
-                "to be given and are in range [-90, 90]", args="<lat> <long>", public=True)
+                "to be given and are in range [-90, 90]. If a title is given with the `-t` " +
+                "option, the location will be sent as venue.", args="[-t] <lat> <long>", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["location", "loc"], list(alemiBot.prefixes)) & filters.regex(
-    pattern=r".(?:location|loc)(?: |)(?:(?:(?P<lat>[0-9.]+) (?P<long>[0-9.]+))|(?P<address>.*))"
+    pattern=r".(?:location|loc)(?: |)(?P<title>-t [^ ]+|)(?: |)(?:(?:(?P<lat>[0-9.]+) (?P<long>[0-9.]+))|(?P<address>.*))"
 ))
 async def location_cmd(client, message):
     args = message.matches[0]
@@ -169,7 +170,12 @@ async def location_cmd(client, message):
     if latitude > 90 or latitude < -90 or longitude > 90 or longitude < -90:
         return await edit_or_reply(message, "`[!] → ` Invalid coordinates")
     try:
-        await client.send_location(message.chat.id, latitude, longitude)
+        if args["title"].startswith("-t "):
+            await client.send_venue(message.chat.id, latitude, longitude,
+                                        title=args["title"].replace("-t ", ""),
+                                        address=args["address"])
+        else:
+            await client.send_location(message.chat.id, latitude, longitude)
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
