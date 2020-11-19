@@ -14,7 +14,7 @@ def get_text(message):
         else:
             return ""
 
-async def edit_or_reply(message, text):
+async def edit_or_reply(message, text, *args, **kwargs):
     if message.from_user is not None and message.from_user.is_self \
     and len(message.text.markdown + text) < 4090: 
         await message.edit(message.text.markdown + "\n" + text)
