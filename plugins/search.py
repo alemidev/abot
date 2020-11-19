@@ -16,7 +16,7 @@ from util.permission import is_allowed
 from util.message import edit_or_reply
 from plugins.help import HelpCategory
 
-HELP = HelpCategory("FILES")
+HELP = HelpCategory("SEARCH")
 
 dictionary = PyDictionary()
 
