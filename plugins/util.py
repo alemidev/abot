@@ -118,6 +118,8 @@ HELP.add_help(["translate", "tran", "tr"], "translate to/from",
 ))
 async def translate_cmd(_, message):
     args = message.matches[0]
+    if args["text"] is None or args["text"] == "":
+        return await edit_or_reply(message, "`[!] → ` Nothing to translate")
     tr_options = {}
     if args["src"].startswith("-s "):
         tr_options["src"] = args["src"].replace("-s ", "")
