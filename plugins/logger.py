@@ -115,18 +115,16 @@ async def query_cmd(client, message):
             buf = []
             q = json.loads(args["query"])
             cursor = None
-            lim = None
+            lim = 10
             if args["limit"] != "":
                 lim = int(args["limit"].replace("-l ", ""))
             if args["filter"] != "":
                 filt = json.loads(args["filter"].replace("-f ", ""))
-                cursor = EVENTS.find(q, filt).sort("_id", -1)
+                cursor = EVENTS.find(q, filt).sort("_id", -1).limit(lim)
             else:
-                cursor = EVENTS.find(q).sort("_id", -1)
+                cursor = EVENTS.find(q).sort("_id", -1).limit(lim)
             for doc in cursor:
                 buf.append(doc)
-                if lim is not None and len(buf) >= lim:
-                    break
             raw = json.dumps(buf, indent=2, default=str)
             if len(message.text.markdown) + len(tokenize_json(raw)) > 4090:
                 f = io.BytesIO(raw.encode("utf-8"))
