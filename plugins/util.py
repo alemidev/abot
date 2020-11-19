@@ -111,7 +111,7 @@ async def rand_cmd(_, message):
 
 HELP.add_help(["translate", "tran", "tr"], "translate to/from",
                 "translate text from a language (autodetected if not specified, `-s`) to another " +
-                "specified lang (defaults to eng, `-d`). It will show the confidence level. This " +
+                "specified lang (defaults to eng, `-d`). It will show the confidence for detected lang. This " +
                 "uses google translate. The lang codes must be 2 letter long (en, ja...)", args="[-s] [-d]", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["translate", "tran", "tr"], list(alemiBot.prefixes)) & filters.regex(pattern=
     r"^.(?:translate|tran|tr)(?: |)(?P<src>-s [^ ]+|)(?: |)(?P<dest>-d [^ ]+|)(?: |)(?P<text>.*)"
