@@ -58,12 +58,18 @@ async def slowtype(_, message):
 
 def interval(delta):
     if delta > 100:
+        return 10
+    if delta > 50:
         return 5
     if delta > 20:
-        return 1
+        return 3
     if delta > 10:
+        return 1
+    if delta > 5:
         return 0.5
-    return 0.25
+    if delta > 2:
+        return 0.25
+    return 0
 
 HELP.add_help(["cd", "countdown"], "count down",
                 "will edit message to show a countdown. If no time is given, it will be 5s.",
