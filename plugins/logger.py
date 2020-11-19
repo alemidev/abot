@@ -57,6 +57,7 @@ def print_formatted(chat, user, message):
 # Print in terminal received chats
 @alemiBot.on_message(group=8)
 async def msglogger(client, message):
+    global LOGGED_COUNT
     print_formatted(message.chat, message.from_user, message)
     data = convert_to_dict(message)
     EVENTS.insert_one(data)
@@ -70,6 +71,7 @@ async def msglogger(client, message):
 # Log Message deletions
 @alemiBot.on_deleted_messages(group=8)
 async def dellogger(_, message):
+    global LOGGED_COUNT
     data = convert_to_dict(message)
     for d in data:
         d["_"] = "Delete"
@@ -89,6 +91,7 @@ HELP.add_help(["stats", "stat"], "get stats",
                 "Get uptime, disk usage for media and for db, number of tracked events.", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["stats", "stat"], list(alemiBot.prefixes)))
 async def stats_cmd(client, message):
+    global LOGGED_COUNT
     count = EVENTS.count_documents({})
     size = DB.command("dbstats")['totalSize']
     memesize = float(subprocess.run( # this is bad and ugly
