@@ -133,9 +133,9 @@ async def replace_arrows(_, message):
 
 HELP.add_help("figlet", "make a figlet art",
                 "run figlet and make a text art. You can specify a font (`-f`), or request a random one (`-r`). " +
-                "Get list of available fonts with `-list`.", args="[-l] [-f] [-r]", public=True)
+                "Get list of available fonts with `-list`.", args="[-l|r|f] [-w]", public=True)
 @alemiBot.on_message(is_allowed & filters.regex(pattern=
-    r"^[\.\/]figlet(?: |)(?:(?P<list>-l)|(?P<font>-f [^ ]+)|(?P<random>-r)|)(?: |)(?P<text>.*)"
+    r"^[\.\/]figlet(?: |)(?:(?P<list>-l)|(?P<font>-f [^ ]+)|(?P<random>-r)|)(?: |)(?P<width>-w [0-9]+|)(?: |)(?P<text>.*)"
 ))
 async def figlettext(_, message):
     print(f" [ figlet ]")
@@ -145,6 +145,9 @@ async def figlettext(_, message):
         msg += " ".join(FIGLET_FONTS)
         msg += " ]```"
         return await edit_or_reply(message, msg)
+    width = 30
+    if args["width"].startswith("-w "):
+        width = int(args["width"].replace("-w ", ""))
     font = "slant"
     if args["random"] == "-r":
         font = secrets.choice(FIGLET_FONTS)
@@ -154,7 +157,7 @@ async def figlettext(_, message):
             font = f
     if args["text"] == "":
         return
-    result = pyfiglet.figlet_format(args["text"], font=font)
+    result = pyfiglet.figlet_format(args["text"], font=font, width=width)
     await edit_or_reply(message, "<code> →\n" + result + "</code>", parse_mode="html")
 
 HELP.add_help("fortune", "do you feel fortunate!?",
