@@ -37,6 +37,8 @@ EVENTS = DB.events
 
 LOG_MEDIA = alemiBot.config.get("database", "log_media", fallback=False)
 
+LOGGED_COUNT = 0
+
 def print_formatted(chat, user, message):
     global last_group
     if chat.id != last_group:
@@ -58,6 +60,7 @@ async def msglogger(client, message):
     print_formatted(message.chat, message.from_user, message)
     data = convert_to_dict(message)
     EVENTS.insert_one(data)
+    LOGGED_COUNT += 1
     if message.media and LOG_MEDIA:
         await client.download_media(message, file_name="data/scraped_media/")
 
@@ -70,6 +73,7 @@ async def dellogger(_, message):
         d["date"] = datetime.now()
         print(colored("[DELETED]", 'red', attrs=['bold']) + " " + str(d["message_id"]))
         EVENTS.insert_one(d)
+        LOGGED_COUNT += 1
 
 def order_suffix(num, measure='B'):
     for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
@@ -95,7 +99,7 @@ async def stats_cmd(client, message):
     medianumber = len(os.listdir("data/scraped_media"))
     uptime = str(datetime.now() - client.start_time)
     await edit_or_reply(message, f"` → ` online for **{uptime}**" +
-                    f"\n` → ` **{count}** events logged" +
+                    f"\n` → ` **{LOGGED_COUNT}** events logged (**{count}** total)" +
                     f"\n` → ` DB size **{order_suffix(size)}**" +
                     f"\n` → ` **{memenumber}** memes collected" +
                     f"\n` → ` meme folder size **{order_suffix(memesize)}**" +
