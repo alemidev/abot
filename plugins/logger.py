@@ -110,13 +110,7 @@ HELP.add_help(["query", "q", "log"], "interact with db",
 async def query_cmd(client, message):
     args = message.matches[0]
     try:
-        if args["count"] == "-c":
-            count = EVENTS.count_documents({})
-            size = DB.command("dbstats")['totalSize']
-            await message.edit(message.text.markdown +
-                            f"\n` → ` **{count}** events logged" +
-                            f"\n` → ` size **{order_suffix(size)}**")
-        elif args["query"] != "":
+        if args["query"] != "":
             buf = []
             q = json.loads(args["query"])
             cursor = None
