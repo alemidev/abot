@@ -54,7 +54,7 @@ def print_formatted(chat, user, message):
 
 # Print in terminal received chats
 @alemiBot.on_message(group=8)
-async def msglogger(_, message):
+async def msglogger(client, message):
     print_formatted(message.chat, message.from_user, message)
     data = convert_to_dict(message)
     EVENTS.insert_one(data)
