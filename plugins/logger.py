@@ -62,11 +62,11 @@ async def msglogger(client, message):
     data = convert_to_dict(message)
     EVENTS.insert_one(data)
     LOGGED_COUNT += 1
-    if message.media and LOG_MEDIA and (hasattr(message, "audio") 
-    or hasattr(message, "document") or hasattr(message, "photo") 
-    or hasattr(message, "video") or hasattr(message, "voice") 
-    or hasattr(message, "video_note") or hasattr(message, "contact")): # I don't think there is a nicer way
-        await client.download_media(message, file_name="data/scraped_media/")
+    if message.media and LOG_MEDIA:
+        try: 
+            await client.download_media(message, file_name="data/scraped_media/")
+        except ValueError:
+            pass # ignore, some messages are marked as media but have nothing to download wtf
 
 # Log Message deletions
 @alemiBot.on_deleted_messages(group=8)
