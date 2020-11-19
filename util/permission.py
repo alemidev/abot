@@ -24,7 +24,7 @@ def allow(uid, val=True):
     serialize()
     return True
 
-def disallow(uid):
+def disallow(uid, val=False):
     if str(uid) not in ALLOWED:
         return False
     ALLOWED.pop(str(uid), None)
