@@ -5,30 +5,15 @@ import io
 import traceback
 import json
 
-# handy libs to have for eval()
-import requests
-import sympy
-import os
-import re
-import random
-import math
-import datetime
-
-from termcolor import colored
-
 from bot import alemiBot
 
 from pyrogram import filters
-from pyrogram.types import InputMediaDocument
 
-from util import batchify
-from util.parse import cleartermcolor
 from util.permission import is_allowed
-from util.message import tokenize_json, tokenize_lines, edit_or_reply, is_me
-from util.serialization import convert_to_dict
+from util.message import edit_or_reply, is_me
 from plugins.help import HelpCategory
 
-HELP = HelpCategory("SYSTEM")
+HELP = HelpCategory("CORE")
 
 HELP.add_help(["asd", "ping"], "a sunny day!",
                 "The ping command.")
@@ -62,14 +47,21 @@ async def update(client, message):
 
 HELP.add_help("where", "get info about chat",
                 "Get the complete information about current chat and attach as json",
-                public=True)
+                args="[target]", public=True)
 @alemiBot.on_message(is_allowed & filters.command("where", list(alemiBot.prefixes)))
 async def where_cmd(client, message):
     try:
+        tgt = message.chat
+        if len(message.command) > 1:
+            arg = message.command[1]
+            if arg.isnumeric():
+                tgt = await client.get_chat(int(arg))
+            else:
+                tgt = await client.get_chat(arg)
         print(f" [ getting info of chat ]")
         if is_me(message):
-            await message.edit(message.text.markdown + f"\n` → ` Getting data of chat `{message.chat.id}`")
-        out = io.BytesIO((str(message.chat)).encode('utf-8'))
+            await message.edit(message.text.markdown + f"\n` → ` Getting data of chat `{tgt.id}`")
+        out = io.BytesIO((str(tgt)).encode('utf-8'))
         out.name = f"chat-{message.chat.id}.json"
         await client.send_document(message.chat.id, out)
     except Exception as e:
@@ -108,7 +100,7 @@ async def who_cmd(client, message):
 
 HELP.add_help("what", "get info about message",
                 "Get the complete information about a message (replied to, from specified id or "+
-                "the sent message) and attach as json", args="[id]", public=True)
+                "the sent message) and attach as json", args="[target]", public=True)
 @alemiBot.on_message(is_allowed & filters.command("what", list(alemiBot.prefixes)))
 async def what_cmd(client, message):
     msg = message
@@ -126,44 +118,3 @@ async def what_cmd(client, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message,"`[!] → ` " + str(e))
-
-HELP.add_help(["run", "r"], "run command on server",
-                "runs a command on server. Shell will be from user running bot. " +
-                "Every command starts in bot root folder.", args="<cmd>")
-@alemiBot.on_message(filters.me & filters.command(["run", "r"], list(alemiBot.prefixes)))
-async def runit(client, message):
-    args = re.sub("^[\.\/](?:run|r)(?: |)", "", message.text)
-    try:
-        print(f" [ running command \"{args}\" ]")
-        result = subprocess.run(args, shell=True, capture_output=True, timeout=60)
-        output = cleartermcolor(result.stdout.decode())
-        if len(args) + len(output) > 4080:
-            await message.edit(f"```$ {args}\n → Output too long, sending as file```")
-            out = io.BytesIO((f"$ {args}\n" + output).encode('utf-8'))
-            out.name = "output.txt"
-            await client.send_document(message.chat.id, out)
-        else:
-            await message.edit(tokenize_lines(f"$ {args}\n\n" + output))
-    except Exception as e:
-        traceback.print_exc()
-        await message.edit(f"`$ {args}`\n`[!] → ` " + str(e))
-
-HELP.add_help(["eval", "e"], "eval a python expression",
-                "eval a python expression. No imports can be made nor variables can be " +
-                "assigned. Some common libs are already imported.", args="<expr>")
-@alemiBot.on_message(filters.me & filters.command(["eval", "e"], list(alemiBot.prefixes)))
-async def evalit(client, message):
-    args = re.sub("^[\.\/](?:eval|e)(?: |)", "", message.text)
-    try:
-        print(f" [ evaluating \"{args}\" ]")
-        result = str(eval(args))
-        if len(args) + len(result) > 4080:
-            await message.edit(f"```>>> {args}\n → Output too long, sending as file```")
-            out = io.BytesIO((f">>> {args}\n" + result).encode('utf-8'))
-            out.name = "output.txt"
-            await client.send_document(message.chat.id, out)
-        else:
-            await message.edit(tokenize_lines(f">>> {args}\n\n" + result))
-    except Exception as e:
-        traceback.print_exc()
-        await message.edit(f"`>>> {args}`\n`[!] → ` " + str(e))
