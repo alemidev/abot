@@ -3,6 +3,7 @@ termcolor
 wikipedia
 italian-dictionary
 PyDictionary
+googletrans
 geopy
 requests
 pyfiglet
