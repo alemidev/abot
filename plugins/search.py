@@ -164,7 +164,7 @@ async def location_cmd(client, message):
     if args["lat"] is not None and args["long"] is not None:
         latitude = float(args["lat"])
         longitude = float(args["long"])
-    elif args["address"] is not None and args["address"] != "":
+    elif args["address"] is not None:
         location = geolocator.geocode(args["address"])
         if location is None:
             return await edit_or_reply(message, "`[!] → ` Not found")
@@ -175,8 +175,10 @@ async def location_cmd(client, message):
     try:
         if args["title"].startswith("-t "):
             tit = re.sub("-t (?:'(.*)'|([^ ]+))", r"\g<1>", args["title"])
+            adr = (args["address"] if args["address"] is not None 
+                            else f"{latitude:.2f} {longitude:.2f}")
             await client.send_venue(message.chat.id, latitude, longitude,
-                                        title=tit, address=args["address"])
+                                        title=tit, address=adr)
         else:
             await client.send_location(message.chat.id, latitude, longitude)
     except Exception as e:
