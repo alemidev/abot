@@ -1,3 +1,4 @@
+import re
 import asyncio
 import traceback
 
@@ -163,7 +164,7 @@ async def location_cmd(client, message):
     if args["lat"] is not None and args["long"] is not None:
         latitude = float(args["lat"])
         longitude = float(args["long"])
-    elif args["address"] is not None:
+    elif args["address"] is not None and args["address"] != "":
         location = geolocator.geocode(args["address"])
         if location is None:
             return await edit_or_reply(message, "`[!] → ` Not found")
@@ -173,9 +174,9 @@ async def location_cmd(client, message):
         return await edit_or_reply(message, "`[!] → ` Invalid coordinates")
     try:
         if args["title"].startswith("-t "):
+            tit = re.sub("-t (?:'(.*)'|([^ ]+))", r"\g<1>", args["title"])
             await client.send_venue(message.chat.id, latitude, longitude,
-                                        title=args["title"].replace("-t ", ""),
-                                        address=args["address"])
+                                        title=tit, address=args["address"])
         else:
             await client.send_location(message.chat.id, latitude, longitude)
     except Exception as e:
