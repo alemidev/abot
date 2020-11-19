@@ -154,7 +154,7 @@ HELP.add_help(["location", "loc"], "send a location",
                 "to be given and are in range [-90, 90]. If a title is given with the `-t` " +
                 "option, the location will be sent as venue.", args="[-t] <lat> <long>", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["location", "loc"], list(alemiBot.prefixes)) & filters.regex(
-    pattern=r".(?:location|loc)(?: |)(?P<title>-t [^ ]+|)(?: |)(?:(?:(?P<lat>[0-9.]+) (?P<long>[0-9.]+))|(?P<address>.*))"
+    pattern=r".(?:location|loc)(?: |)(?P<title>-t '.*'|-t [^ ]+|)(?: |)(?:(?:(?P<lat>[0-9.]+) (?P<long>[0-9.]+))|(?P<address>.*))"
 ))
 async def location_cmd(client, message):
     args = message.matches[0]
