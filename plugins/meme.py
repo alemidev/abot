@@ -57,11 +57,11 @@ async def getmeme(client, message):
 
 HELP.add_help("steal", "steal a meme",
                 "save a meme to collection. Either attach an image or reply to one. " +
-                "A name should be given but I'm waiting a PR on pyrogram for that.")
+                "A name for the meme must be given.")
 @alemiBot.on_message(filters.me & filters.command("steal", list(alemiBot.prefixes)))
 async def steal(client, message):
-    # if len(message.command) < 2:
-    #     return await message.edit(message.text.markdown + "\n`[!] → ` No meme name provided")
+    if len(message.command) < 2:
+        return await message.edit(message.text.markdown + "\n`[!] → ` No meme name provided")
     msg = message
     if message.reply_to_message is not None:
         msg = message.reply_to_message
@@ -69,6 +69,15 @@ async def steal(client, message):
         try:                                                # TODO I need to get what file type it is!
             fpath = await client.download_media(msg, file_name="data/memes/") # + message.command[1])
             await message.edit(get_text(message) + '\n` → ` saved meme as {}'.format(fpath))
+            path, fname = os.path.splitext(fpath) # this part below is trash, im waiting for my PR on pyrogram
+            extension = fname.split(".")
+            if len(extension) > 1:
+                extension = extension[1]
+            else:
+                extension = ".jpg" # cmon most memes will be jpg
+            newname = message.command[1] + '.' + extension
+            os.rename(fpath, path + newname)
+            await message.edit(get_text(message) + '\n` → ` saved meme as {newname}'.format(fpath))
         except Exception as e:
             await message.edit(get_text(message) + "\n`[!] → ` " + str(e))
     else:
