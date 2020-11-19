@@ -20,7 +20,7 @@ from util import batchify
 from util.parse import cleartermcolor
 from util.text import split_for_window
 from util.permission import is_allowed
-from util.message import tokenize_json, edit_or_reply, get_text
+from util.message import tokenize_json, edit_or_reply, get_text, is_me
 from util.user import get_username, get_channel, get_username_dict # lmaoo bad
 from util.serialization import convert_to_dict
 from plugins.help import HelpCategory
@@ -182,7 +182,7 @@ HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
                 "request last edited messages, from channel or globally (-g, reserved to owner). A number of " +
                 "messages to peek can be specified. You can append `-json` at the end to get a json with all message data.",
                 public=True, args="[-t] [-g] [num] [-json]")
-@alemiBot.on_message(filters.me & filters.command(["peek", "deld", "deleted", "removed"], prefixes=".") & filters.regex(
+@alemiBot.on_message(is_allowed & filters.command(["peek", "deld", "deleted", "removed"], prefixes=".") & filters.regex(
     pattern=r"^.(?:peek|deld|deleted|removed)(?: |)(?P<time>-t|)(?: |)(?P<global>-g|)(?: |)(?P<number>[0-9]+|)(?: |)(?P<json>-json|)"
 ))
 async def deleted_cmd(client, message):
@@ -193,7 +193,7 @@ async def deleted_cmd(client, message):
         if args["number"] != "":
             limit = int(args["number"])
         q = { "_": "Delete" }
-        if args["global"] != "-g" or message.from_user is None or not message.from_user.is_self:
+        if args["global"] != "-g" or is_me(message):
             q["chat.id"] = message.chat.id
         cursor = EVENTS.find(q, {"message_id": 1, "date": 1} ).sort("_id", -1)
         res = []
