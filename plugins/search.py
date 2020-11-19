@@ -55,6 +55,7 @@ async def diz(_, message):
         out += "\n\n".join(res['definizione'])
         await edit_or_reply(message, out)
     except Exception as e:
+        traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e) if str(e) != "" else "Not found")
 
 HELP.add_help(["dic", "dictionary"], "search in eng dict",
@@ -78,6 +79,7 @@ async def dic(_, message):
             out += "\n\n"
         await edit_or_reply(message, out)
     except Exception as e:
+        traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
 
 HELP.add_help(["ud", "urban"], "search in urban dict",
@@ -100,6 +102,7 @@ async def urbandict(_, message):
         out += res['permalink']
         await edit_or_reply(message, out)
     except Exception as e:
+        traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
 
 HELP.add_help("wiki", "search on wikipedia",
@@ -126,6 +129,7 @@ async def wiki(_, message):
         # else:
         #     await event.message.reply(out, link_preview=False)
     except Exception as e:
+        traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
 
 HELP.add_help("lmgtfy", "let me google that for you",
@@ -140,6 +144,7 @@ async def lmgtfy(_, message):
         print(f" [ lmgtfy {arg} ]")
         await edit_or_reply(message, f"` → ` http://letmegooglethat.com/?q={arg}")
     except Exception as e:
+        traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
 
 HELP.add_help("location", "send a location",
@@ -153,4 +158,5 @@ async def location_cmd(client, message):
         await client.send_location(message.chat.id, float(message.command[1]),
                                                     float(message.command[2]))
     except Exception as e:
+        traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
