@@ -8,6 +8,7 @@ from bot import alemiBot
 import wikipedia
 import italian_dictionary
 from PyDictionary import PyDictionary
+from geopy.geocoders import Nominatim
 
 import requests
 
@@ -19,6 +20,7 @@ from plugins.help import HelpCategory
 HELP = HelpCategory("SEARCH")
 
 dictionary = PyDictionary()
+geolocator = Nominatim(user_agent="telegram-client")
 
 def ud_define(word):
     try:
@@ -150,12 +152,20 @@ async def lmgtfy(_, message):
 HELP.add_help("location", "send a location",
                 "send a location for specific latitude and longitude. Both has " +
                 "to be given and are in range [-90, 90]", args="<lat> <long>", public=True)
-@alemiBot.on_message(is_allowed & filters.command("location", list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filters.command(["location", "loc"], list(alemiBot.prefixes)) & filters.regex(
+    pattern=r".(?:location|loc)(?: |)(?:(?:(?P<lat>[0-9.]+) (?P<long>[0-9.]+))|(?P<address>.*))"
+))
 async def location_cmd(client, message):
-    if len(message.command) < 3:
-        return await edit_or_reply(message, "`[!] → ` Not enough args")
-    latitude = float(message.command[1])
-    longitude = float(message.command[2])
+    args = message.matches[0]
+    latitude = 0.0
+    longitude = 0.0
+    if args["lat"] is not None and args["long"] is not None:
+        latitude = float(args["lat"])
+        longitude = float(args["long"])
+    elif args["address"] is not None:
+        location = geolocator.geocode(args["address"])
+        latitude = location.latitude
+        longitude = location.longitude
     if latitude > 90 or latitude < -90 or longitude > 90 or longitude < -90:
         return await edit_or_reply(message, "`[!] → ` Invalid coordinates")
     try:

@@ -41,6 +41,7 @@ You can add a section `[database]` with `username` and `password` for your Mongo
 ### Non-Essential
 * `termcolor` : for colored terminal printing. Only in `logger` module.
 * `wikipedia`, `italian-dictionary`, `PyDictionary` : used for dictionary searching. Only in `search` module.
+* `geopy`, : used for location lookup. Only in `search` module.
 * `pyfiglet` : for figlet art, only in `text`
 * `pillow` : for frying memes. Only in `memes`
 * `sympy` : for math solving and representing. Needs also `matplotlib` for plotting. Only in `math`.

@@ -3,6 +3,7 @@ termcolor
 wikipedia
 italian-dictionary
 PyDictionary
+geopy
 requests
 pyfiglet
 pillow
