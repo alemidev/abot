@@ -87,9 +87,13 @@ async def countdown(_, message):
         except ValueError:
             return await tgt_msg.edit("`[!] → ` argument must be a float")
     msg = tgt_msg.text + "\n` → Countdown ` **{:.1f}**"
+    last = ""
     print(f" [ countdown ]")
     while time.time() < end:
-        await tgt_msg.edit(msg.format(time.time() - end))
+        curr = msg.format(time.time() - end)
+        if curr != last: # with fast counting down at the end it may try to edit with same value
+            await tgt_msg.edit(msg.format(time.time() - end))
+            last = curr
         await asyncio.sleep(interval(end - time.time()))
     await tgt_msg.edit(msg.format(0))
 
