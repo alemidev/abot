@@ -10,6 +10,8 @@ with open("data/perms.json") as f:
 def check_allowed(_, __, message):
     if message.from_user is None:
         return False
+    if message.from_user.is_self:
+        return True
     return str(message.from_user.id) in ALLOWED
 
 is_allowed = filters.create(check_allowed)
