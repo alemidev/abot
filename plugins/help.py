@@ -56,12 +56,12 @@ async def help_cmd(_, message):
             cat = CATEGORIES[k]
             if message.command[1] in cat.HELP_ENTRIES:
                 e = cat.HELP_ENTRIES[message.command[1]]
-                return await edit_or_reply(message, f"`→ {e.title} {e.args}` {e.longtext}")
+                return await edit_or_reply(message, f"`→ {e.title} {e.args}` {e.longtext}", parse_mode="markdown")
             elif message.command[1] in ALIASES and ALIASES[message.command[1]] in cat.HELP_ENTRIES:
                 e = cat.HELP_ENTRIES[ALIASES[message.command[1]]]
-                return await edit_or_reply(message, f"`→ {e.title} {e.args}`  {e.longtext}")
+                return await edit_or_reply(message, f"`→ {e.title} {e.args}`  {e.longtext}", parse_mode="markdown")
     await edit_or_reply(message, "`ᚨᛚᛖᛗᛁᛒᛟᛏ v0.2`\n" +
                         "`→ .help [cmd] ` print this or help for specific cmd\n" +
                         get_all_short_text() +
                         f"__Commands with * are available to trusted users__\n" +
-                        "\nhttps://github.com/alemigliardi/alemibot")
+                        "\nhttps://github.com/alemigliardi/alemibot", parse_mode="markdown")

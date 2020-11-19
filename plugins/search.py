@@ -149,7 +149,7 @@ async def lmgtfy(_, message):
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
 
-HELP.add_help("location", "send a location",
+HELP.add_help(["location", "loc"], "send a location",
                 "send a location for specific latitude and longitude. Both has " +
                 "to be given and are in range [-90, 90]", args="<lat> <long>", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["location", "loc"], list(alemiBot.prefixes)) & filters.regex(
