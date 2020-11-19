@@ -42,7 +42,7 @@ async def getmeme(client, message):
             if len(memes) > 0:
                 fname = memes[0]
                 print(f" [ getting specific meme : \"{fname}\" ]")
-                await client.send_document(message.chat.id, "data/memes/"+fname, reply_to_message_id=message.message_id,
+                await client.send_photo(message.chat.id, "data/memes/"+fname, reply_to_message_id=message.message_id,
                                             caption='` → ` **{}**'.format(fname))
             else:
                 await edit_or_reply(f"`[!] → ` no meme named {args['name']}")
