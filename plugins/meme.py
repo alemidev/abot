@@ -76,9 +76,10 @@ async def steal(client, message):
             else:
                 extension = ".jpg" # cmon most memes will be jpg
             newname = message.command[1] + '.' + extension
-            os.rename(fpath, path + newname)
-            await message.edit(get_text(message) + '\n` → ` saved meme as {newname}'.format(fpath))
+            os.rename(fpath, "data/memes/" + newname)
+            await message.edit(get_text(message) + f'\n` → ` saved meme as {newname}')
         except Exception as e:
+            traceback.print_exc()
             await message.edit(get_text(message) + "\n`[!] → ` " + str(e))
     else:
         await message.edit(get_text(message) + "\n`[!] → ` you need to attach or reply to a file, dummy")
