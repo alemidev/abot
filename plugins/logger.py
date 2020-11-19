@@ -84,9 +84,9 @@ HELP.add_help(["stats", "stat"], "get stats",
 async def stats_cmd(client, message):
     count = EVENTS.count_documents({})
     size = DB.command("dbstats")['totalSize']
-    memesize = subprocess.run(["du", "-b", "data/memes", "|", "cut", "-f1"], capture_output=True)
+    memesize = subprocess.run(["du", "-b", "data/memes", "|", "cut", "-f1"], capture_output=True).stdout
     memenumber = len(os.listdir("data/memes"))
-    mediasize = subprocess.run(["du", "-b", "data/scraped_media", "|", "cut", "-f1"], capture_output=True)
+    mediasize = subprocess.run(["du", "-b", "data/scraped_media", "|", "cut", "-f1"], capture_output=True).stdout
     medianumber = len(os.listdir("data/scraped_media"))
     uptime = str(datetime.now() - client.start_time)
     await edit_or_reply(message, f"` → ` online for **{uptime}**" +
