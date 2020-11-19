@@ -132,12 +132,25 @@ HELP.add_help("lmgtfy", "let me google that for you",
                 "generates a `Let Me Google That For You` link.",
                 args="[query]", public=True)
 @alemiBot.on_message(is_allowed & filters.command("lmgtfy", list(alemiBot.prefixes)))
-async def lmgtfy(event):
+async def lmgtfy(_, message):
     if len(message.command) < 2:
         return await edit_or_reply(message, "`[!] → ` No query given")
     try:
         arg = message.command[1].replace(" ", "+") # fuck it probably is already split at spaces, TODO
         print(f" [ lmgtfy {arg} ]")
         await edit_or_reply(message, f"` → ` http://letmegooglethat.com/?q={arg}")
+    except Exception as e:
+        await edit_or_reply(message, "`[!] → ` " + str(e))
+
+HELP.add_help("location", "send a location",
+                "send a location for specific latitude and longitude. Both has " +
+                "to be given.", args="<lat> <long>", public=True)
+@alemiBot.on_message(is_allowed & filters.command("location", list(alemiBot.prefixes)))
+async def location_cmd(client, message):
+    if len(message.command) < 3:
+        return await edit_or_reply(message, "`[!] → ` Not enough args")
+    try:
+        await client.send_location(message.chat.id, float(message.command[1]),
+                                                    float(message.command[2]))
     except Exception as e:
         await edit_or_reply(message, "`[!] → ` " + str(e))
