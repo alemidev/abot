@@ -17,10 +17,10 @@ def get_text(message):
 async def edit_or_reply(message, text, *args, **kwargs):
     if message.from_user is not None and message.from_user.is_self \
     and len(message.text.markdown + text) < 4090: 
-        await message.edit(message.text.markdown + "\n" + text)
+        await message.edit(message.text.markdown + "\n" + text, *args, **kwargs)
     else:
         for m in batchify(text, 4090):
-            await message.reply(m)
+            await message.reply(m, *args, **kwargs)
 
 def tokenize_json(text):
     res = re.subn(
