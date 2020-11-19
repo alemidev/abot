@@ -16,7 +16,6 @@ class alemiBot(Client):
     def __init__(self, name):
         super().__init__(
             name,
-            plugins=dict(root=f"plugins/"),
             workdir="./",
             app_version="alemibot v0.1",)
         self.start_time = datetime.now()
