@@ -149,14 +149,17 @@ async def lmgtfy(_, message):
 
 HELP.add_help("location", "send a location",
                 "send a location for specific latitude and longitude. Both has " +
-                "to be given.", args="<lat> <long>", public=True)
+                "to be given and are in range [-90, 90]", args="<lat> <long>", public=True)
 @alemiBot.on_message(is_allowed & filters.command("location", list(alemiBot.prefixes)))
 async def location_cmd(client, message):
     if len(message.command) < 3:
         return await edit_or_reply(message, "`[!] → ` Not enough args")
+    latitude = float(message.command[1])
+    longitude = float(message.command[2])
+    if latitude > 90 or latitude < -90 or longitude > 90 or longitude < -90:
+        return await edit_or_reply(message, "`[!] → ` Invalid coordinates")
     try:
-        await client.send_location(message.chat.id, float(message.command[1]),
-                                                    float(message.command[2]))
+        await client.send_location(message.chat.id, latitude, longitude)
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
