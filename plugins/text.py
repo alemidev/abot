@@ -165,7 +165,7 @@ async def fortune(_, message):
         print(f" [ running command \"fortune\" ]")
         result = subprocess.run("fortune", capture_output=True)
         output = cleartermcolor(result.stdout.decode())
-        await edit_or_reply("``` → " + output + "```")
+        await edit_or_reply(message, "``` → " + output + "```")
     except Exception as e:
         await edit_or_reply(message, "`[!] → ` " + str(e))
 
