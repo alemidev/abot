@@ -23,7 +23,6 @@ class HelpEntry:
                 ALIASES[a] = title[0]
         else:
             self.title = title
-            ALIASES[title] = [ title ]
         if public:
             self.shorttext += " *"
 
