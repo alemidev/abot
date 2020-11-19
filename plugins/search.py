@@ -174,7 +174,7 @@ async def location_cmd(client, message):
         return await edit_or_reply(message, "`[!] → ` Invalid coordinates")
     try:
         if args["title"].startswith("-t "):
-            tit = re.sub("-t (?:'(.*)'|([^ ]+))", r"\g<1>", args["title"])
+            tit = re.sub("-t (?:'(.*)'|([^ ]+))", r"\g<1>\g<2>", args["title"])
             adr = (args["address"] if args["address"] is not None 
                             else f"{latitude:.2f} {longitude:.2f}")
             await client.send_venue(message.chat.id, latitude, longitude,
