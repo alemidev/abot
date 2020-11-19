@@ -4,6 +4,7 @@ WOOOT a pyrogram rewrite im crazyyy
 """
 import os
 import sys
+from datetime import datetime
 from pyrogram import Client, idle
 from configparser import ConfigParser
 
@@ -18,6 +19,7 @@ class alemiBot(Client):
             plugins=dict(root=f"plugins/"),
             workdir="./",
             app_version="alemibot v0.1",)
+        self.start_time = datetime.now()
 
     async def start(self):
         await super().start()

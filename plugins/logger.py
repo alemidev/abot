@@ -1,12 +1,13 @@
 import asyncio
 import subprocess
-import datetime
 import time
 import json
 import io
+import os
 import traceback
 
 from pymongo import MongoClient
+from datetime import datetime
 
 from termcolor import colored
 
@@ -34,6 +35,8 @@ M_CLIENT = MongoClient('localhost', 27017,
 DB = M_CLIENT.alemibot
 EVENTS = DB.events
 
+LOG_MEDIA = alemiBot.config.get("database", "log_media", fallback=False)
+
 def print_formatted(chat, user, message):
     global last_group
     if chat.id != last_group:
@@ -55,6 +58,8 @@ async def msglogger(_, message):
     print_formatted(message.chat, message.from_user, message)
     data = convert_to_dict(message)
     EVENTS.insert_one(data)
+    if message.media and LOG_MEDIA:
+        await client.download_media(message, file_name="data/scraped_media/")
 
 # Log Message deletions
 @alemiBot.on_deleted_messages(group=8)
@@ -62,7 +67,7 @@ async def dellogger(_, message):
     data = convert_to_dict(message)
     for d in data:
         d["_"] = "Delete"
-        d["date"] = datetime.datetime.now()
+        d["date"] = datetime.now()
         print(colored("[DELETED]", 'red', attrs=['bold']) + " " + str(d["message_id"]))
         EVENTS.insert_one(d)
 
@@ -73,11 +78,31 @@ def order_suffix(num, measure='B'):
         num /= 1024.0
     return "{n:.1f} Yi{m}".format(n=num, m=measure)
 
+HELP.add_help(["stats", "stat"], "get stats",
+                "Get uptime, disk usage for media and for db, number of tracked events.", public=True)
+@alemiBot.on_message(is_allowed & filters.command(["stats", "stat"], list(alemiBot.prefixes)))
+async def stats_cmd(client, message):
+    count = EVENTS.count_documents({})
+    size = DB.command("dbstats")['totalSize']
+    memesize = subprocess.run(["du", "-b", "data/memes", "|", "cut", "-f1"], capture_output=True)
+    memenumber = len(os.listdir("data/memes"))
+    mediasize = subprocess.run(["du", "-b", "data/scraped_media", "|", "cut", "-f1"], capture_output=True)
+    medianumber = len(os.listdir("data/scraped_media"))
+    uptime = str(datetime.now() - client.start_time)
+    await message.edit(message.text.markdown +
+                    f"\n` → ` online for **{uptime}**" +
+                    f"\n` → ` **{count}** events logged" +
+                    f"\n` → ` DB size **{order_suffix(size)}**" +
+                    f"\n` → ` **{memenumber}** memes collected" +
+                    f"\n` → ` meme folder size **{order_suffix(memesize)}**" +
+                    f"\n` → ` **{medianumber}** media scraped" +
+                    f"\n` → ` scraped media size **{order_suffix(mediasize)}**" +
+
 HELP.add_help(["query", "q", "log"], "interact with db",
                 "make queries to the underlying database (MongoDB) to request documents. " +
-                "Filters, limits and fields can be configured with arguments.", args="[-c] [-l] [-f] <query>")
+                "Filters, limits and fields can be configured with arguments.", args="[-l] [-f] <query>")
 @alemiBot.on_message(filters.me & filters.command(["query", "q", "log"], prefixes=".") & filters.regex(pattern=
-    r"^.(?:log|query|q)(?: |)(?P<count>-c|)(?: |)(?P<limit>-l [0-9]+|)(?: |)(?P<filter>-f [^ ]+|)(?: |)(?P<query>[^ ]+|)"
+    r"^.(?:log|query|q)(?: |)(?P<limit>-l [0-9]+|)(?: |)(?P<filter>-f [^ ]+|)(?: |)(?P<query>[^ ]+|)"
 ))
 async def query_cmd(client, message):
     args = message.matches[0]

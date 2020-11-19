@@ -38,15 +38,3 @@ async def download(client, message):
         await client.send_document(message.chat.id, name, reply_to_message_id=message.message_id, caption=f'` → {name}`')
     except Exception as e:
         await message.edit(message.text.markdown + "\n`[!] → ` " + str(e))
-
-# class FilesModules:
-#     def __init__(self, client):
-#         self.helptext = "`━━┫ FILES `\n"
-# 
-#         client.add_event_handler(upload)
-#         self.helptext += "`→ .put ` save attached file to server\n"
-# 
-#         client.add_event_handler(download)
-#         self.helptext += "`→ .get <name> ` upload a file from server to chat\n"
-# 
-#         print(" [ Registered Files Modules ]")
