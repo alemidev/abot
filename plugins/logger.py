@@ -163,7 +163,7 @@ async def hist_cmd(_, message):
         m_id = int(args["id"])
     if m_id is None:
         return
-    cursor = EVENTS.find( {"message_id": m_id, "chat.id": message.chat.id},
+    cursor = EVENTS.find( {"_": "Message", "message_id": m_id, "chat.id": message.chat.id},
             {"text": 1, "date": 1, "edit_date": 1} ).sort("_id", -1)
     out = ""
     for doc in cursor:
