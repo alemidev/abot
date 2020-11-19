@@ -155,7 +155,7 @@ async def figlettext(_, message):
     if args["text"] == "":
         return
     result = pyfiglet.figlet_format(args["text"], font=font)
-    await edit_or_reply(message, "<code> →\n" + result + "</code>")
+    await edit_or_reply(message, "<code> →\n" + result + "</code>", parse_mode="html")
 
 HELP.add_help("fortune", "do you feel fortunate!?",
                 "run `fortune` to get a random sentence. Like fortune bisquits!", public=True)
