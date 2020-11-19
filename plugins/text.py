@@ -145,7 +145,7 @@ async def figlettext(_, message):
         msg += " ".join(FIGLET_FONTS)
         msg += " ]```"
         return await edit_or_reply(message, msg)
-    font = "slant"
+    font = "isometric"
     if args["random"] == "-r":
         font = secrets.choice(FIGLET_FONTS)
     elif args["font"] is not None and args["font"] != "":
