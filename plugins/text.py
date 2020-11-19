@@ -211,7 +211,7 @@ async def rand(_, message):
                 res = [] # so it won't do the thing below
         for r in res:
             out += f"` → ` **{r}**\n"
-        await edit_or_reply(out)
+        await edit_or_reply(message, out)
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
