@@ -165,6 +165,8 @@ async def location_cmd(client, message):
         longitude = float(args["long"])
     elif args["address"] is not None:
         location = geolocator.geocode(args["address"])
+        if location is None:
+            return await edit_or_reply(message, "`[!] → ` Not found")
         latitude = location.latitude
         longitude = location.longitude
     if latitude > 90 or latitude < -90 or longitude > 90 or longitude < -90:
