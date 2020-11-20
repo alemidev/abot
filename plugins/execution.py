@@ -80,7 +80,7 @@ async def evalit(client, message):
             result = eval(args)
             if inspect.iscoroutine(result):
                 result = await result
-        result = fake_stdout.getvalue() + "\n" + "` → `" + str(result)
+        result = fake_stdout.getvalue() + " → " + str(result)
         if len(args) + len(result) > 4080:
             await message.edit(f"```>>> {args}\n → Output too long, sending as file```")
             out = io.BytesIO((f">>> {args}\n" + result).encode('utf-8'))
