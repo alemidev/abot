@@ -2,6 +2,7 @@ import subprocess
 import io
 import traceback
 import sys
+import inspect
 
 # handy libs to have for eval()
 import datetime
@@ -54,7 +55,9 @@ async def evalit(client, message):
     args = re.sub("^[\.\/](?:eval|e)(?: |)", "", message.text)
     try:
         print(f" [ evaluating \"{args}\" ]")
-        result = str(eval(args))
+        result = eval(args)
+        if inspect.iscoroutine(a):
+            result = await result
         if len(args) + len(result) > 4080:
             await message.edit(f"```>>> {args}\n → Output too long, sending as file```")
             out = io.BytesIO((f">>> {args}\n" + result).encode('utf-8'))
