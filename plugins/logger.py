@@ -188,25 +188,25 @@ HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
     pattern=r"^.(?:peek|deld|deleted|removed)(?: |)(?P<time>-t|)(?: |)(?P<global>-g|)(?: |)(?P<number>[0-9]+|)(?: |)(?P<json>-json|)"
 ))
 async def deleted_cmd(client, message): # This is a mess omg
-    limit = 1
     args = message.matches[0]
+
     show_time = args["time"] == "-t"
     local_search = args["global"] != "-g" or not is_me(message)
+    limit = 1
+    if args["number"] != "":
+        limit = int(args["number"])
+    q = { "_": "Delete" }
+    if local_search:
+        q["chat.id"] = message.chat.id
+
     try:
-        if args["number"] != "":
-            limit = int(args["number"])
-        q = { "_": "Delete" }
-        if local_search:
-            q["chat.id"] = message.chat.id
         cursor = EVENTS.find(q, {"message_id": 1, "date": 1} ).sort("_id", -1)
         res = []
         for doc in cursor: # TODO make this part not a fucking mess!
             match = {}
+            match["id"] = doc["message_id"]
             if "date" in doc:
                 match["date"] = doc["date"]
-            else:
-                match["date"] = "N/A"
-            match["id"] = doc["message_id"]
             try:
                 msg = EVENTS.find({"_": "Message", "message_id": match["id"]}).sort("_id", -1).next()
             except StopIteration: # no message was found, maybe it's a ChatAction
@@ -221,15 +221,21 @@ async def deleted_cmd(client, message): # This is a mess omg
                 match["message"] = ""
             if not local_search:
                 match["channel"] = get_channel_dict(msg["chat"])
+            if "attached_file" in msg:
+                match["attached_file"] = msg["attached_file"]
             res.append(match)
             limit -= 1
             if limit <= 0:
                 break
+
         if args["json"] == "-json":
             f = io.BytesIO(json.dumps(res, indent=2, default=str).encode('utf-8'))
             f.name = "peek.json"
             await client.send_document(message.chat.id, f, reply_to_message_id=message.message_id,
                                         caption=f"` → Peek result `")
+        elif len(res) == 1 and "attached_file" in res[0]:
+            await client.send_document(message.chat.id, "data/scraped_media/"+doc["attached_file"], reply_to_message_id=message.message_id,
+                                        caption=f"<b>{doc['author']}</b> <code>→</code> {doc['message']}", parse_mode="html")
         else:
             out = ""
             for doc in res:
