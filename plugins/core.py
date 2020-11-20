@@ -110,15 +110,15 @@ HELP.add_help("what", "get info about message",
 @alemiBot.on_message(is_allowed & filters.command("what", list(alemiBot.prefixes)))
 async def what_cmd(client, message):
     msg = message
-    if message.reply_to_message is not None:
-        msg = await client.get_messages(message.chat.id, message.message_id)
-    elif len(message.command) > 1 and message.command[1].isnumeric():
-        chat_id = message.chat.id
-        if len(message.command) > 2 and message.command[2].isnumeric():
-            chat_id = int(message.command[2])
-        msg = await client.get_messages(chat_id, int(message.command[1]))
-    print(f" [ getting info of msg ]")
     try:
+        if message.reply_to_message is not None:
+            msg = await client.get_messages(message.chat.id, message.message_id)
+        elif len(message.command) > 1 and message.command[1].isnumeric():
+            chat_id = message.chat.id
+            if len(message.command) > 2 and message.command[2].isnumeric():
+                chat_id = int(message.command[2])
+            msg = await client.get_messages(chat_id, int(message.command[1]))
+        print(f" [ getting info of msg ]")
         if is_me(message):
             await message.edit(message.text.markdown + f"\n` → ` Getting data of msg `{msg.message_id}`")
         out = io.BytesIO((str(msg)).encode('utf-8'))
