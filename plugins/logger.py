@@ -21,7 +21,8 @@ from util.parse import cleartermcolor
 from util.text import split_for_window
 from util.permission import is_allowed
 from util.message import tokenize_json, edit_or_reply, get_text, is_me
-from util.user import get_username, get_channel, get_username_dict # lmaoo bad
+from util.user import get_username, get_username_dict # lmaoo bad
+from util.chat import get_channel
 from util.serialization import convert_to_dict
 from plugins.help import HelpCategory
 
@@ -185,19 +186,20 @@ HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
 @alemiBot.on_message(is_allowed & filters.command(["peek", "deld", "deleted", "removed"], prefixes=".") & filters.regex(
     pattern=r"^.(?:peek|deld|deleted|removed)(?: |)(?P<time>-t|)(?: |)(?P<global>-g|)(?: |)(?P<number>[0-9]+|)(?: |)(?P<json>-json|)"
 ))
-async def deleted_cmd(client, message):
+async def deleted_cmd(client, message): # This is a mess omg
     limit = 1
     args = message.matches[0]
     show_time = args["time"] == "-t"
+    global_search = args["global"] != "-g" or not is_me(message)
     try:
         if args["number"] != "":
             limit = int(args["number"])
         q = { "_": "Delete" }
-        if args["global"] != "-g" or not is_me(message):
+        if global_search:
             q["chat.id"] = message.chat.id
         cursor = EVENTS.find(q, {"message_id": 1, "date": 1} ).sort("_id", -1)
         res = []
-        for doc in cursor:
+        for doc in cursor: # TODO make this part not a fucking mess!
             match = {}
             if "date" in doc:
                 match["date"] = doc["date"]
@@ -216,6 +218,8 @@ async def deleted_cmd(client, message):
                 match["message"] = msg["text"]["markdown"]
             else:
                 match["message"] = ""
+            if global_search:
+                match["channel"] = get_channel_dict(doc["chat"])
             res.append(match)
             limit -= 1
             if limit <= 0:
@@ -230,7 +234,8 @@ async def deleted_cmd(client, message):
             for doc in res:
                 if show_time:
                     out += f"[{str(doc['date'])}] "
-                out += f"<code>[{doc['id']}]</code> <b>{doc['author']}</b><code> → </code> {doc['message']}\n\n"
+                where = "| " + doc["channel"] if global_search else ""
+                out += f"<code>[{doc['id']}]</code> <b>{doc['author']}</b><code> {where} → </code> {doc['message']}\n\n"
             if out == "":
                 out = "` → ` Nothing to display"
             await edit_or_reply(message, out, parse_mode="html")

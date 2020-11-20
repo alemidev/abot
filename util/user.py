@@ -19,9 +19,3 @@ def get_username_dict(user):
             return user['first_name'] + ' ' + user['last_name']
         else:
             return user['first_name']
-
-def get_channel(chat):
-    if chat.title is None:
-        return get_username(chat)
-    else:
-        return chat.title
