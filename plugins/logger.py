@@ -233,9 +233,14 @@ async def deleted_cmd(client, message): # This is a mess omg
             out = ""
             for doc in res:
                 if show_time:
-                    out += f"[{str(doc['date'])}] "
-                where = " | " + doc["channel"] if not local_search else "" # ewwwwww
-                out += f"<code>[{doc['id']}]</code> <b>{doc['author']}</b><code>{where} → </code> {doc['message']}\n\n"
+                    out += f"{str(doc['date'])} "
+                out += f"<code>[{doc['id']}]</code> "
+                out += f"<b>{doc['author']}</b> <code> → </code>"
+                if not local_search:
+                    out += f"<code>{doc['channel']} → </code>\n"
+                out += f"{doc['message']}\n"
+                if not local_search:
+                    out += "\n"
             if out == "":
                 out = "` → ` Nothing to display"
             await edit_or_reply(message, out, parse_mode="html")
