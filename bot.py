@@ -14,7 +14,6 @@ class alemiBot(Client):
     config = ConfigParser() # uggh doing it like this kinda
     config.read("config.ini") #     ugly but it'll do for now
     prefixes = config.get("customization", "prefixes", fallback="./")
-    instance = None
 
     def __init__(self, name):
         super().__init__(
@@ -25,7 +24,6 @@ class alemiBot(Client):
         # Get current commit hash and append to app version
         res = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True)
         self.app_version += "-" + res.stdout.decode('utf-8').strip()
-        self.instance = self
 
     async def start(self):
         await super().start()

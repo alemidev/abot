@@ -26,9 +26,6 @@ from util.serialization import convert_to_dict
 from plugins.help import HelpCategory
 
 class GlobalThings():
-    def __init__(self):
-        self.client = alemiBot.instance
-    
     def __str__(self):
         return str(convert_to_dict(self))
 
