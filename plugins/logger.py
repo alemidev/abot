@@ -243,9 +243,9 @@ async def deleted_cmd(client, message): # This is a mess omg
                 if show_time:
                     out += f"{str(doc['date'])} "
                 out += f"<code>[{doc['id']}]</code> "
-                out += f"<b>{doc['author']}</b> <code> → </code>"
+                out += f"<b>{doc['author']}</b> <code>→</code> "
                 if not local_search:
-                    out += f"<code>{doc['channel']} → </code>\n"
+                    out += f"<code>{doc['channel']} →</code>\n"
                 out += f"{doc['message']}"
                 if "attached_file" in doc:
                     out += f" (<i>{doc['attached_file']}</i>)"
