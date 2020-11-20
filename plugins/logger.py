@@ -193,7 +193,7 @@ async def deleted_cmd(client, message):
         if args["number"] != "":
             limit = int(args["number"])
         q = { "_": "Delete" }
-        if args["global"] != "-g" or is_me(message):
+        if args["global"] != "-g" or not is_me(message):
             q["chat.id"] = message.chat.id
         cursor = EVENTS.find(q, {"message_id": 1, "date": 1} ).sort("_id", -1)
         res = []
