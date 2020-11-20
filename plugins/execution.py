@@ -32,16 +32,19 @@ class GlobalThings():
 GLOBALS = GlobalThings()
 
 class stdoutWrapper(): 
-    def __init__(self): 
-        self.stdout = io.StringIO()
+    def __init__(self):
+        self.buffer = io.StringIO()
         self.old_stdout = sys.stdout
+        self.old_stderr = sys.stderr
           
-    def __enter__(self): 
-        sys.stdout = self.stdout
-        return self.stdout
+    def __enter__(self):
+        sys.stdout = self.buffer
+        sys.stderr = self.buffer
+        return self.buffer
       
     def __exit__(self, exc_type, exc_value, exc_traceback): 
         sys.stdout = self.old_stdout
+        sys.stderr = self.old_stderr
 
 HELP = HelpCategory("EXECUTION")
 
@@ -100,22 +103,32 @@ async def evalit(client, message):
         traceback.print_exc()
         await message.edit(f"`>>> {args}`\n`[!] → ` " + str(e))
 
+async def aexec(code, client, message): # client and message are passed so they are in scope
+    global GLOBALS
+    exec(
+        f'async def __aex(): ' +
+        ''.join(f'\n {l}' for l in code.split('\n')),
+        
+        locals()
+    )
+    return await locals()['__aex']()
+
 HELP.add_help(["exec", "ex"], "execute python code",
                 "execute python code. This, unlike `eval`, has no bounds and " +
                 "**can have side effects**. Use with more caution than `eval`. " +
                 "`exec` always returns `None`, but anything printed to `stdout` " +
                 "will be shown. You can set anything in the GLOBALS object for " +
-                "persistence.", args="<code>")
+                "persistence. The `exec` call is wrapped to make it work with async " +
+                "code.", args="<code>")
 @alemiBot.on_message(filters.me & filters.command(["exec", "ex"], list(alemiBot.prefixes)) & filters.regex(
     pattern=r"^.(?:exec|ex) (?P<code>.*)", flags=re.DOTALL
 ))
 async def execit(client, message):
-    global GLOBALS
     args = message.matches[0]["code"]
     fancy_args = args.replace("\n", "\n... ")
     try:
         with stdoutWrapper() as fake_stdout:
-            exec(args)
+            await aexec(args, client, message)
         result = fake_stdout.getvalue()
         if len(args) + len(result) > 4080:
             await message.edit(f"```>>> {fancy_args}\n → Output too long, sending as file```")
