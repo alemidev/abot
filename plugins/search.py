@@ -192,7 +192,9 @@ HELP.add_help(["weather", "wttr"], "get weather of location",
                 "searches OpenWeatherMap for specified location. To make queries to OpenWeatherMap " +
                 "an API key is necessary, thus registering to OpenWeatherMap. This is super early and shows very little.",
                 args="<val> <from> <to>", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["weather", "wttr"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filters.command(["weather", "wttr"], list(alemiBot.prefixes)) & filters.regex(
+    pattern=r".(?:weather|wttr)(?: |)(?P<query>.*)"
+))
 async def weather_cmd(_, message):
     if len(message.command) < 2:
         return await edit_or_reply(message, "`[!] → ` Not enough arguments")
@@ -200,7 +202,10 @@ async def weather_cmd(_, message):
     if APIKEY == "":
         return await edit_or_reply(message, "`[!] → ` No APIKEY provided in config")
     try:
-        r = requests.get(f'http://api.openweathermap.org/data/2.5/weather?q={message.command[1]}&APPID={APIKEY}').json()
+        q = message.matches[0]["query"]
+        r = requests.get(f'http://api.openweathermap.org/data/2.5/weather?q={q}&APPID={APIKEY}').json()
+        if r["cod"] != 200:
+            return await edit_or_reply(message, "`[!] → ` Query failed")
         await edit_or_reply(message, WTTR_STRING.format(loc=r["name"], desc=r["weather"][0]["description"],
                                                         mintemp=r["main"]["temp_min"] - 272.15,
                                                         maxtemp=r["main"]["temp_max"] - 272.15,
