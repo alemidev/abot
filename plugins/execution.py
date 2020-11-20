@@ -82,7 +82,7 @@ HELP.add_help(["exec", "ex"], "execute python code",
                 "execute python code. This, unlike `eval`, has no bounds and " +
                 "**can have side effects**. Use with more caution than `eval`.", args="<code>")
 @alemiBot.on_message(filters.me & filters.command(["exec", "ex"], list("./"))) # TODO fix regex below to use prefixes
-async def evalit(client, message):
+async def execit(client, message):
     args = re.sub("^[\.\/](?:exec|ex)(?: |)", "", message.text)
     fancy_args = args.replace("\n", "\n... ")
     try:
