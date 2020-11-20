@@ -24,11 +24,11 @@ translator = Translator()
 
 HELP = HelpCategory("UTIL")
 
-HELP.add_help("convert", "convert various units",
+HELP.add_help(["convert", "conv"], "convert various units",
                 "convert various measure units. Accepts many units, like " +
                 "`.convert 52 °C °F` or `.convert 2.78 daN*mm^2 mN*µm^2`.",
                 args="<val> <from> <to>", public=True)
-@alemiBot.on_message(is_allowed & filters.command("convert", list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filters.command(["convert", "conv"], list(alemiBot.prefixes)))
 async def convert_cmd(_, message):
     if len(message.command) < 4:
         return await edit_or_reply(message, "`[!] → ` Not enough arguments")
