@@ -49,7 +49,7 @@ async def getmeme(client, message):
             out = f"` → ` **Meme list** ({len(memes)} total) :\n[ "
             out += ", ".join(memes)
             out += "]"
-            await edit_or_reply(out)
+            await edit_or_reply(message, out)
         elif args["name"] != "":
             memes = [ s for s in os.listdir("data/memes")      # I can't decide if this
                         if s.lower().startswith(args["name"])] #  is nice or horrible
