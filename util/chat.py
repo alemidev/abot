@@ -1,4 +1,4 @@
-from user import get_username, get_username_dict
+from util.user import get_username, get_username_dict
 
 def get_channel(chat):
     if chat.title is None:
