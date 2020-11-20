@@ -123,6 +123,7 @@ HELP.add_help(["query", "q", "log"], "interact with db",
 async def query_cmd(client, message):
     args = message.matches[0]
     try:
+        await client.send_chat_action(message.chat.id, "upload_document")
         if args["query"] != "":
             buf = []
             q = json.loads(args["query"])
@@ -148,6 +149,7 @@ async def query_cmd(client, message):
     except Exception as e:
         traceback.print_exc()
         await message.edit(message.text.markdown + "\n`[!] → ` " + str(e))
+    await client.send_chat_action(message.chat.id, "cancel")
 
 HELP.add_help(["hist", "history"], "get edit history of a message",
                 "request edit history of a message. You can specify an id or reply to a message.",
@@ -168,20 +170,26 @@ async def hist_cmd(_, message):
         return
     if args["group"].startswith("-g "):
         c_id = int(args["group"].replace("-g ", ""))
-    cursor = EVENTS.find( {"_": "Message", "message_id": m_id, "chat.id": c_id},
-            {"text": 1, "date": 1, "edit_date": 1} ).sort("_id", -1)
-    out = ""
-    for doc in cursor:
-        if show_time:
-            if "edit_date" not in doc or doc['edit_date'] is None:
-                out += f"[{str(doc['date'])}] "    
+    try:
+        await client.send_chat_action(message.chat.id, "upload_document")
+        cursor = EVENTS.find( {"_": "Message", "message_id": m_id, "chat.id": c_id},
+                {"text": 1, "date": 1, "edit_date": 1} ).sort("_id", -1)
+        out = ""
+        for doc in cursor:
+            if show_time:
+                if "edit_date" not in doc or doc['edit_date'] is None:
+                    out += f"[{str(doc['date'])}] "    
+                else:
+                    out += f"[{str(doc['edit_date'])}] "
+            if "text" in doc:
+                out += f"` → ` {doc['text']['markdown']}\n"
             else:
-                out += f"[{str(doc['edit_date'])}] "
-        if "text" in doc:
-            out += f"` → ` {doc['text']['markdown']}\n"
-        else:
-            out += f"` → ` N/A\n"
-    await edit_or_reply(message, out)
+                out += f"` → ` N/A\n"
+        await edit_or_reply(message, out)
+    except Exception as e:
+        traceback.print_exc()
+        await message.edit(message.text.markdown + "\n`[!] → ` " + str(e))
+    await client.send_chat_action(message.chat.id, "cancel")
 
 HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
                 "request last edited messages, from channel or globally (-g, reserved to owner). A number of " +
@@ -203,6 +211,7 @@ async def deleted_cmd(client, message): # This is a mess omg
         q["chat.id"] = message.chat.id
 
     try:
+        await client.send_chat_action(message.chat.id, "upload_document")
         cursor = EVENTS.find(q, {"message_id": 1, "date": 1} ).sort("_id", -1)
         res = []
         for doc in cursor: # TODO make this part not a fucking mess!
@@ -262,4 +271,5 @@ async def deleted_cmd(client, message): # This is a mess omg
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.send_chat_action(message.chat.id, "cancel")
 

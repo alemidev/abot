@@ -41,6 +41,7 @@ HELP.add_help("meme", "get a meme",
 ))
 async def getmeme(client, message):
     try:
+        await client.send_chat_action(message.chat.id, "upload_photo")
         args = message.matches[0]
         if args["list"] == "-list":
             print(" [ getting meme list ]")
@@ -66,6 +67,7 @@ async def getmeme(client, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.send_chat_action(message.chat.id, "cancel")
 
 HELP.add_help("steal", "steal a meme",
                 "save a meme to collection. Either attach an image or reply to one. " +
@@ -142,6 +144,7 @@ async def deepfry(client, message):
     if message.reply_to_message is not None:
         msg = message.reply_to_message
     if msg.media:
+        await client.send_chat_action(message.chat.id, "upload_photo")
         print(f" [ frying meme ]")
         try:
             count = 1
@@ -171,6 +174,7 @@ async def deepfry(client, message):
                     "\n` → ` Downloading [OK]\n` → ` Frying [OK]\n` → ` Uploading [OK]")
         except Exception as e:
             await message.edit(get_text(message) + "\n`[!] → ` " + str(e))
+        await client.send_chat_action(message.chat.id, "cancel")
     else:
         await message.edit(get_text(message) + "\n`[!] → ` you need to attach or reply to a file, dummy")
 

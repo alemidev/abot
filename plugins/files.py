@@ -34,7 +34,9 @@ async def download(client, message):
     if len(message.command) < 2:
         return await message.edit(message.text.markdown + "\n`[!] → ` No filename provided")
     try:
+        await client.send_chat_action(message.chat.id, "upload_document")
         name = message.command[1]
         await client.send_document(message.chat.id, name, reply_to_message_id=message.message_id, caption=f'` → {name}`')
     except Exception as e:
         await message.edit(message.text.markdown + "\n`[!] → ` " + str(e))
+    await client.send_chat_action(message.chat.id, "cancel")

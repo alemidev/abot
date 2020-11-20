@@ -30,6 +30,7 @@ async def expr(client, message):
         arg = message.matches[0]["query"]
         opt = message.matches[0]["opt"]
         print(f" [ mathifying {arg} ]")
+        await client.send_chat_action(message.chat.id, "upload_document")
         if opt == "-latex":
             preview(arg, viewer='file', filename='expr.png', dvioptions=["-T", "bbox", "-D 300", "--truecolor", "-bg", "Transparent"])
         else:
@@ -40,6 +41,7 @@ async def expr(client, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.send_chat_action(message.chat.id, "cancel")
 
 HELP.add_help(["plot", "graph"], "plot provided function",
                 "this command will run sympy `plot` and return result as image. Foruma passing is wonky. " +
@@ -55,6 +57,7 @@ async def graph(client, message):
         eq = []
         for a in arg.split(", "):
             eq.append(parse_expr(a))
+        await client.send_chat_action(message.chat.id, "upload_document")
         if opt == "-3d":
             plot3d(*eq, show=False).save("graph.png")
         # elif opt == "-par":
@@ -66,6 +69,7 @@ async def graph(client, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.send_chat_action(message.chat.id, "cancel")
 
 HELP.add_help("solve", "attempt to solve equation",
                 "this command will run sympy `solve` and attempt to find roots of the " +

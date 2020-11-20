@@ -48,11 +48,13 @@ async def currency_convert_cmd(_, message):
     if len(message.command) < 4:
         return await edit_or_reply(message, "`[!] → ` Not enough arguments")
     try:
+        await client.send_chat_action(message.chat.id, "choose_contact")
         res = json.loads(convert(message.command[2], message.command[3], float(message.command[1])))
         await edit_or_reply(message, f"` → ` {res['amount']} {res['to']}")
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.send_chat_action(message.chat.id, "cancel")
 
 def interval(delta):
     if delta > 100:

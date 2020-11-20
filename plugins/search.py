@@ -48,6 +48,7 @@ async def diz(_, message):
     if len(message.command) < 2:
         return await edit_or_reply(message, "`[!] → ` No query given")
     try:
+        await client.send_chat_action(message.chat.id, "upload_document")
         arg = message.command[1]
         print(f" [ searching \"{arg}\" on it dictionary ]")
         # Use this to get only the meaning 
@@ -60,6 +61,7 @@ async def diz(_, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e) if str(e) != "" else "Not found")
+    await client.send_chat_action(message.chat.id, "cancel")
 
 HELP.add_help(["dic", "dictionary"], "search in eng dict",
                 "get definition from english dictionary of given word.",
@@ -69,6 +71,7 @@ async def dic(_, message):
     if len(message.command) < 2:
         return await edit_or_reply(message, "`[!] → ` No query given")
     try:
+        await client.send_chat_action(message.chat.id, "upload_document")
         arg = message.command[1]
         print(f" [ searching \"{arg}\" on eng dictionary ]")
         res = dictionary.meaning(arg)
@@ -84,6 +87,7 @@ async def dic(_, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.send_chat_action(message.chat.id, "cancel")
 
 HELP.add_help(["ud", "urban"], "search in urban dict",
                 "get definition from urban dictionary of given word.",
@@ -93,6 +97,7 @@ async def urbandict(_, message):
     if len(message.command) < 2:
         return await edit_or_reply(message, "`[!] → ` No query given")
     try:
+        await client.send_chat_action(message.chat.id, "upload_document")
         arg = message.command[1]
         print(f" [ searching \"{arg}\" on urban dictionary ]")
         res = ud_define(arg)
@@ -107,6 +112,7 @@ async def urbandict(_, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.send_chat_action(message.chat.id, "cancel")
 
 HELP.add_help("wiki", "search on wikipedia",
                 "search on wikipedia, attaching initial text and a link.",
@@ -116,6 +122,7 @@ async def wiki(_, message):
     if len(message.command) < 2:
         return await edit_or_reply(message, "`[!] → ` No query given")
     try:
+        await client.send_chat_action(message.chat.id, "upload_document")
         arg = message.command[1]
         print(f" [ searching \"{arg}\" on wikipedia ]")
         page = wikipedia.page(arg)
@@ -134,6 +141,7 @@ async def wiki(_, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.send_chat_action(message.chat.id, "cancel")
 
 HELP.add_help("lmgtfy", "let me google that for you",
                 "generates a `Let Me Google That For You` link.",
@@ -165,7 +173,9 @@ async def location_cmd(client, message):
         latitude = float(args["lat"])
         longitude = float(args["long"])
     elif args["address"] is not None:
+        await client.send_chat_action(message.chat.id, "find_location")
         location = geolocator.geocode(args["address"])
+        await client.send_chat_action(message.chat.id, "cancel")
         if location is None:
             return await edit_or_reply(message, "`[!] → ` Not found")
         latitude = location.latitude
@@ -204,6 +214,7 @@ async def weather_cmd(_, message):
     # if APIKEY == "":
     #     return await edit_or_reply(message, "`[!] → ` No APIKEY provided in config")
     try:
+        await client.send_chat_action(message.chat.id, "find_location")
         q = message.matches[0]["query"]
         r = requests.get(f"https://wttr.in/{q}?mnTC0&lang=en")
         await edit_or_reply(message, "<code> → " + r.text + "</code>", parse_mode="html")
@@ -219,3 +230,4 @@ async def weather_cmd(_, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.send_chat_action(message.chat.id, "cancel")

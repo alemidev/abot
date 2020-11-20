@@ -48,11 +48,12 @@ async def slowtype(_, message):
                 continue # important because sending same message twice causes an exception
             t = asyncio.sleep(interval) # does this "start" the coroutine early?
             await message.edit(msg)
+            await client.send_chat_action(message.chat.id, "typing")
             await t # does this work? I should read asyncio docs
     except:
         traceback.print_exc()
         pass # msg was deleted probably
-    # await set_offline(event.client)
+    await client.send_chat_action(message.chat.id, "cancel")
 
 HELP.add_help(["rc", "randomcase"], "make text randomly capitalized",
                 "will edit message applying random capitalization to every letter, like the spongebob meme.")
