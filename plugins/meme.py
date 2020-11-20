@@ -18,6 +18,19 @@ from plugins.help import HelpCategory
 
 HELP = HelpCategory("MEME")
 
+# TODO make this an util and maybe pass **kwargs
+async def send_media_appropriately(client, message, fname, extra_text=""):
+    if fname.endswith((".jpg", ".jpeg", ".png", ".webp")):
+        await client.send_photo(message.chat.id, "data/memes/"+fname, reply_to_message_id=message.message_id,
+                                caption=f'` → {extra_text}` **{fname}**')
+    elif fname.endswith((".gif", ".mp4", ".webm")):
+        await client.send_video(message.chat.id, "data/memes/"+fname, reply_to_message_id=message.message_id,
+                                caption=f'` → {extra_text}` **{fname}**')
+    else:
+        await client.send_document(message.chat.id, "data/memes/"+fname, reply_to_message_id=message.message_id,
+                                        caption=f'` → {extra_text}` **{fname}**')
+    
+
 HELP.add_help("meme", "get a meme",
                 "get a specific meme is a name is given, otherwise a random one. " +
                 "Use argument `-list` to gett all meme names.", public=True, args="[-list] [name]")
@@ -36,28 +49,18 @@ async def getmeme(client, message):
             out += "]"
             await edit_or_reply(out)
         elif args["name"] != "":
-            print(f" [ getting specific meme : \"{args['name']}\" ]")
             memes = [ s for s in os.listdir("data/memes")      # I can't decide if this
                         if s.lower().startswith(args["name"])] #  is nice or horrible
             if len(memes) > 0:
                 fname = memes[0]
                 print(f" [ getting specific meme : \"{fname}\" ]")
-                await client.send_photo(message.chat.id, "data/memes/"+fname, reply_to_message_id=message.message_id,
-                                            caption='` → ` **{}**'.format(fname))
+                await send_media_appropriately(client, message, fname)
             else:
                 await edit_or_reply(f"`[!] → ` no meme named {args['name']}")
         else: 
             fname = secrets.choice(os.listdir("data/memes"))
             print(f" [ getting random meme : \"{fname}\" ]")
-            if fname.endswith((".jpg", ".jpeg", ".png", ".webp")):
-                await client.send_photo(message.chat.id, "data/memes/"+fname, reply_to_message_id=message.message_id,
-                                        caption='` → Random meme : ` **{}**'.format(fname))
-            elif fname.endswith((".gif", ".mp4", ".webm")):
-                await client.send_video(message.chat.id, "data/memes/"+fname, reply_to_message_id=message.message_id,
-                                        caption='` → Random meme : ` **{}**'.format(fname))
-            else:
-                await client.send_document(message.chat.id, "data/memes/"+fname, reply_to_message_id=message.message_id,
-                                        caption='` → Random meme : ` **{}**'.format(fname))
+            await send_media_appropriately(client, message, fname, extra_text="Random meme : ")
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
