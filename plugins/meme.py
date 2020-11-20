@@ -52,7 +52,7 @@ async def getmeme(client, message):
             if fname.endswith((".jpg", ".jpeg", ".png", ".webp")):
                 await client.send_photo(message.chat.id, "data/memes/"+fname, reply_to_message_id=message.message_id,
                                         caption='` → Random meme : ` **{}**'.format(fname))
-            elif fname.endswith(".gif", ".mp4", ".webm")):
+            elif fname.endswith((".gif", ".mp4", ".webm")):
                 await client.send_video(message.chat.id, "data/memes/"+fname, reply_to_message_id=message.message_id,
                                         caption='` → Random meme : ` **{}**'.format(fname))
             else:
