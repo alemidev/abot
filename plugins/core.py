@@ -39,8 +39,11 @@ async def update(client, message):
         result = subprocess.run(["git", "pull"], capture_output=True, timeout=60)
         result = subprocess.run(["pip", "install", "-r", "requirements.txt"],
                                                     capture_output=True, timeout=60)
-        msg += " [OK]\n` → ` Bot will now restart"
+        msg += " [OK]\n` → ` Restarting"
         await message.edit(msg) 
+        with open("data/lastmsg.json", "w") as f:
+            json.dump({"message_id": message.message_id,
+                        "chat_id": message.chat.id}, f)
         asyncio.get_event_loop().create_task(client.restart())
     except Exception as e:
         traceback.print_exc()

@@ -23,6 +23,14 @@ class alemiBot(Client):
     async def start(self):
         await super().start()
         print("> Bot started\n")
+        try:
+            with open("data/lastmsg.json", "rw") as f:
+                m = json.load(f)
+                message = await client.get_messages(m["chat_id"], m["message_id"])
+                await message.edit(message.text.markdown + " [OK]")
+                json.dump({}, f)
+        except:
+            pass #ignore
 
     async def stop(self):
         await super().stop()
