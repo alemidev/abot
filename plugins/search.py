@@ -189,8 +189,10 @@ WTTR_STRING = "`→ {loc} `\n` → `**{desc}**\n` → ` {mintemp:.0f}C - {maxtem
               "` → ` pressure **{press}hPa** `|` wind **{wspd}m/s**\n` → ` **{vis}m** visibility (__{cld}% clouded__)"
 
 HELP.add_help(["weather", "wttr"], "get weather of location",
-                "searches OpenWeatherMap for specified location. To make queries to OpenWeatherMap " +
-                "an API key is necessary, thus registering to OpenWeatherMap. This is super early and shows very little.",
+                "makes a request to wttr.in for provided location. Props to https://github.com/chubin/wttr.in " +
+                "for awesome site, remember you can `curl wttr.in` in terminal."
+                # "searches OpenWeatherMap for specified location. To make queries to OpenWeatherMap " +
+                # "an API key is necessary, thus registering to OpenWeatherMap. This is super early and shows very little.",
                 args="<location>", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["weather", "wttr"], list(alemiBot.prefixes)) & filters.regex(
     pattern=r".(?:weather|wttr)(?: |)(?P<query>.*)"
@@ -198,19 +200,22 @@ HELP.add_help(["weather", "wttr"], "get weather of location",
 async def weather_cmd(_, message):
     if len(message.command) < 2:
         return await edit_or_reply(message, "`[!] → ` Not enough arguments")
-    APIKEY = alemiBot.config.get("weather", "apikey", fallback="")
-    if APIKEY == "":
-        return await edit_or_reply(message, "`[!] → ` No APIKEY provided in config")
+    # APIKEY = alemiBot.config.get("weather", "apikey", fallback="")
+    # if APIKEY == "":
+    #     return await edit_or_reply(message, "`[!] → ` No APIKEY provided in config")
     try:
         q = message.matches[0]["query"]
-        r = requests.get(f'http://api.openweathermap.org/data/2.5/weather?q={q}&APPID={APIKEY}').json()
-        if r["cod"] != 200:
-            return await edit_or_reply(message, "`[!] → ` Query failed")
-        await edit_or_reply(message, WTTR_STRING.format(loc=r["name"], desc=r["weather"][0]["description"],
-                                                        mintemp=r["main"]["temp_min"] - 272.15,
-                                                        maxtemp=r["main"]["temp_max"] - 272.15,
-                                                        hum=r["main"]["humidity"], press=r["main"]["pressure"],
-                                                        wspd=r["wind"]["speed"], vis=r["visibility"], cld=r["clouds"]["all"]))
+        r = requests.get(f"https://wttr.in/{q}?mnTC0&lang=en")
+        await edit_or_reply("<code> → " + r.text + "</code>", parse_mode="html")
+        # # Why bother with OpenWeatherMap?
+        # r = requests.get(f'http://api.openweathermap.org/data/2.5/weather?q={q}&APPID={APIKEY}').json()
+        # if r["cod"] != 200:
+        #     return await edit_or_reply(message, "`[!] → ` Query failed")
+        # await edit_or_reply(message, WTTR_STRING.format(loc=r["name"], desc=r["weather"][0]["description"],
+        #                                                 mintemp=r["main"]["temp_min"] - 272.15,
+        #                                                 maxtemp=r["main"]["temp_max"] - 272.15,
+        #                                                 hum=r["main"]["humidity"], press=r["main"]["pressure"],
+        #                                                 wspd=r["wind"]["speed"], vis=r["visibility"], cld=r["clouds"]["all"]))
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
