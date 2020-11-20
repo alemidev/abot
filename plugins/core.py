@@ -37,6 +37,8 @@ async def update(client, message):
         msg += "\n` → ` Updating"
         await message.edit(msg) 
         result = subprocess.run(["git", "pull"], capture_output=True, timeout=60)
+        result = subprocess.run(["pip", "install", "-r", "requirements.txt"],
+                                                    capture_output=True, timeout=60)
         msg += " [OK]\n` → ` Bot will now restart"
         await message.edit(msg) 
         asyncio.get_event_loop().create_task(client.restart())
