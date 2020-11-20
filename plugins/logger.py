@@ -22,7 +22,7 @@ from util.text import split_for_window
 from util.permission import is_allowed
 from util.message import tokenize_json, edit_or_reply, get_text, is_me
 from util.user import get_username, get_username_dict # lmaoo bad
-from util.chat import get_channel
+from util.chat import get_channel, get_channel_dict
 from util.serialization import convert_to_dict
 from plugins.help import HelpCategory
 
