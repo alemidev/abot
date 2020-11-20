@@ -49,7 +49,7 @@ def get_all_short_text():
 
 # The help command
 @alemiBot.on_message(is_allowed & filters.command(["help", "h"], list(alemiBot.prefixes)))
-async def help_cmd(_, message):
+async def help_cmd(client, message):
     if len(message.command) > 1:
         for k in CATEGORIES:
             cat = CATEGORIES[k]
@@ -59,7 +59,7 @@ async def help_cmd(_, message):
             elif message.command[1] in ALIASES and ALIASES[message.command[1]] in cat.HELP_ENTRIES:
                 e = cat.HELP_ENTRIES[ALIASES[message.command[1]]]
                 return await edit_or_reply(message, f"`→ {e.title} {e.args}`  {e.longtext}", parse_mode="markdown")
-    await edit_or_reply(message, "`ᚨᛚᛖᛗᛁᛒᛟᛏ v0.2`\n" +
+    await edit_or_reply(message, "`ᚨᛚᛖᛗᛁᛒᛟᛏ v{client.app_version}`\n" +
                         "`→ .help [cmd] ` print this or help for specific cmd\n" +
                         get_all_short_text() +
                         f"__Commands with * are available to trusted users__\n" +

@@ -5,6 +5,7 @@ WOOOT a pyrogram rewrite im crazyyy
 import os
 import sys
 import json
+import subprocess
 from datetime import datetime
 from pyrogram import Client, idle
 from configparser import ConfigParser
@@ -18,8 +19,11 @@ class alemiBot(Client):
         super().__init__(
             name,
             workdir="./",
-            app_version="alemibot v0.1",)
+            app_version="0.2",)
         self.start_time = datetime.now()
+        # Get current commit hash and append to app version
+        res = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True)
+        self.app_version += "-" + res.stdout.decode('utf-8')
 
     async def start(self):
         await super().start()
@@ -43,6 +47,6 @@ class alemiBot(Client):
         os.execv(__file__, sys.argv) # This will replace current process
 
 if __name__ == "__main__":
-    app = alemiBot("debug")
+    app = alemiBot("alemibot")
     app.run()
 
