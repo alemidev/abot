@@ -23,7 +23,7 @@ class alemiBot(Client):
         self.start_time = datetime.now()
         # Get current commit hash and append to app version
         res = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True)
-        self.app_version += "-" + res.stdout.decode('utf-8')
+        self.app_version += "-" + res.stdout.decode('utf-8').strip()
 
     async def start(self):
         await super().start()
