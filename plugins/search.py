@@ -190,7 +190,7 @@ WTTR_STRING = "`→ {loc} `\n` → `**{desc}**\n` → ` {mintemp:.0f}C - {maxtem
 
 HELP.add_help(["weather", "wttr"], "get weather of location",
                 "makes a request to wttr.in for provided location. Props to https://github.com/chubin/wttr.in " +
-                "for awesome site, remember you can `curl wttr.in` in terminal."
+                "for awesome site, remember you can `curl wttr.in` in terminal.",
                 # "searches OpenWeatherMap for specified location. To make queries to OpenWeatherMap " +
                 # "an API key is necessary, thus registering to OpenWeatherMap. This is super early and shows very little.",
                 args="<location>", public=True)
