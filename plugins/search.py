@@ -206,7 +206,7 @@ async def weather_cmd(_, message):
     try:
         q = message.matches[0]["query"]
         r = requests.get(f"https://wttr.in/{q}?mnTC0&lang=en")
-        await edit_or_reply("<code> → " + r.text + "</code>", parse_mode="html")
+        await edit_or_reply(message, "<code> → " + r.text + "</code>", parse_mode="html")
         # # Why bother with OpenWeatherMap?
         # r = requests.get(f'http://api.openweathermap.org/data/2.5/weather?q={q}&APPID={APIKEY}').json()
         # if r["cod"] != 200:
