@@ -219,7 +219,7 @@ async def deleted_cmd(client, message): # This is a mess omg
             else:
                 match["message"] = ""
             if not local_search:
-                match["channel"] = get_channel_dict(doc["chat"])
+                match["channel"] = get_channel_dict(msg["chat"])
             res.append(match)
             limit -= 1
             if limit <= 0:
