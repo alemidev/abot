@@ -23,6 +23,23 @@ from util.parse import cleartermcolor
 from util.message import tokenize_json, tokenize_lines
 from plugins.help import HelpCategory
 
+class GlobalThings():
+    why = "So you can store global things with exec and eval"
+
+GLOBALS = GlobalThings()
+
+class stdoutWrapper(): 
+    def __init__(self): 
+        self.stdout = io.StringIO()
+        self.old_stdout = sys.stdout
+          
+    def __enter__(self): 
+        sys.stdout = self.stdout
+        return self.stdout
+      
+    def __exit__(self, exc_type, exc_value, exc_traceback): 
+        sys.stdout = self.old_stdout
+
 HELP = HelpCategory("EXECUTION")
 
 HELP.add_help(["run", "r"], "run command on server",
@@ -48,45 +65,41 @@ async def runit(client, message):
 
 HELP.add_help(["eval", "e"], "eval a python expression",
                 "eval a python expression. No imports can be made nor variables can be " +
-                "assigned. Some common libs are already imported. `eval` cannot have side effects.",
+                "assigned. Some common libs are already imported. `eval` cannot have side effects. " +
+                "Anything returned by `eval` will be printed upon successful evaluation. If " +
+                "a coroutine is returned, it will be awaited (needed for executing async funcs defined " +
+                "with .exec). `stdout` will be captured and shown before the returned value.",
                 args="<expr>")
 @alemiBot.on_message(filters.me & filters.command(["eval", "e"], list("./")))
 async def evalit(client, message):
+    global GLOBALS
     args = re.sub("^[\.\/](?:eval|e)(?: |)", "", message.text)
     try:
         print(f" [ evaluating \"{args}\" ]")
-        result = eval(args)
-        if inspect.iscoroutine(a):
-            result = await result
-        result = str(result)    # just in case
+        with stdoutWrapper() as fake_stdout:
+            result = eval(args)
+            if inspect.iscoroutine(result):
+                result = await result
+        result = fake_stdout.getvalue() + "\n" + "` → `" + str(result)
         if len(args) + len(result) > 4080:
             await message.edit(f"```>>> {args}\n → Output too long, sending as file```")
             out = io.BytesIO((f">>> {args}\n" + result).encode('utf-8'))
             out.name = "output.txt"
             await client.send_document(message.chat.id, out)
         else:
-            await message.edit(tokenize_lines(f">>> {args}\n\n" + result))
+            await message.edit(tokenize_lines(f">>> {args}\n" + result))
     except Exception as e:
         traceback.print_exc()
         await message.edit(f"`>>> {args}`\n`[!] → ` " + str(e))
 
-class stdoutWrapper(): 
-    def __init__(self): 
-        self.stdout = io.StringIO()
-        self.old_stdout = sys.stdout
-          
-    def __enter__(self): 
-        sys.stdout = self.stdout
-        return self.stdout
-      
-    def __exit__(self, exc_type, exc_value, exc_traceback): 
-        sys.stdout = self.old_stdout
-
 HELP.add_help(["exec", "ex"], "execute python code",
                 "execute python code. This, unlike `eval`, has no bounds and " +
-                "**can have side effects**. Use with more caution than `eval`.", args="<code>")
+                "**can have side effects**. Use with more caution than `eval`. " +
+                "`exec` always returns `None`, but anything printed to `stdout` " +
+                "will be shown. You can use the GLOBALS object for persistence.", args="<code>")
 @alemiBot.on_message(filters.me & filters.command(["exec", "ex"], list("./"))) # TODO fix regex below to use prefixes
 async def execit(client, message):
+    global GLOBALS
     args = re.sub("^[\.\/](?:exec|ex)(?: |)", "", message.text)
     fancy_args = args.replace("\n", "\n... ")
     try:
