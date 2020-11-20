@@ -230,10 +230,10 @@ async def deleted_cmd(client, message):
             for doc in res:
                 if show_time:
                     out += f"[{str(doc['date'])}] "
-                out += f"**[**`{doc['id']}`**]** `{doc['author']} →` {doc['message']}\n\n"
+                out += f"<b>[</b><code>{doc['id']}</code><b>]</b> <code>{doc['author']} →</code> {doc['message']}\n\n"
             if out == "":
                 out = "` → ` Nothing to display"
-            await edit_or_reply(message, out)
+            await edit_or_reply(message, out, parse_mode="html")
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
