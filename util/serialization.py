@@ -3,12 +3,15 @@ from datetime import datetime
 
 from pyrogram.types import List
 
-def convert_to_dict(obj):
+def convert_to_dict(obj, depth=0):
+    if depth > 3: # safety recursion stop
+        print("[!] Terminating recursion : {str(obj)}")
+        return str(obj)
     if isinstance(obj, datetime) or isinstance(obj, int) \
     or isinstance(obj, float) or isinstance(obj, bool) or obj is None:
         return obj 
     elif isinstance(obj, list) or isinstance(obj, List):
-        return [ convert_to_dict(e) for e in obj ]
+        return [ convert_to_dict(e, depth=depth+1) for e in obj ]
     elif not hasattr(obj, "__dict__"):
         return str(obj)
     elif isinstance(obj, str): # The weird Str thing from pyrogram
@@ -26,7 +29,7 @@ def convert_to_dict(obj):
                     if attr == "phone_number" else
                     datetime.fromtimestamp(getattr(obj, attr))
                     if attr.endswith("date") else
-                    convert_to_dict(getattr(obj, attr))
+                    convert_to_dict(getattr(obj, attr), depth=depth+1)
                 )
                 for attr in filter(lambda x: not x.startswith("_"), obj.__dict__)
                 if getattr(obj, attr) is not None
