@@ -61,13 +61,14 @@ async def msglogger(client, message):
     global LOGGED_COUNT
     print_formatted(message.chat, message.from_user, message)
     data = convert_to_dict(message)
-    EVENTS.insert_one(data)
-    LOGGED_COUNT += 1
     if message.media and LOG_MEDIA:
         try: 
-            await client.download_media(message, file_name="data/scraped_media/")
+            fname = await client.download_media(message, file_name="data/scraped_media/")
+            data["attached_file"] = fname.split("data/scraped_media/")[1]
         except ValueError:
             pass # ignore, some messages are marked as media but have nothing to download wtf
+    EVENTS.insert_one(data)
+    LOGGED_COUNT += 1
 
 # Log Message deletions
 @alemiBot.on_deleted_messages(group=8)
