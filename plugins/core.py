@@ -52,7 +52,7 @@ async def update(client, message):
 
 HELP.add_help("where", "get info about chat",
                 "Get the complete information about current chat and attach as json",
-                args="[target]", public=True)
+                args="[<target>]", public=True)
 @alemiBot.on_message(is_allowed & filters.command("where", list(alemiBot.prefixes)))
 async def where_cmd(client, message):
     try:
@@ -75,24 +75,22 @@ async def where_cmd(client, message):
 
 HELP.add_help("who", "get info about user",
                 "Get the complete information about an user (replied to or "+
-                "id given) and attach as json", public=True, args="[target]")
-@alemiBot.on_message(is_allowed & filters.command("who", list(alemiBot.prefixes)) &
-    filters.regex(pattern=r"^.who(?: |)(?P<name>[^ ]+|)"
-))
+                "id given) and attach as json", public=True, args="[<target>]")
+@alemiBot.on_message(is_allowed & filters.command("who", list(alemiBot.prefixes)))
 async def who_cmd(client, message):
     try:
         peer = None
-        if message.reply_to_message is not None \
+        if len(message.command) > 1:
+            arg = message.command[1]
+            if arg.isnumeric():
+                peer = await client.get_users(int(arg))
+            else:
+                peer = await client.get_users(arg)
+        elif message.reply_to_message is not None \
         and message.reply_to_message.from_user is not None:
             peer = message.reply_to_message.from_user
-        elif message.matches[0]["name"] != "":
-            name = message.matches[0]["name"]
-            try:
-                peer = await client.get_users(int(name))
-            except:
-                peer = await client.get_users(name)
         else:
-            return
+            peer = await client.get_users(message.from_user)
         print(f" [ getting info of user ]")
         if is_me(message):
             await message.edit(message.text.markdown + f"\n` → ` Getting data of user `{peer.id}`")
@@ -106,7 +104,7 @@ async def who_cmd(client, message):
 HELP.add_help("what", "get info about message",
                 "Get the complete information about a message (replied to, from specified id or "+
                 "the sent message) and attach as json. If no chat is specified, " +
-                "message will be searched in current chat", args="[target] [chat]", public=True)
+                "message will be searched in current chat", args="[<target> [<chat>]]", public=True)
 @alemiBot.on_message(is_allowed & filters.command("what", list(alemiBot.prefixes)))
 async def what_cmd(client, message):
     msg = message

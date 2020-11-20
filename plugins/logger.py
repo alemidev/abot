@@ -116,7 +116,7 @@ async def stats_cmd(client, message):
 
 HELP.add_help(["query", "q", "log"], "interact with db",
                 "make queries to the underlying database (MongoDB) to request documents. " +
-                "Filters, limits and fields can be configured with arguments.", args="[-l] [-f] <query>")
+                "Filters, limits and fields can be configured with arguments.", args="[-l <n>] [-f <{filter}>] <{query}>")
 @alemiBot.on_message(filters.me & filters.command(["query", "q", "log"], prefixes=".") & filters.regex(pattern=
     r"^.(?:log|query|q)(?: |)(?P<limit>-l [0-9]+|)(?: |)(?P<filter>-f [^ ]+|)(?: |)(?P<query>[^ ]+|)"
 ))
@@ -151,7 +151,7 @@ async def query_cmd(client, message):
 
 HELP.add_help(["hist", "history"], "get edit history of a message",
                 "request edit history of a message. You can specify an id or reply to a message.",
-                public=True, args="[-t] [-g] [id]")
+                public=True, args="[-t] [-g <g>] [<id>]")
 @alemiBot.on_message(is_allowed & filters.command(["history", "hist"], prefixes=".") & filters.regex(
     pattern=r"^.hist(?:ory|)(?: |)(?P<time>-t|)(?: |)(?P<group>-g [0-9]+|)(?: |)(?P<id>[0-9]+|)"
 ))
@@ -186,7 +186,7 @@ async def hist_cmd(_, message):
 HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
                 "request last edited messages, from channel or globally (-g, reserved to owner). A number of " +
                 "messages to peek can be specified. You can append `-json` at the end to get a json with all message data.",
-                public=True, args="[-t] [-g] [num] [-json]")
+                public=True, args="[-t] [-g] [<num>] [-json]")
 @alemiBot.on_message(is_allowed & filters.command(["peek", "deld", "deleted", "removed"], prefixes=".") & filters.regex(
     pattern=r"^.(?:peek|deld|deleted|removed)(?: |)(?P<time>-t|)(?: |)(?P<global>-g|)(?: |)(?P<number>[0-9]+|)(?: |)(?P<json>-json|)"
 ))

@@ -18,7 +18,7 @@ HELP = HelpCategory("MANAGEMENT")
 
 HELP.add_help("delme", "immediately delete message",
                 "add `-delme`, `-delete` or `-del` at the end of a message to have it deleted after a time. " +
-                "If no time is given, message will be immediately deleted", args="[time]")
+                "If no time is given, message will be immediately deleted", args="[<time>]")
 @alemiBot.on_message(filters.me & filters.regex(pattern=
     r"(?:.*|)(?:-delme|-delete|-d)(?: |)(?P<time>[0-9]+|)$"
 ), group=5)
@@ -32,7 +32,7 @@ async def deleteme(_, message):
 HELP.add_help(["purge", "wipe", "clear"], "batch delete messages",
                 "delete last <n> sent messages from <target>. If <n> is not given, will default to 1. " +
                 "If no target is given, only self messages will be deleted. Target can be `@all` and `@everyone`",
-                args="[target] [number]", public=True)
+                args="[@<target>] [<number>]", public=True)
 @alemiBot.on_message(is_allowed & filters.regex(pattern=
     r"^[\.\/](?:purge|wipe|clear)(?: |)(?P<target>@[^ ]+|)(?: |)(?P<number>[0-9]+|)"
 ))

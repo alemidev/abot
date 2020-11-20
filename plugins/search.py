@@ -153,7 +153,7 @@ async def lmgtfy(_, message):
 HELP.add_help(["loc", "location"], "send a location",
                 "send a location for specific latitude and longitude. Both has " +
                 "to be given and are in range [-90, 90]. If a title is given with the `-t` " +
-                "option, the location will be sent as venue.", args="[-t] (<lat> <long> | <loc>)", public=True)
+                "option, the location will be sent as venue.", args="[-t <title>] (<lat> <long> | <loc>)", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["loc", "location"], list(alemiBot.prefixes)) & filters.regex(
     pattern=r".(?:location|loc)(?: |)(?P<title>-t '.*'|-t [^ ]+|)(?: |)(?:(?:(?P<lat>[0-9.]+) (?P<long>[0-9.]+))|(?P<address>.*))"
 ))
@@ -191,7 +191,7 @@ WTTR_STRING = "`→ {loc} `\n` → `**{desc}**\n` → ` {mintemp:.0f}C - {maxtem
 HELP.add_help(["weather", "wttr"], "get weather of location",
                 "searches OpenWeatherMap for specified location. To make queries to OpenWeatherMap " +
                 "an API key is necessary, thus registering to OpenWeatherMap. This is super early and shows very little.",
-                args="<val> <from> <to>", public=True)
+                args="<location>", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["weather", "wttr"], list(alemiBot.prefixes)) & filters.regex(
     pattern=r".(?:weather|wttr)(?: |)(?P<query>.*)"
 ))

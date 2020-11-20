@@ -35,7 +35,7 @@ async def send_media_appropriately(client, message, fname, extra_text=""):
 
 HELP.add_help("meme", "get a meme",
                 "get a specific meme is a name is given, otherwise a random one. " +
-                "Use argument `-list` to gett all meme names.", public=True, args="[-list] [name]")
+                "Use argument `-list` to gett all meme names.", public=True, args="[-list] [<name>]")
 @alemiBot.on_message(is_allowed & filters.command("meme", list(alemiBot.prefixes)) & filters.regex(pattern=
     r"meme(?: |$)(?P<list>-list|)(?: |$ |)(?P<name>[^ ]*)"
 ))
@@ -80,7 +80,7 @@ async def steal(client, message):
     if msg.media:
         try:                                                # TODO I need to get what file type it is!
             fpath = await client.download_media(msg, file_name="data/memes/") # + message.command[1])
-            await message.edit(get_text(message) + '\n` → ` saved meme as {}'.format(fpath))
+            # await message.edit(get_text(message) + '\n` → ` saved meme as {}'.format(fpath))
             path, fname = os.path.splitext(fpath) # this part below is trash, im waiting for my PR on pyrogram
             extension = fname.split(".")
             if len(extension) > 1:
@@ -133,7 +133,7 @@ async def fry_image(img: Image) -> Image:
 
 HELP.add_help("fry", "fry a meme",
                 "fry a meme. Sadly, no stars on eyes (yet!). Code comes from `https://github.com/Ovyerus/deeppyer`. " +
-                "The number of frying rounds can be specified, will default to 1.", args="[-c]", public=True)
+                "The number of frying rounds can be specified, will default to 1.", args="[-c <n>]", public=True)
 @alemiBot.on_message(is_allowed & filters.command("fry", list(alemiBot.prefixes)) & filters.regex(pattern=
     r"fry(?: |)(?P<count>-c [0-9]+|)"
 ))

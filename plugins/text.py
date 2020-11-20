@@ -25,7 +25,7 @@ FIGLET_FONTS = pyfiglet.FigletFont.getFonts()
 HELP.add_help(["slow", "sl"], "make text appear slowly",
                 "edit message adding batch of characters every time. If no batch size is " +
                 "given, it will default to 1. If no time is given, it will default to 0.5s.",
-                args="[-t] [-b] <text>")
+                args="[-t <time>] [-b <batch>] <text>")
 @alemiBot.on_message(filters.me & filters.regex(pattern=
     r"^[\.\/](?:sl|slow)(?: |)(?P<timer>-t [0-9.]+|)(?: |)(?P<batch>-b [0-9]+|)(?P<text>.*)"
 ), group=2)
@@ -100,7 +100,7 @@ async def replace_arrows(_, message):
 
 HELP.add_help("figlet", "make a figlet art",
                 "run figlet and make a text art. You can specify a font (`-f`), or request a random one (`-r`). " +
-                "Get list of available fonts with `-list`.", args="[-l|r|f] [-w]", public=True)
+                "Get list of available fonts with `-list`.", args="[-l] [-r | -f <font>] [-w <n>]", public=True)
 @alemiBot.on_message(is_allowed & filters.regex(pattern=
     r"^[\.\/]figlet(?: |)(?:(?P<list>-l)|(?P<font>-f [^ ]+)|(?P<random>-r)|)(?: |)(?P<width>-w [0-9]+|)(?: |)(?P<text>.*)"
 ))

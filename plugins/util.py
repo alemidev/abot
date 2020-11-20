@@ -71,7 +71,7 @@ def interval(delta):
 
 HELP.add_help(["cd", "countdown"], "count down",
                 "will edit message to show a countdown. If no time is given, it will be 5s.",
-                args="[time]", public=True)
+                args="[<time>]", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["countdown", "cd"], list(alemiBot.prefixes)), group=2)
 async def countdown(_, message):
     if is_me(message):
@@ -98,7 +98,7 @@ async def countdown(_, message):
 HELP.add_help(["rand", "random", "roll"], "get random choices",
                 "this can be used as a dice roller (`.roll 3d6`). If a list of choices is given, a random one " +
                 "will be chosen from that. If a number is given, it will choose a value from 1 to <n>, both included. " +
-                "You can specify how many extractions to make", args="[-n] [choices]", public=True)
+                "You can specify how many extractions to make", args="[-n <n>] [choices] | [n]d<max>", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["rand", "random", "roll"], list(alemiBot.prefixes)) & filters.regex(pattern=
     r"^.(?:random|rand|roll)(?: |)(?:(?:(?P<num>[0-9]+|)d(?P<max>[0-9]+))|(?:(?P<batch>-n [0-9]+|)(?: |)(?P<values>.*)))"
 ))
@@ -145,7 +145,7 @@ async def rand_cmd(_, message):
 HELP.add_help(["translate", "tran", "tr"], "translate to/from",
                 "translate text from a language (autodetected if not specified, `-s`) to another " +
                 "specified lang (defaults to eng, `-d`). It will show the confidence for detected lang. This " +
-                "uses google translate. The lang codes must be 2 letter long (en, ja...)", args="[-s] [-d]", public=True)
+                "uses google translate. The lang codes must be 2 letter long (en, ja...)", args="[-s <src>] [-d <des>]", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["translate", "tran", "tr"], list(alemiBot.prefixes)) & filters.regex(pattern=
     r"^.(?:translate|tran|tr)(?: |)(?P<src>-s [^ ]+|)(?: |)(?P<dest>-d [^ ]+|)(?: |)(?P<text>.*)"
 ))
