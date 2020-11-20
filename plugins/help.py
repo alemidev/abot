@@ -59,7 +59,7 @@ async def help_cmd(client, message):
             elif message.command[1] in ALIASES and ALIASES[message.command[1]] in cat.HELP_ENTRIES:
                 e = cat.HELP_ENTRIES[ALIASES[message.command[1]]]
                 return await edit_or_reply(message, f"`→ {e.title} {e.args}`  {e.longtext}", parse_mode="markdown")
-    await edit_or_reply(message, "`ᚨᛚᛖᛗᛁᛒᛟᛏ v{client.app_version}`\n" +
+    await edit_or_reply(message, f"`ᚨᛚᛖᛗᛁᛒᛟᛏ v{client.app_version}`\n" +
                         "`→ .help [cmd] ` print this or help for specific cmd\n" +
                         get_all_short_text() +
                         f"__Commands with * are available to trusted users__\n" +
