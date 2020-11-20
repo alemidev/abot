@@ -105,14 +105,18 @@ async def who_cmd(client, message):
 
 HELP.add_help("what", "get info about message",
                 "Get the complete information about a message (replied to, from specified id or "+
-                "the sent message) and attach as json", args="[target]", public=True)
+                "the sent message) and attach as json. If no chat is specified, " +
+                "message will be searched in current chat", args="[target] [chat]", public=True)
 @alemiBot.on_message(is_allowed & filters.command("what", list(alemiBot.prefixes)))
 async def what_cmd(client, message):
     msg = message
     if message.reply_to_message is not None:
         msg = await client.get_messages(message.chat.id, message.message_id)
     elif len(message.command) > 1 and message.command[1].isnumeric():
-        msg = await client.get_messages(message.chat.id, int(message.command[1]))
+        chat_id = message.chat.id
+        if len(message.command) > 2 and message.command[2].isnumeric():
+            chat_id = int(message.command[2])
+        msg = await client.get_messages(chat_id, int(message.command[1]))
     print(f" [ getting info of msg ]")
     try:
         if is_me(message):
