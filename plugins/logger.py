@@ -234,6 +234,7 @@ async def deleted_cmd(client, message): # This is a mess omg
             await client.send_document(message.chat.id, f, reply_to_message_id=message.message_id,
                                         caption=f"` → Peek result `")
         elif len(res) == 1 and "attached_file" in res[0]:
+            doc = res[0]
             await client.send_document(message.chat.id, "data/scraped_media/"+doc["attached_file"], reply_to_message_id=message.message_id,
                                         caption=f"<b>{doc['author']}</b> <code>→</code> {doc['message']}", parse_mode="html")
         else:
