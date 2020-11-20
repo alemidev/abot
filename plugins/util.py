@@ -1,6 +1,7 @@
 import asyncio
 import secrets
 import re
+import json
 import time
 import traceback
 
@@ -12,6 +13,8 @@ from util.permission import is_allowed
 from util.message import edit_or_reply, is_me
 
 from googletrans import Translator
+from google_currency import convert
+from unit_converter.converter import converts
 
 from bot import alemiBot
 
@@ -20,6 +23,36 @@ from plugins.help import HelpCategory
 translator = Translator()
 
 HELP = HelpCategory("UTIL")
+
+HELP.add_help("convert", "convert various units",
+                "convert various measure units. Accepts many units, like " +
+                "`.convert 52 °C °F` or `.convert 2.78 daN*mm^2 mN*µm^2`.",
+                args="<val> <from> <to>", public=True)
+@alemiBot.on_message(is_allowed & filters.command("convert", list(alemiBot.prefixes)))
+async def convert_cmd(_, message):
+    if len(message.command) < 4:
+        return await edit_or_reply(message, "`[!] → ` Not enough arguments")
+    try:
+        res = converts(message.command[1] + " " + message.command[2], message.command[3])
+        await edit_or_reply(message, f"` → ` {res} {message.command[3]}")
+    except Exception as e:
+        traceback.print_exc()
+        await edit_or_reply(message, "`[!] → ` " + str(e))
+
+HELP.add_help(["currency", "cconvert"], "convert across currencies",
+                "convert various measure units. Accepts many currencies, like " +
+                "`.convert 1 btc us`.",
+                args="<val> <from> <to>", public=True)
+@alemiBot.on_message(is_allowed & filters.command(["currency", "cconvert"], list(alemiBot.prefixes)))
+async def currency_convert_cmd(_, message):
+    if len(message.command) < 4:
+        return await edit_or_reply(message, "`[!] → ` Not enough arguments")
+    try:
+        res = json.loads(convert(message.command[2], message.command[3], float(message.command[1])))
+        await edit_or_reply(message, f"` → ` {res['amount']} {res['to']}")
+    except Exception as e:
+        traceback.print_exc()
+        await edit_or_reply(message, "`[!] → ` " + str(e))
 
 def interval(delta):
     if delta > 100:

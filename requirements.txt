@@ -4,6 +4,8 @@ wikipedia
 italian-dictionary
 PyDictionary
 googletrans
+unit-converter
+google_currency
 geopy
 requests
 pyfiglet
