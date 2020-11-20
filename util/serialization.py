@@ -5,7 +5,7 @@ from pyrogram.types import List
 
 def convert_to_dict(obj, depth=0):
     if depth > 10: # safety recursion stop
-        print("[!] Terminating recursion : {str(obj)}")
+        print(f"[!] Terminating recursion : {str(obj)}")
         return str(obj)
     if isinstance(obj, datetime) or isinstance(obj, int) \
     or isinstance(obj, float) or isinstance(obj, bool) or obj is None:
