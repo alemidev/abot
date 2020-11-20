@@ -42,7 +42,7 @@ def ud_define(word):
 
 HELP.add_help(["diz", "dizionario"], "search in ita dict",
                 "get definition from italian dictionary of given word.",
-                args="[word]", public=True)
+                args="<word>", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["diz", "dizionario"], list(alemiBot.prefixes)))
 async def diz(_, message):
     if len(message.command) < 2:
@@ -63,7 +63,7 @@ async def diz(_, message):
 
 HELP.add_help(["dic", "dictionary"], "search in eng dict",
                 "get definition from english dictionary of given word.",
-                args="[word]", public=True)
+                args="<word>", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["dic", "dictionary"], list(alemiBot.prefixes)))
 async def dic(_, message):
     if len(message.command) < 2:
@@ -87,7 +87,7 @@ async def dic(_, message):
 
 HELP.add_help(["ud", "urban"], "search in urban dict",
                 "get definition from urban dictionary of given word.",
-                args="[word]", public=True)
+                args="<word>", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["ud", "urban"], list(alemiBot.prefixes)))
 async def urbandict(_, message):
     if len(message.command) < 2:
@@ -110,7 +110,7 @@ async def urbandict(_, message):
 
 HELP.add_help("wiki", "search on wikipedia",
                 "search on wikipedia, attaching initial text and a link.",
-                args="[query]", public=True)
+                args="<query>", public=True)
 @alemiBot.on_message(is_allowed & filters.command("wiki", list(alemiBot.prefixes)))
 async def wiki(_, message):
     if len(message.command) < 2:
@@ -137,7 +137,7 @@ async def wiki(_, message):
 
 HELP.add_help("lmgtfy", "let me google that for you",
                 "generates a `Let Me Google That For You` link.",
-                args="[query]", public=True)
+                args="<query>", public=True)
 @alemiBot.on_message(is_allowed & filters.command("lmgtfy", list(alemiBot.prefixes)))
 async def lmgtfy(_, message):
     if len(message.command) < 2:
@@ -150,11 +150,11 @@ async def lmgtfy(_, message):
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
 
-HELP.add_help(["location", "loc"], "send a location",
+HELP.add_help(["loc", "location"], "send a location",
                 "send a location for specific latitude and longitude. Both has " +
                 "to be given and are in range [-90, 90]. If a title is given with the `-t` " +
-                "option, the location will be sent as venue.", args="[-t] <lat> <long>", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["location", "loc"], list(alemiBot.prefixes)) & filters.regex(
+                "option, the location will be sent as venue.", args="[-t] (<lat> <long> | <loc>)", public=True)
+@alemiBot.on_message(is_allowed & filters.command(["loc", "location"], list(alemiBot.prefixes)) & filters.regex(
     pattern=r".(?:location|loc)(?: |)(?P<title>-t '.*'|-t [^ ]+|)(?: |)(?:(?:(?P<lat>[0-9.]+) (?P<long>[0-9.]+))|(?P<address>.*))"
 ))
 async def location_cmd(client, message):

@@ -57,7 +57,7 @@ async def getmeme(client, message):
 
 HELP.add_help("steal", "steal a meme",
                 "save a meme to collection. Either attach an image or reply to one. " +
-                "A name for the meme must be given.")
+                "A name for the meme must be given.", args="<name>")
 @alemiBot.on_message(filters.me & filters.command("steal", list(alemiBot.prefixes)))
 async def steal(client, message):
     if len(message.command) < 2:
