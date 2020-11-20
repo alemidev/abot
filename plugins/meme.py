@@ -42,7 +42,7 @@ HELP.add_help("meme", "get a meme",
 async def getmeme(client, message):
     try:
         args = message.matches[0]
-        if args["list"] == "-l" or args["list"] == "-list":
+        if args["list"] == "-list":
             print(" [ getting meme list ]")
             memes = os.listdir("data/memes")
             memes.sort()
@@ -58,7 +58,7 @@ async def getmeme(client, message):
                 print(f" [ getting specific meme : \"{fname}\" ]")
                 await send_media_appropriately(client, message, fname)
             else:
-                await edit_or_reply(f"`[!] → ` no meme named {args['name']}")
+                await edit_or_reply(message, f"`[!] → ` no meme named {args['name']}")
         else: 
             fname = secrets.choice(os.listdir("data/memes"))
             print(f" [ getting random meme : \"{fname}\" ]")
