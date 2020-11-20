@@ -184,3 +184,28 @@ async def location_cmd(client, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
+
+WTTR_STRING = "`→ {loc} `\n` → `**{desc}**\n` → ` {mintemp:.0f}C - {maxtemp:.0f}C `|` **{hum}%** humidity\n" + \
+              "` → ` pressure **{press}hPa** `|` wind **{wspd}m/s**\n` → ` **{vis}m** visibility (__{cld}% clouded__)"
+
+HELP.add_help(["weather", "wttr"], "get weather of location",
+                "searches OpenWeatherMap for specified location. To make queries to OpenWeatherMap " +
+                "an API key is necessary, thus registering to OpenWeatherMap. This is super early and shows very little.",
+                args="<val> <from> <to>", public=True)
+@alemiBot.on_message(is_allowed & filters.command(["weather", "wttr"], list(alemiBot.prefixes)))
+async def weather_cmd(_, message):
+    if len(message.command) < 2:
+        return await edit_or_reply(message, "`[!] → ` Not enough arguments")
+    APIKEY = alemiBot.config.get("weather", "apikey", fallback="")
+    if APIKEY == "":
+        return await edit_or_reply(message, "`[!] → ` No APIKEY provided in config")
+    try:
+        r = requests.get(f'http://api.openweathermap.org/data/2.5/weather?q={message.command[1]}&APPID={APIKEY}').json()
+        await edit_or_reply(message, WTTR_STRING.format(loc=r["name"], desc=r["weather"][0]["description"],
+                                                        mintemp=r["main"]["temp_min"] - 272.15,
+                                                        maxtemp=r["main"]["temp_max"] - 272.15,
+                                                        hum=r["main"]["humidity"], press=r["main"]["pressure"],
+                                                        wspd=r["wind"]["speed"], vis=r["visibility"], cld=r["clouds"]["all"]))
+    except Exception as e:
+        traceback.print_exc()
+        await edit_or_reply(message, "`[!] → ` " + str(e))
