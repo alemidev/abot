@@ -246,8 +246,12 @@ async def deleted_cmd(client, message): # This is a mess omg
                 out += f"<b>{doc['author']}</b> <code> → </code>"
                 if not local_search:
                     out += f"<code>{doc['channel']} → </code>\n"
-                out += f"{doc['message']}\n"
+                out += f"{doc['message']}"
+                if "attached_file" in doc:
+                    out += f" (<i>{doc['attached_file']}</i>)"
                 if not local_search:
+                    out += "\n\n"
+                else:
                     out += "\n"
             if out == "":
                 out = "` → ` Nothing to display"
