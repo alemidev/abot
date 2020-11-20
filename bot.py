@@ -5,7 +5,6 @@ WOOOT a pyrogram rewrite im crazyyy
 import os
 import sys
 import json
-import traceback
 from datetime import datetime
 from pyrogram import Client, idle
 from configparser import ConfigParser
@@ -33,7 +32,7 @@ class alemiBot(Client):
             with open("data/lastmsg.json", "w") as f:
                 json.dump({}, f)
         except:
-            traceback.print_exc()
+            pass # ignore
 
     async def stop(self):
         await super().stop()
