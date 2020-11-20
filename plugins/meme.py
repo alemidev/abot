@@ -20,12 +20,14 @@ HELP = HelpCategory("MEME")
 
 # TODO make this an util and maybe pass **kwargs
 async def send_media_appropriately(client, message, fname, extra_text=""):
-    if fname.endswith((".jpg", ".jpeg", ".png", ".webp")):
+    if fname.endswith((".jpg", ".jpeg", ".png")):
         await client.send_photo(message.chat.id, "data/memes/"+fname, reply_to_message_id=message.message_id,
                                 caption=f'` → {extra_text}` **{fname}**')
     elif fname.endswith((".gif", ".mp4", ".webm")):
         await client.send_video(message.chat.id, "data/memes/"+fname, reply_to_message_id=message.message_id,
                                 caption=f'` → {extra_text}` **{fname}**')
+    elif fname.endswith((".webp", ".tgs")):
+        await client.send_sticker(message.chat.id, "data/memes/"+fname, reply_to_message_id=message.message_id)
     else:
         await client.send_document(message.chat.id, "data/memes/"+fname, reply_to_message_id=message.message_id,
                                         caption=f'` → {extra_text}` **{fname}**')
