@@ -190,12 +190,12 @@ async def deleted_cmd(client, message): # This is a mess omg
     limit = 1
     args = message.matches[0]
     show_time = args["time"] == "-t"
-    global_search = args["global"] != "-g" or not is_me(message)
+    local_search = args["global"] != "-g" or not is_me(message)
     try:
         if args["number"] != "":
             limit = int(args["number"])
         q = { "_": "Delete" }
-        if global_search:
+        if local_search:
             q["chat.id"] = message.chat.id
         cursor = EVENTS.find(q, {"message_id": 1, "date": 1} ).sort("_id", -1)
         res = []
@@ -218,7 +218,7 @@ async def deleted_cmd(client, message): # This is a mess omg
                 match["message"] = msg["text"]["markdown"]
             else:
                 match["message"] = ""
-            if global_search:
+            if not local_search:
                 match["channel"] = get_channel_dict(doc["chat"])
             res.append(match)
             limit -= 1
@@ -234,8 +234,8 @@ async def deleted_cmd(client, message): # This is a mess omg
             for doc in res:
                 if show_time:
                     out += f"[{str(doc['date'])}] "
-                where = "| " + doc["channel"] if global_search else ""
-                out += f"<code>[{doc['id']}]</code> <b>{doc['author']}</b><code> {where} → </code> {doc['message']}\n\n"
+                where = " | " + doc["channel"] if not local_search else "" # ewwwwww
+                out += f"<code>[{doc['id']}]</code> <b>{doc['author']}</b><code>{where} → </code> {doc['message']}\n\n"
             if out == "":
                 out = "` → ` Nothing to display"
             await edit_or_reply(message, out, parse_mode="html")
