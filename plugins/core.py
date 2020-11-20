@@ -112,7 +112,7 @@ async def what_cmd(client, message):
     msg = message
     try:
         if message.reply_to_message is not None:
-            msg = await client.get_messages(message.chat.id, message.message_id)
+            msg = await client.get_messages(message.chat.id, message.reply_to_message.message_id)
         elif len(message.command) > 1 and message.command[1].isnumeric():
             chat_id = message.chat.id
             if len(message.command) > 2 and message.command[2].isnumeric():
