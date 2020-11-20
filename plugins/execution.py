@@ -1,5 +1,6 @@
 import subprocess
 import io
+import re
 import traceback
 import sys
 import inspect
@@ -21,10 +22,15 @@ from pyrogram import filters
 
 from util.parse import cleartermcolor
 from util.message import tokenize_json, tokenize_lines
+from util.serialization import convert_to_dict
 from plugins.help import HelpCategory
 
 class GlobalThings():
-    why = "So you can store global things with exec and eval"
+    def __init__(self):
+        self.client = alemiBot.instance
+    
+    def __str__(self):
+        return str(convert_to_dict(self))
 
 GLOBALS = GlobalThings()
 
@@ -45,9 +51,11 @@ HELP = HelpCategory("EXECUTION")
 HELP.add_help(["run", "r"], "run command on server",
                 "runs a command on server. Shell will be from user running bot. " +
                 "Every command starts in bot root folder.", args="<cmd>")
-@alemiBot.on_message(filters.me & filters.command(["run", "r"], list("./")))
+@alemiBot.on_message(filters.me & filters.command(["run", "r"], list(alemiBot.prefixes)) & filters.regex(
+    pattern=r"^.(?:run|r) (?P<cmd>.*)", flags=re.DOTALL
+))
 async def runit(client, message):
-    args = re.sub("^[\.\/](?:run|r)(?: |)", "", message.text)
+    args = message.matches[0]["cmd"]
     try:
         print(f" [ running command \"{args}\" ]")
         result = subprocess.run(args, shell=True, capture_output=True, timeout=60)
@@ -68,12 +76,15 @@ HELP.add_help(["eval", "e"], "eval a python expression",
                 "assigned. Some common libs are already imported. `eval` cannot have side effects. " +
                 "Anything returned by `eval` will be printed upon successful evaluation. If " +
                 "a coroutine is returned, it will be awaited (needed for executing async funcs defined " +
-                "with .exec). `stdout` will be captured and shown before the returned value.",
-                args="<expr>")
-@alemiBot.on_message(filters.me & filters.command(["eval", "e"], list("./")))
+                "with .exec). `stdout` will be captured and shown before the returned value. Use the " +
+                "GLOBALS object for persistence. No assignation can be done in `eval`, but getting " +
+                "fields is possible.", args="<expr>")
+@alemiBot.on_message(filters.me & filters.command(["eval", "e"], list(alemiBot.prefixes)) & filters.regex(
+    pattern=r"^.(?:eval|e) (?P<expr>.*)", flags=re.DOTALL
+))
 async def evalit(client, message):
     global GLOBALS
-    args = re.sub("^[\.\/](?:eval|e)(?: |)", "", message.text)
+    args = message.matches[0]["expr"]
     try:
         print(f" [ evaluating \"{args}\" ]")
         with stdoutWrapper() as fake_stdout:
@@ -96,11 +107,14 @@ HELP.add_help(["exec", "ex"], "execute python code",
                 "execute python code. This, unlike `eval`, has no bounds and " +
                 "**can have side effects**. Use with more caution than `eval`. " +
                 "`exec` always returns `None`, but anything printed to `stdout` " +
-                "will be shown. You can use the GLOBALS object for persistence.", args="<code>")
-@alemiBot.on_message(filters.me & filters.command(["exec", "ex"], list("./"))) # TODO fix regex below to use prefixes
+                "will be shown. You can set anything in the GLOBALS object for " +
+                "persistence.", args="<code>")
+@alemiBot.on_message(filters.me & filters.command(["exec", "ex"], list(alemiBot.prefixes)) & filters.regex(
+    pattern=r"^.(?:exec|ex) (?P<code>.*)", flags=re.DOTALL
+))
 async def execit(client, message):
     global GLOBALS
-    args = re.sub("^[\.\/](?:exec|ex)(?: |)", "", message.text)
+    args = message.matches[0]["code"]
     fancy_args = args.replace("\n", "\n... ")
     try:
         with stdoutWrapper() as fake_stdout:
