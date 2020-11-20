@@ -151,12 +151,13 @@ async def query_cmd(client, message):
 
 HELP.add_help(["hist", "history"], "get edit history of a message",
                 "request edit history of a message. You can specify an id or reply to a message.",
-                public=True, args="[-t] [id]")
+                public=True, args="[-t] [-g] [id]")
 @alemiBot.on_message(is_allowed & filters.command(["history", "hist"], prefixes=".") & filters.regex(
-    pattern=r"^.hist(?:ory|)(?: |)(?P<time>-t|)(?: |)(?P<id>[0-9]+|)"
+    pattern=r"^.hist(?:ory|)(?: |)(?P<time>-t|)(?: |)(?P<group>-g [0-9]+|)(?: |)(?P<id>[0-9]+|)"
 ))
 async def hist_cmd(_, message):
     m_id = None
+    c_id = message.chat.id
     args = message.matches[0]
     show_time = args["time"] == "-t"
     if message.reply_to_message is not None:
@@ -165,7 +166,9 @@ async def hist_cmd(_, message):
         m_id = int(args["id"])
     if m_id is None:
         return
-    cursor = EVENTS.find( {"_": "Message", "message_id": m_id, "chat.id": message.chat.id},
+    if args["group"].startswith("-g "):
+        c_id = int(args["group"].replace("-g ", ""))
+    cursor = EVENTS.find( {"_": "Message", "message_id": m_id, "chat.id": c_id},
             {"text": 1, "date": 1, "edit_date": 1} ).sort("_id", -1)
     out = ""
     for doc in cursor:
