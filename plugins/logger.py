@@ -48,7 +48,7 @@ class BufferingQueue():
 
     def add_document(self, item):
         self.q.put(item)
-        if len(self.q) > self.bufsize:
+        if self.q.qsize() > self.bufsize:
             buf = []
             for i in range(self.bufsize):
                 buf.appen(self.q.get())
