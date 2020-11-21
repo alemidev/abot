@@ -231,7 +231,7 @@ async def deleted_cmd(client, message): # This is a mess omg
         elif len(res) == 1 and "attached_file" in res[0]:
             doc = res[0]
             await client.send_document(message.chat.id, "data/scraped_media/"+doc["attached_file"], reply_to_message_id=message.message_id,
-                                        caption=f"<b>{get_username_dict(doc['from_user'])}</b> <code>→</code> {get_message_dict(doc)}", parse_mode="html")
+                                        caption=f"<b>{get_username_dict(doc['from_user'])}</b> <code>→</code> {get_text_dict(doc)}", parse_mode="html")
         else:
             out = ""
             for doc in res:
