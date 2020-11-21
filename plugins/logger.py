@@ -41,8 +41,9 @@ LOG_MEDIA = alemiBot.config.get("database", "log_media", fallback=False)
 
 LOGGED_COUNT = 0
 
-class BufferingQueue():
-    def __init__(self):
+# LMAOOOO WTFFF THIS NEEDS TO BE WAY FUCKING BETTER TODO LIKE MAYBE A CLASS TODO
+class BufferingQueue(): #                       MAYBE AN OBJECT WITH AN INSTANCE TO
+    def __init__(self): #                       HANDLE ALL THE DB STUFF TODO TODO TODO TODO
         self.q = queue.Queue()
         self.bufsize = alemiBot.config.get("database", "batchsize", fallback=10)
 
@@ -50,8 +51,12 @@ class BufferingQueue():
         self.q.put(item)
         if self.q.qsize() > self.bufsize:
             buf = []
-            for i in range(self.bufsize):
-                buf.append(self.q.get())
+            try:
+                for i in range(self.bufsize):
+                    buf.append(self.q.get(block=False, timeout=1))
+            except queue.Empty:
+                print("[!] Buffering queue race condition")
+                pass
             EVENTS.insert_many(buf)
 
 BUFFER = BufferingQueue()
