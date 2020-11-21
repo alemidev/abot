@@ -110,12 +110,12 @@ async def stats_cmd(client, message):
     medianumber = len(os.listdir("data/scraped_media"))
     uptime = str(datetime.now() - client.start_time)
     await edit_or_reply(message, f"`→ online for {uptime} `" +
-                    f"\n` → ` **{LOGGED_COUNT}** events logged (**{count}** total)" +
+                    f"\n` → ` **{LOGGED_COUNT}** events monitored (**{count}** total)" +
                     f"\n` → ` DB size **{order_suffix(size)}**" +
                     f"\n` → ` **{memenumber}** memes collected" +
                     f"\n` → ` meme folder size **{order_suffix(memesize)}**" +
-                    f"\n` → ` **{medianumber}** media scraped" +
-                    f"\n` → ` scraped media size **{order_suffix(mediasize)}**")
+                    f"\n` → ` **{medianumber}** documents archived" + # lmao don't call it scraped_media maybe
+                    f"\n` → ` archive size **{order_suffix(mediasize)}**")
     await client.set_offline()
 
 HELP.add_help(["query", "q", "log"], "interact with db",
