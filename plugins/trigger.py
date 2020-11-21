@@ -61,6 +61,6 @@ async def search_triggers(client, message):
     if msg_txt == "":
         return
     for trg in triggers:
-        if trg.lower() in msg_text:
+        if trg.lower() in msg_txt:
             await message.reply(triggers[trg])
             await client.set_offline()
