@@ -15,14 +15,14 @@ def get_text(message):
             return ""
 
 def get_text_dict(message):
-    if "text" in message:
-        if "markup" in message["text"]:
-            return message["text"]["markup"]
-        return message["text"]
+    if "markdown" in message:
+        return message["markdown"]
+    elif "text" in message:
+        return get_text_dict(message["text"])
     elif "caption" in message:
         return message["caption"]
     else:
-        return ""
+        return str(message)
 
 async def edit_or_reply(message, text, *args, **kwargs):
     if is_me(message) and len(message.text.markdown + text) < 4090: 
