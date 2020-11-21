@@ -19,6 +19,7 @@ HELP.add_help(["asd", "ping"], "a sunny day!",
                 "The ping command.")
 @alemiBot.on_message(filters.me & filters.command(["asd", "ping"], list(alemiBot.prefixes)))
 async def ping(client, message):
+    print(" [ Pong ]")
     msg = message.text.markdown
     before = time.time()
     await message.edit(msg + "\n` → ` a sunny day")

@@ -82,6 +82,7 @@ async def steal(client, message):
         msg = message.reply_to_message
     if msg.media:
         try:                                                # TODO I need to get what file type it is!
+            print(" [ stealing meme ]")
             fpath = await client.download_media(msg, file_name="data/memes/") # + message.command[1])
             # await message.edit(get_text(message) + '\n` → ` saved meme as {}'.format(fpath))
             path, fname = os.path.splitext(fpath) # this part below is trash, im waiting for my PR on pyrogram

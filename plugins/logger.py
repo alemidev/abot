@@ -95,6 +95,7 @@ HELP.add_help(["stats", "stat"], "get stats",
                 "Get uptime, disk usage for media and for db, number of tracked events.", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["stats", "stat"], list(alemiBot.prefixes)))
 async def stats_cmd(client, message):
+    print(" [ getting stats ]")
     global LOGGED_COUNT
     count = EVENTS.count_documents({})
     size = DB.command("dbstats")['totalSize']
@@ -134,13 +135,17 @@ async def query_cmd(client, message):
             lim = 10
             if args["limit"] != "":
                 lim = int(args["limit"].replace("-l ", ""))
+            print(f" [ querying db : {args['query']} ]")
+
             if args["filter"] != "":
                 filt = json.loads(args["filter"].replace("-f ", ""))
                 cursor = EVENTS.find(q, filt).sort("_id", -1).limit(lim)
             else:
                 cursor = EVENTS.find(q).sort("_id", -1).limit(lim)
+
             for doc in cursor:
                 buf.append(doc)
+
             raw = json.dumps(buf, indent=2, default=str)
             if len(message.text.markdown) + len(tokenize_json(raw)) > 4090:
                 f = io.BytesIO(raw.encode("utf-8"))

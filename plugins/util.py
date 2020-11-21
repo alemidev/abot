@@ -33,6 +33,7 @@ async def convert_cmd(client, message):
     if len(message.command) < 4:
         return await edit_or_reply(message, "`[!] → ` Not enough arguments")
     try:
+        print(" [ Converting units ]")
         res = converts(message.command[1] + " " + message.command[2], message.command[3])
         await edit_or_reply(message, f"` → ` {res} {message.command[3]}")
     except Exception as e:
@@ -40,15 +41,16 @@ async def convert_cmd(client, message):
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()
 
-HELP.add_help(["currency", "cconvert"], "convert across currencies",
+HELP.add_help(["currency", "cconvert", "curr"], "convert across currencies",
                 "convert various measure units. Accepts many currencies, like " +
                 "`.convert 1 btc us`.",
                 args="<val> <from> <to>", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["currency", "cconvert"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filters.command(["currency", "cconvert", "curr"], list(alemiBot.prefixes)))
 async def currency_convert_cmd(client, message):
     if len(message.command) < 4:
         return await edit_or_reply(message, "`[!] → ` Not enough arguments")
     try:
+        print(" [ Converting currency ]")
         await client.send_chat_action(message.chat.id, "choose_contact")
         res = json.loads(convert(message.command[2], message.command[3], float(message.command[1])))
         await edit_or_reply(message, f"` → ` {res['amount']} {res['to']}")
@@ -167,6 +169,7 @@ async def translate_cmd(client, message):
     try:
         await client.send_chat_action(message.chat.id, "find_location")
         q = args["text"]
+        print(f" [ Translating {q} ]")
         res = translator.translate(q, **tr_options)
         out = f"`[{res.extra_data['confidence']:.2f}] → ` {res.text}"
         await edit_or_reply(message, out)

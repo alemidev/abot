@@ -22,6 +22,7 @@ HELP.add_help(["censor", "bully"], "start censoring a chat",
     filters.regex(pattern=r"^.(?:censor|bully)(?: |)(?P<target>@[^ ]+|)"
 ))
 async def startcensor(client, message):
+    print(" [ Censoring new chat ]")
     target = message.matches[0]["target"]
     if target in { "", "@all", "@everyone" }:
         censoring[message.chat.id] = None
@@ -34,7 +35,6 @@ async def startcensor(client, message):
             censoring[message.chat.id] = []
         censoring[message.chat.id].append(tgt.id)
     await message.edit(message.text.markdown + f"\n` → ` Censoring {target}")
-    print(" [ Censoring new chat ]")
 
 HELP.add_help("stop", "stop censoring a chat",
             "typing .stop in a chat that is being censored will stop all censoring")
@@ -53,12 +53,14 @@ async def bully(client, message):
         else:
             if censoring[message.chat.id] is None:
                 await message.delete()
+                print(" [ Get bullied ]")
             else:
                 if message.from_user is None:
                     return
                 if message.from_user.id in censoring[message.chat.id]:
                     await message.delete()
-    await client.set_offline()
+                    print(" [ Get bullied ]")
+        await client.set_offline()
 
 HELP.add_help(["spam", "flood"], "pretty self explainatory",
             "will send many messages in this chat at a specific interval. " +

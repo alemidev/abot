@@ -50,6 +50,7 @@ def get_all_short_text():
 # The help command
 @alemiBot.on_message(is_allowed & filters.command(["help", "h"], list(alemiBot.prefixes)))
 async def help_cmd(client, message):
+    print(" [ Help! ]")
     if len(message.command) > 1:
         for k in CATEGORIES:
             cat = CATEGORIES[k]

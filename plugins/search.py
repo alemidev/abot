@@ -174,6 +174,7 @@ async def location_cmd(client, message):
     args = message.matches[0]
     latitude = 0.0
     longitude = 0.0
+    print(" [ getting a location ]")
     if args["lat"] is not None and args["long"] is not None:
         latitude = float(args["lat"])
         longitude = float(args["long"])
@@ -220,6 +221,7 @@ async def weather_cmd(client, message):
     # if APIKEY == "":
     #     return await edit_or_reply(message, "`[!] → ` No APIKEY provided in config")
     try:
+        print(" [ curl wttr.in ]")
         await client.send_chat_action(message.chat.id, "find_location")
         q = message.matches[0]["query"]
         r = requests.get(f"https://wttr.in/{q}?mnTC0&lang=en")

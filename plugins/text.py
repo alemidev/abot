@@ -93,6 +93,7 @@ async def shrug(client, message):
 
 @alemiBot.on_message(filters.me & filters.regex(pattern=r"<-|->|=>|<="), group=3)
 async def replace_arrows(client, message):
+    print(" [ arrow! ]")
     await message.edit(message.text.markdown.replace("<-", "←")
                                             .replace("->", "→")
                                             .replace("=>", "⇨")
@@ -106,7 +107,6 @@ HELP.add_help("figlet", "make a figlet art",
     r"^[\.\/]figlet(?: |)(?:(?P<list>-l)|(?P<font>-f [^ ]+)|(?P<random>-r)|)(?: |)(?P<width>-w [0-9]+|)(?: |)(?P<text>.*)"
 ))
 async def figlettext(client, message):
-    print(f" [ figlet ]")
     args = message.matches[0]
     if args["list"] == "-l":
         msg = f"` → ` **Figlet fonts : ({len(FIGLET_FONTS)})\n```[ "
@@ -125,6 +125,7 @@ async def figlettext(client, message):
             font = f
     if args["text"] == "":
         return
+    print(f" [ figlet-ing {args['text']} ]")
     result = pyfiglet.figlet_format(args["text"], font=font, width=width)
     await edit_or_reply(message, "<code> →\n" + result + "</code>", parse_mode="html")
     await client.set_offline()

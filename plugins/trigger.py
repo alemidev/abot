@@ -31,6 +31,7 @@ async def trigger_cmd(client, message):
     args = message.matches[0]
     changed = False
     if args["arg"] == "-l":
+        print(" [ listing triggers ]")
         out = "\n"
         for t in triggers:
             out += f"`'{t}' → ` {triggers[t]}\n"
@@ -38,10 +39,12 @@ async def trigger_cmd(client, message):
             out += "` → Nothing to display`"
         await message.edit(message.text.markdown + out)
     elif args["arg"] == "-n" and args["trigger"] != "" and args["message"] != "":
+        print(" [ new trigger ]")
         triggers[args["trigger"].strip("'")] = args["message"]
         await message.edit(message.text.markdown + f"\n` → ` Registered new trigger")
         changed = True
     elif args["arg"] == "-d" and args["trigger"] != "":
+        print(" [ removing trigger ]")
         if triggers.pop(args["trigger"].strip("'"), None) is not None:
             await message.edit(message.text.markdown + "\n` → ` Removed trigger")
             changed = True
@@ -66,3 +69,4 @@ async def search_triggers(client, message):
         if trg.lower() in msg_txt:
             await message.reply(triggers[trg])
             await client.set_offline()
+            print(" [ T R I G G E R E D ]")

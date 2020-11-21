@@ -82,7 +82,7 @@ HELP.add_help("solve", "attempt to solve equation",
 async def solve_cmd(client, message):
     try:
         arg = message.matches[0]["query"]
-        print(f" [ mathifying {arg} ]")
+        print(f" [ solving {arg} ]")
         in_expr = parse_expr(arg).simplify()
         res = solve(in_expr)
         out = f"` → {str(in_expr)}`\n```" + str(res) + "```"

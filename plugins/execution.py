@@ -128,6 +128,7 @@ async def execit(client, message):
     args = message.matches[0]["code"]
     fancy_args = args.replace("\n", "\n... ")
     try:
+        print(f" [ executing \"{args}\" ]")
         with stdoutWrapper() as fake_stdout:
             await aexec(args, client, message)
         result = fake_stdout.getvalue()

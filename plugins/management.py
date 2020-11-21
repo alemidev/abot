@@ -99,6 +99,7 @@ async def manage_allowed_cmd(client, message):
             users_to_manage.append(user)
         else:
             return await message.edit(message.text.markdown + "\n`[!] → ` Provide an ID or reply to a msg")
+        print(" [ changing permissions ]")
         out = ""
         action_allow = message.command[0] == "allow"
         for u in users_to_manage:
@@ -128,6 +129,7 @@ async def trusted_list(client, message):
         text = "`[` "
         issues = ""
         users = []
+        print(" [ listing allowed users ]")
         if len(message.command) > 1 and message.command[1] == "-s":
             for uid in list_allowed():
                 try:
