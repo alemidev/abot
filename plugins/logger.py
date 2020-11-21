@@ -75,7 +75,7 @@ async def msglogger(client, message):
 # Log Message deletions
 @alemiBot.on_deleted_messages(group=10)
 async def dellogger(client, message):
-    global BUFFER
+    global LOGGED_COUNT
     data = convert_to_dict(message)
     for d in data:
         d["_"] = "Delete"
