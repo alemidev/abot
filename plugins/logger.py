@@ -5,6 +5,7 @@ import json
 import io
 import os
 import traceback
+import queue
 
 from pymongo import MongoClient
 from datetime import datetime
@@ -40,6 +41,21 @@ LOG_MEDIA = alemiBot.config.get("database", "log_media", fallback=False)
 
 LOGGED_COUNT = 0
 
+class BufferingQueue():
+    def __init__(self):
+        self.q = queue.Queue()
+        self.bufsize = alemiBot.config.get("database", "batchsize", fallback=10)
+
+    def add_document(self, item):
+        self.q.put(item)
+        if len(self.q) > self.bufsize:
+            buf = []
+            for i in range(self.bufsize):
+                buf.appen(self.q.get())
+            EVENTS.insert_many(buf)
+
+BUFFER = BufferingQueue()
+
 def print_formatted(chat, user, message):
     global last_group
     if chat.id != last_group:
@@ -59,6 +75,7 @@ def print_formatted(chat, user, message):
 @alemiBot.on_message(group=10)
 async def msglogger(client, message):
     global LOGGED_COUNT
+    global BUFFER
     # print_formatted(message.chat, message.from_user, message)
     data = convert_to_dict(message)
     if message.media and LOG_MEDIA:
@@ -68,19 +85,20 @@ async def msglogger(client, message):
                 data["attached_file"] = fname.split("data/scraped_media/")[1]
         except ValueError:
             pass # ignore, some messages are marked as media but have nothing to download wtf
-    EVENTS.insert_one(data)
+    BUFFER.add_document(data)
     LOGGED_COUNT += 1
 
 # Log Message deletions
 @alemiBot.on_deleted_messages(group=10)
 async def dellogger(client, message):
     global LOGGED_COUNT
+    global BUFFER
     data = convert_to_dict(message)
     for d in data:
         d["_"] = "Delete"
         d["date"] = datetime.now()
         # print(colored("[DELETED]", 'red', attrs=['bold']) + " " + str(d["message_id"]))
-        EVENTS.insert_one(d)
+        BUFFER.add_document(d)
         LOGGED_COUNT += 1
 
 def order_suffix(num, measure='B'):
