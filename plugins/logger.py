@@ -240,7 +240,7 @@ async def deleted_cmd(client, message): # This is a mess omg
                 out += f"<code>[{doc['message_id']}]</code> "
                 out += f"<b>{get_username_dict(doc['from_user'])}</b> <code>→</code> "
                 if not local_search:
-                    out += f"<code>{get_channel_dict(doc['chat'])} →</code>\n"
+                    out += f"<code>{get_channel_dict(doc['chat'])} → </code>"
                 out += f"{get_text_dict(doc)}"
                 if "attached_file" in doc:
                     out += f" (<i>{doc['attached_file']}</i>)"
