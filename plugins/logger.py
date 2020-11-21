@@ -51,7 +51,7 @@ class BufferingQueue():
         if self.q.qsize() > self.bufsize:
             buf = []
             for i in range(self.bufsize):
-                buf.appen(self.q.get())
+                buf.append(self.q.get())
             EVENTS.insert_many(buf)
 
 BUFFER = BufferingQueue()
