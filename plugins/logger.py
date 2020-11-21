@@ -29,7 +29,7 @@ from plugins.help import HelpCategory
 
 HELP = HelpCategory("LOG")
 
-last_group = "N/A"
+LAST_GROUP = "N/A"
 
 M_CLIENT = MongoClient('localhost', 27017,
     username=alemiBot.config.get("database", "username", fallback=""),
@@ -41,31 +41,11 @@ LOG_MEDIA = alemiBot.config.get("database", "log_media", fallback=False)
 
 LOGGED_COUNT = 0
 
-# LMAOOOO WTFFF THIS NEEDS TO BE WAY FUCKING BETTER TODO LIKE MAYBE A CLASS TODO
-class BufferingQueue(): #                       MAYBE AN OBJECT WITH AN INSTANCE TO
-    def __init__(self): #                       HANDLE ALL THE DB STUFF TODO TODO TODO TODO
-        self.q = queue.Queue()
-        self.bufsize = alemiBot.config.get("database", "batchsize", fallback=10)
-
-    def add_document(self, item):
-        self.q.put(item)
-        if self.q.qsize() > self.bufsize:
-            buf = []
-            try:
-                for i in range(self.bufsize):
-                    buf.append(self.q.get(block=False, timeout=1))
-            except queue.Empty:
-                print("[!] Buffering queue race condition")
-                pass
-            EVENTS.insert_many(buf)
-
-BUFFER = BufferingQueue()
-
 def print_formatted(chat, user, message):
-    global last_group
-    if chat.id != last_group:
+    global LAST_GROUP
+    if chat.id != LAST_GROUP:
         print(colored("━━━━━━━━━━┫ " + get_channel(chat), 'cyan', attrs=['bold']))
-    last_group = chat.id
+    LAST_GROUP = chat.id
     u_name = get_username(user)
     pre = len(u_name) + 3
     text = get_text(message).replace("\n", "\n" + " "*pre)
@@ -80,7 +60,6 @@ def print_formatted(chat, user, message):
 @alemiBot.on_message(group=10)
 async def msglogger(client, message):
     global LOGGED_COUNT
-    global BUFFER
     # print_formatted(message.chat, message.from_user, message)
     data = convert_to_dict(message)
     if message.media and LOG_MEDIA:
@@ -90,20 +69,19 @@ async def msglogger(client, message):
                 data["attached_file"] = fname.split("data/scraped_media/")[1]
         except ValueError:
             pass # ignore, some messages are marked as media but have nothing to download wtf
-    BUFFER.add_document(data)
+    EVENTS.insert_one(data)
     LOGGED_COUNT += 1
 
 # Log Message deletions
 @alemiBot.on_deleted_messages(group=10)
 async def dellogger(client, message):
-    global LOGGED_COUNT
     global BUFFER
     data = convert_to_dict(message)
     for d in data:
         d["_"] = "Delete"
         d["date"] = datetime.now()
         # print(colored("[DELETED]", 'red', attrs=['bold']) + " " + str(d["message_id"]))
-        BUFFER.add_document(d)
+        EVENTS.insert_one(d)
         LOGGED_COUNT += 1
 
 def order_suffix(num, measure='B'):
