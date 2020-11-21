@@ -245,10 +245,7 @@ async def deleted_cmd(client, message): # This is a mess omg
                 out += f"{get_text_dict(doc)}"
                 if "attached_file" in doc:
                     out += f" (<i>{doc['attached_file']}</i>)"
-                if not local_search:
-                    out += "\n\n"
-                else:
-                    out += "\n"
+                out += "\n"
             if out == "":
                 out = "` → ` Nothing to display"
             await edit_or_reply(message, out, parse_mode="html")
