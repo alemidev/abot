@@ -22,7 +22,7 @@ def get_text_dict(message):
     elif "caption" in message:
         return message["caption"]
     else:
-        return str(message)
+        return ""
 
 async def edit_or_reply(message, text, *args, **kwargs):
     if is_me(message) and len(message.text.markdown + text) < 4090: 
