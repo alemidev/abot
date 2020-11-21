@@ -64,7 +64,8 @@ async def msglogger(client, message):
     if message.media and LOG_MEDIA:
         try: 
             fname = await client.download_media(message, file_name="data/scraped_media/")
-            data["attached_file"] = fname.split("data/scraped_media/")[1]
+            if fname is not None:
+                data["attached_file"] = fname.split("data/scraped_media/")[1]
         except ValueError:
             pass # ignore, some messages are marked as media but have nothing to download wtf
     EVENTS.insert_one(data)
