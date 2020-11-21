@@ -20,7 +20,7 @@ from util import batchify
 from util.parse import cleartermcolor
 from util.text import split_for_window
 from util.permission import is_allowed
-from util.message import tokenize_json, edit_or_reply, get_text, is_me
+from util.message import tokenize_json, edit_or_reply, get_text, get_text_dict, is_me
 from util.user import get_username, get_username_dict # lmaoo bad
 from util.chat import get_channel, get_channel_dict
 from util.serialization import convert_to_dict
@@ -208,38 +208,19 @@ async def deleted_cmd(client, message): # This is a mess omg
     limit = 1
     if args["number"] != "":
         limit = int(args["number"])
-    q = { "_": "Delete" }
-    if local_search:
-        q["chat.id"] = message.chat.id
 
     try:
         await client.send_chat_action(message.chat.id, "upload_document")
-        cursor = EVENTS.find(q, {"message_id": 1, "date": 1} ).sort("_id", -1)
+        cursor = EVENTS.find({ "_": "Delete" }, {"message_id": 1, "date": 1} ).sort("_id", -1)
         res = []
-        for doc in cursor: # TODO make this part not a fucking mess!
-            match = {}
-            match["id"] = doc["message_id"]
-            if "date" in doc:
-                match["date"] = doc["date"]
-            try:
-                msg = EVENTS.find({"_": "Message", "message_id": match["id"]}).sort("_id", -1).next()
-            except StopIteration: # no message was found, maybe it's a ChatAction
-                continue
-            if "from_user" not in msg:
-                match["author"] = "UNKNOWN"
-            else:
-                match["author"] = get_username_dict(msg["from_user"])
-            if "text" in msg:
-                match["message"] = msg["text"]["markdown"]
-            else:
-                match["message"] = ""
-            if not local_search:
-                match["channel"] = get_channel_dict(msg["chat"])
-            if "attached_file" in msg:
-                match["attached_file"] = msg["attached_file"]
-            res.append(match)
-            limit -= 1
-            if limit <= 0:
+        for deletion in cursor: # TODO make this part not a fucking mess!
+            candidates = EVENTS.find({"_": "Message", "message_id": deletion["message_id"]}).sort("_id", -1)
+            for msg in candidates:
+                if local_search and msg["chat"]["id"] != message.chat.id:
+                    continue
+                res.append(msg)
+                break # append just first valid match
+            if len(res) >= limit:
                 break
 
         if args["json"] == "-json":
@@ -256,11 +237,11 @@ async def deleted_cmd(client, message): # This is a mess omg
             for doc in res:
                 if show_time:
                     out += f"{str(doc['date'])} "
-                out += f"<code>[{doc['id']}]</code> "
-                out += f"<b>{doc['author']}</b> <code>→</code> "
+                out += f"<code>[{doc['message_id']}]</code> "
+                out += f"<b>{get_username_dict(doc['from_user'])}</b> <code>→</code> "
                 if not local_search:
-                    out += f"<code>{doc['channel']} →</code>\n"
-                out += f"{doc['message']}"
+                    out += f"<code>{get_channel_dict(doc['chat'])} →</code>\n"
+                out += f"{get_text_dict(doc)}"
                 if "attached_file" in doc:
                     out += f" (<i>{doc['attached_file']}</i>)"
                 if not local_search:
