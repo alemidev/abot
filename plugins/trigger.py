@@ -6,7 +6,7 @@ from pyrogram import filters
 from bot import alemiBot
 
 from util.permission import is_allowed
-from util.message import is_me
+from util.message import is_me, get_text
 from plugins.help import HelpCategory
 
 HELP = HelpCategory("TRIGGER")
@@ -57,7 +57,10 @@ async def search_triggers(client, message):
         return # pyrogram gets edit events as message events!
     if message.chat.type != "private" and not message.mentioned:
         return # in groups only get triggered in mentions
+    msg_txt = get_text(message).lower()
+    if msg_txt == "":
+        return
     for trg in triggers:
-        if trg.lower() in message.text.lower():
+        if trg.lower() in msg_text:
             await message.reply(triggers[trg])
             await client.set_offline()
