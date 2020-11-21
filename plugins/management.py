@@ -22,7 +22,7 @@ HELP.add_help("delme", "immediately delete message",
 @alemiBot.on_message(filters.me & filters.regex(pattern=
     r"(?:.*|)(?:-delme|-delete|-d)(?: |)(?P<time>[0-9]+|)$"
 ), group=5)
-async def deleteme(_, message):
+async def deleteme(client, message):
     print(" [ deleting sent message ]")
     t = message.matches[0]["time"]
     if t != "":
@@ -32,8 +32,8 @@ async def deleteme(_, message):
 HELP.add_help(["purge", "wipe", "clear"], "batch delete messages",
                 "delete last <n> sent messages from <target>. If <n> is not given, will default to 1. " +
                 "If no target is given, only self messages will be deleted. Target can be `@all` and `@everyone`",
-                args="[@<target>] [<number>]", public=True)
-@alemiBot.on_message(is_allowed & filters.regex(pattern=
+                args="[@<target>] [<number>]", public=False)
+@alemiBot.on_message(filters.me & filters.regex(pattern=
     r"^[\.\/](?:purge|wipe|clear)(?: |)(?P<target>@[^ ]+|)(?: |)(?P<number>[0-9]+|)"
 ))
 async def purge(client, message):
@@ -67,6 +67,7 @@ async def purge(client, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.set_offline()
 
 HELP.add_help(["allow", "disallow", "revoke"], "allow/disallow to use bot",
                 "this command will work differently if invoked with `allow` or with `disallow`. Target user " +

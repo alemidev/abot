@@ -68,6 +68,7 @@ async def getmeme(client, message):
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
+    await client.set_offline()
 
 HELP.add_help("steal", "steal a meme",
                 "save a meme to collection. Either attach an image or reply to one. " +
@@ -177,6 +178,7 @@ async def deepfry(client, message):
         await client.send_chat_action(message.chat.id, "cancel")
     else:
         await message.edit(get_text(message) + "\n`[!] → ` you need to attach or reply to a file, dummy")
+    await client.set_offline()
 
 #
 #   This comes from https://github.com/anuragrana/Python-Scripts/blob/master/image_to_ascii.py
@@ -229,3 +231,4 @@ async def ascii_cmd(client, message):
     else:
         await event.message.edit(event.raw_text + 
                 "\n`[!] → ` you need to attach or reply to a file, dummy")
+    await client.set_offline()

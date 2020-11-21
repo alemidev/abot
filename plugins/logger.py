@@ -72,7 +72,7 @@ async def msglogger(client, message):
 
 # Log Message deletions
 @alemiBot.on_deleted_messages(group=8)
-async def dellogger(_, message):
+async def dellogger(client, message):
     global LOGGED_COUNT
     data = convert_to_dict(message)
     for d in data:
@@ -113,6 +113,7 @@ async def stats_cmd(client, message):
                     f"\n` → ` meme folder size **{order_suffix(memesize)}**" +
                     f"\n` → ` **{medianumber}** media scraped" +
                     f"\n` → ` scraped media size **{order_suffix(mediasize)}**")
+    await client.set_offline()
 
 HELP.add_help(["query", "q", "log"], "interact with db",
                 "make queries to the underlying database (MongoDB) to request documents. " +
@@ -190,6 +191,7 @@ async def hist_cmd(client, message):
         traceback.print_exc()
         await message.edit(message.text.markdown + "\n`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
+    await client.set_offline()
 
 HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
                 "request last edited messages, from channel or globally (-g, reserved to owner). A number of " +
@@ -272,4 +274,5 @@ async def deleted_cmd(client, message): # This is a mess omg
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
+    await client.set_offline()
 

@@ -58,7 +58,7 @@ async def slowtype(client, message):
 HELP.add_help(["rc", "randomcase"], "make text randomly capitalized",
                 "will edit message applying random capitalization to every letter, like the spongebob meme.")
 @alemiBot.on_message(filters.me & filters.command(["rc", "randomcase"], list(alemiBot.prefixes)), group=2)
-async def randomcase(_, message):
+async def randomcase(client, message):
     print(f" [ making message randomly capitalized ]")
     text = re.sub("[\.\/](?:rc|randomcase)(?: |)", "", message.text.markdown)
     if text == "":
@@ -87,12 +87,12 @@ async def randomcase(_, message):
 HELP.add_help("shrug", "¯\_(ツ)_/¯", "will replace `.shrug` or `/shrug` or `!shrug` anywhere "+
                 "in yor message with the composite emoji. (this will ignore your custom prefixes)")
 @alemiBot.on_message(filters.me & filters.regex(pattern="[" + "\\".join(list(alemiBot.prefixes)) + "]shrug"), group=2)
-async def shrug(_, message):
+async def shrug(client, message):
     print(f" [ ¯\_(ツ)_/¯ ]")
     await message.edit(re.sub(r"[\.\/\!]shrug","¯\_(ツ)_/¯", message.text.markdown))
 
 @alemiBot.on_message(filters.me & filters.regex(pattern=r"<-|->|=>|<="), group=3)
-async def replace_arrows(_, message):
+async def replace_arrows(client, message):
     await message.edit(message.text.markdown.replace("<-", "←")
                                             .replace("->", "→")
                                             .replace("=>", "⇨")
@@ -105,7 +105,7 @@ HELP.add_help("figlet", "make a figlet art",
 @alemiBot.on_message(is_allowed & filters.regex(pattern=
     r"^[\.\/]figlet(?: |)(?:(?P<list>-l)|(?P<font>-f [^ ]+)|(?P<random>-r)|)(?: |)(?P<width>-w [0-9]+|)(?: |)(?P<text>.*)"
 ))
-async def figlettext(_, message):
+async def figlettext(client, message):
     print(f" [ figlet ]")
     args = message.matches[0]
     if args["list"] == "-l":
@@ -127,11 +127,12 @@ async def figlettext(_, message):
         return
     result = pyfiglet.figlet_format(args["text"], font=font, width=width)
     await edit_or_reply(message, "<code> →\n" + result + "</code>", parse_mode="html")
+    await client.set_offline()
 
 HELP.add_help("fortune", "do you feel fortunate!?",
                 "run `fortune` to get a random sentence. Like fortune bisquits!", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["fortune"], list(alemiBot.prefixes)))
-async def fortune(_, message):
+async def fortune(client, message):
     try:
         print(f" [ running command \"fortune\" ]")
         result = subprocess.run("fortune", capture_output=True)
@@ -139,3 +140,4 @@ async def fortune(_, message):
         await edit_or_reply(message, "``` → " + output + "```")
     except Exception as e:
         await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.set_offline()

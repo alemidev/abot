@@ -29,7 +29,7 @@ HELP.add_help(["convert", "conv"], "convert various units",
                 "`.convert 52 °C °F` or `.convert 2.78 daN*mm^2 mN*µm^2`.",
                 args="<val> <from> <to>", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["convert", "conv"], list(alemiBot.prefixes)))
-async def convert_cmd(_, message):
+async def convert_cmd(client, message):
     if len(message.command) < 4:
         return await edit_or_reply(message, "`[!] → ` Not enough arguments")
     try:
@@ -38,6 +38,7 @@ async def convert_cmd(_, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.set_offline()
 
 HELP.add_help(["currency", "cconvert"], "convert across currencies",
                 "convert various measure units. Accepts many currencies, like " +
@@ -55,6 +56,7 @@ async def currency_convert_cmd(client, message):
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
+    await client.set_offline()
 
 def interval(delta):
     if delta > 100:
@@ -75,7 +77,7 @@ HELP.add_help(["cd", "countdown"], "count down",
                 "will edit message to show a countdown. If no time is given, it will be 5s.",
                 args="[<time>]", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["countdown", "cd"], list(alemiBot.prefixes)), group=2)
-async def countdown(_, message):
+async def countdown(client, message):
     if is_me(message):
         tgt_msg = message
     else:
@@ -96,6 +98,7 @@ async def countdown(_, message):
             last = curr
         await asyncio.sleep(interval(end - time.time()))
     await tgt_msg.edit(msg.format(0))
+    await client.set_offline()
 
 HELP.add_help(["rand", "random", "roll"], "get random choices",
                 "this can be used as a dice roller (`.roll 3d6`). If a list of choices is given, a random one " +
@@ -104,7 +107,7 @@ HELP.add_help(["rand", "random", "roll"], "get random choices",
 @alemiBot.on_message(is_allowed & filters.command(["rand", "random", "roll"], list(alemiBot.prefixes)) & filters.regex(pattern=
     r"^.(?:random|rand|roll)(?: |)(?:(?:(?P<num>[0-9]+|)d(?P<max>[0-9]+))|(?:(?P<batch>-n [0-9]+|)(?: |)(?P<values>.*)))"
 ))
-async def rand_cmd(_, message):
+async def rand_cmd(client, message):
     args = message.matches[0]
     try:
         res = []
@@ -143,6 +146,7 @@ async def rand_cmd(_, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.set_offline()
 
 HELP.add_help(["translate", "tran", "tr"], "translate to/from",
                 "translate text from a language (autodetected if not specified, `-s`) to another " +
@@ -151,7 +155,7 @@ HELP.add_help(["translate", "tran", "tr"], "translate to/from",
 @alemiBot.on_message(is_allowed & filters.command(["translate", "tran", "tr"], list(alemiBot.prefixes)) & filters.regex(pattern=
     r"^.(?:translate|tran|tr)(?: |)(?P<src>-s [^ ]+|)(?: |)(?P<dest>-d [^ ]+|)(?: |)(?P<text>.*)"
 ))
-async def translate_cmd(_, message):
+async def translate_cmd(client, message):
     args = message.matches[0]
     if args["text"] is None or args["text"] == "":
         return await edit_or_reply(message, "`[!] → ` Nothing to translate")
@@ -161,6 +165,7 @@ async def translate_cmd(_, message):
     if args["dest"].startswith("-d "):
         tr_options["dest"] = args["dest"].replace("-d ", "")
     try:
+        await client.send_chat_action(message.chat.id, "find_location")
         q = args["text"]
         res = translator.translate(q, **tr_options)
         out = f"`[{res.extra_data['confidence']:.2f}] → ` {res.text}"
@@ -168,3 +173,5 @@ async def translate_cmd(_, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.send_chat_action(message.chat.id, "cancel")
+    await client.set_offline()

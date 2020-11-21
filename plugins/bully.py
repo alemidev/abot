@@ -56,6 +56,7 @@ async def bully(client, message):
                     return
                 if message.from_user.id in censoring[message.chat.id]:
                     await message.delete()
+    await client.set_offline()
 
 HELP.add_help(["spam", "flood"], "pretty self explainatory",
             "will send many messages in this chat at a specific interval. " +

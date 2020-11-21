@@ -62,6 +62,7 @@ async def diz(client, message):
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e) if str(e) != "" else "Not found")
     await client.send_chat_action(message.chat.id, "cancel")
+    await client.set_offline()
 
 HELP.add_help(["dic", "dictionary"], "search in eng dict",
                 "get definition from english dictionary of given word.",
@@ -88,6 +89,7 @@ async def dic(client, message):
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
+    await client.set_offline()
 
 HELP.add_help(["ud", "urban"], "search in urban dict",
                 "get definition from urban dictionary of given word.",
@@ -113,6 +115,7 @@ async def urbandict(client, message):
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
+    await client.set_offline()
 
 HELP.add_help("wiki", "search on wikipedia",
                 "search on wikipedia, attaching initial text and a link.",
@@ -142,6 +145,7 @@ async def wiki(client, message):
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
+    await client.set_offline()
 
 HELP.add_help("lmgtfy", "let me google that for you",
                 "generates a `Let Me Google That For You` link.",
@@ -157,6 +161,7 @@ async def lmgtfy(client, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.set_offline()
 
 HELP.add_help(["loc", "location"], "send a location",
                 "send a location for specific latitude and longitude. Both has " +
@@ -194,6 +199,7 @@ async def location_cmd(client, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.set_offline()
 
 WTTR_STRING = "`→ {loc} `\n` → `**{desc}**\n` → ` {mintemp:.0f}C - {maxtemp:.0f}C `|` **{hum}%** humidity\n" + \
               "` → ` pressure **{press}hPa** `|` wind **{wspd}m/s**\n` → ` **{vis}m** visibility (__{cld}% clouded__)"
@@ -231,3 +237,4 @@ async def weather_cmd(client, message):
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
+    await client.set_offline()

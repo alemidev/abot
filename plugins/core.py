@@ -18,7 +18,7 @@ HELP = HelpCategory("CORE")
 HELP.add_help(["asd", "ping"], "a sunny day!",
                 "The ping command.")
 @alemiBot.on_message(filters.me & filters.command(["asd", "ping"], list(alemiBot.prefixes)))
-async def ping(_, message):
+async def ping(client, message):
     msg = message.text.markdown
     before = time.time()
     await message.edit(msg + "\n` → ` a sunny day")
@@ -72,6 +72,7 @@ async def where_cmd(client, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message,"`[!] → ` " + str(e))
+    await client.set_offline()
 
 HELP.add_help("who", "get info about user",
                 "Get the complete information about an user (replied to or "+
@@ -100,6 +101,7 @@ async def who_cmd(client, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.set_offline()
 
 HELP.add_help("what", "get info about message",
                 "Get the complete information about a message (replied to, from specified id or "+
@@ -125,3 +127,4 @@ async def what_cmd(client, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message,"`[!] → ` " + str(e))
+    await client.set_offline()

@@ -64,3 +64,4 @@ async def help_cmd(client, message):
                         get_all_short_text() +
                         f"__Commands with * are available to trusted users__\n" +
                         "\nhttps://github.com/alemigliardi/alemibot", parse_mode="markdown")
+    await client.set_offline()

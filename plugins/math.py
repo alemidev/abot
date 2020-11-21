@@ -42,6 +42,7 @@ async def expr(client, message):
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
+    await client.set_offline()
 
 HELP.add_help(["plot", "graph"], "plot provided function",
                 "this command will run sympy `plot` and return result as image. Foruma passing is wonky. " +
@@ -70,6 +71,7 @@ async def graph(client, message):
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
+    await client.set_offline()
 
 HELP.add_help("solve", "attempt to solve equation",
                 "this command will run sympy `solve` and attempt to find roots of the " +
@@ -77,7 +79,7 @@ HELP.add_help("solve", "attempt to solve equation",
 @alemiBot.on_message(is_allowed & filters.command("solve", list(alemiBot.prefixes)) & filters.regex(
     pattern=r"^.solve(?: |)(?P<query>.*)"
 ))
-async def solve_cmd(_, message):
+async def solve_cmd(client, message):
     try:
         arg = message.matches[0]["query"]
         print(f" [ mathifying {arg} ]")
@@ -88,3 +90,4 @@ async def solve_cmd(_, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.set_offline()

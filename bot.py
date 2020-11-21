@@ -10,6 +10,8 @@ from datetime import datetime
 from pyrogram import Client, idle
 from configparser import ConfigParser
 
+from pyrogram.raw.functions.account import UpdateStatus
+
 class alemiBot(Client):
     config = ConfigParser() # uggh doing it like this kinda
     config.read("config.ini") #     ugly but it'll do for now
@@ -24,6 +26,9 @@ class alemiBot(Client):
         # Get current commit hash and append to app version
         res = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True)
         self.app_version += "-" + res.stdout.decode('utf-8').strip()
+
+    async def set_offline(self):
+        await self.send(UpdateStatus(offline=True))
 
     async def start(self):
         await super().start()
