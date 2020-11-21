@@ -42,6 +42,8 @@ HELP.add_help("stop", "stop censoring a chat",
 async def bully(client, message):
     if message.edit_date is not None:
         return # pyrogram gets edit events as message events!
+    if message.chat is None:
+        return # can't censor messages outside of chats
     if message.chat.id in censoring:
         if message.from_user is not None and message.from_user.is_self \
         and message.text.startswith(".stop"):
