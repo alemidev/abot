@@ -199,6 +199,7 @@ async def hist_cmd(client, message):
         await client.send_chat_action(message.chat.id, "upload_document")
         cursor = EVENTS.find( {"_": "Message", "message_id": m_id, "chat.id": c_id},
                 {"text": 1, "date": 1, "edit_date": 1} ).sort("_id", -1)
+        print(" [ Querying db for message history ]")
         out = ""
         for doc in cursor:
             if show_time:
@@ -232,16 +233,19 @@ async def deleted_cmd(client, message): # This is a mess omg
     limit = 1
     if args["number"] != "":
         limit = int(args["number"])
+    print(f" [ peeking {limit} messages ]")
 
     try:
         await client.send_chat_action(message.chat.id, "upload_document")
-        cursor = EVENTS.find({ "_": "Delete" }, {"message_id": 1, "date": 1} ).sort("_id", -1)
+        cursor = EVENTS.find({ "_": "Delete" }).sort("_id", -1)
+        print(" [ Querying db for deletions ]")
         res = []
         for deletion in cursor: # TODO make this part not a fucking mess!
             if local_search and "chat" in deletion \
             and deletion["chat"]["id"] != message.chat.id:
                 continue # don't make a 2nd query, should speed up a ton
             candidates = EVENTS.find({"_": "Message", "message_id": deletion["message_id"]}).sort("_id", -1).limit(10)
+            print(" [ Querying db for possible deleted msg ]")
             for msg in candidates:
                 if local_search and msg["chat"]["id"] != message.chat.id:
                     continue
