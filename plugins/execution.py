@@ -58,7 +58,8 @@ async def runit(client, message):
     args = message.matches[0]["cmd"]
     try:
         print(f" [ running command \"{args}\" ]")
-        result = subprocess.run(args, shell=True, capture_output=True, timeout=60)
+        result = subprocess.run(args, shell=True, stdout=subprocess.PIPE,
+                                        stderr=subprocess.STDOUT, timeout=60)
         output = cleartermcolor(result.stdout.decode())
         if len(args) + len(output) > 4080:
             await message.edit(f"```$ {args}\n → Output too long, sending as file```")
