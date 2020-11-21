@@ -29,7 +29,7 @@ HELP.add_help(["slow", "sl"], "make text appear slowly",
 @alemiBot.on_message(filters.me & filters.regex(pattern=
     r"^[\.\/](?:sl|slow)(?: |)(?P<timer>-t [0-9.]+|)(?: |)(?P<batch>-b [0-9]+|)(?P<text>.*)"
 ), group=2)
-async def slowtype(_, message):
+async def slowtype(client, message):
     args = message.matches[0]
     print(f" [ making text appear slowly ]")
     interval = 0.5

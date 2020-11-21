@@ -44,7 +44,7 @@ HELP.add_help(["currency", "cconvert"], "convert across currencies",
                 "`.convert 1 btc us`.",
                 args="<val> <from> <to>", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["currency", "cconvert"], list(alemiBot.prefixes)))
-async def currency_convert_cmd(_, message):
+async def currency_convert_cmd(client, message):
     if len(message.command) < 4:
         return await edit_or_reply(message, "`[!] → ` Not enough arguments")
     try:

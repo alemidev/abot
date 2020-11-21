@@ -157,7 +157,7 @@ HELP.add_help(["hist", "history"], "get edit history of a message",
 @alemiBot.on_message(is_allowed & filters.command(["history", "hist"], prefixes=".") & filters.regex(
     pattern=r"^.hist(?:ory|)(?: |)(?P<time>-t|)(?: |)(?P<group>-g [0-9]+|)(?: |)(?P<id>[0-9]+|)"
 ))
-async def hist_cmd(_, message):
+async def hist_cmd(client, message):
     m_id = None
     c_id = message.chat.id
     args = message.matches[0]
