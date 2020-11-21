@@ -56,7 +56,7 @@ def print_formatted(chat, user, message):
     print(f"{colored(u_name, 'cyan')} {colored('→', 'grey')} {text}")
 
 # Print in terminal received chats
-@alemiBot.on_message(group=8)
+@alemiBot.on_message(group=10)
 async def msglogger(client, message):
     global LOGGED_COUNT
     print_formatted(message.chat, message.from_user, message)
@@ -71,7 +71,7 @@ async def msglogger(client, message):
     LOGGED_COUNT += 1
 
 # Log Message deletions
-@alemiBot.on_deleted_messages(group=8)
+@alemiBot.on_deleted_messages(group=10)
 async def dellogger(client, message):
     global LOGGED_COUNT
     data = convert_to_dict(message)
