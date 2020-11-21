@@ -55,6 +55,8 @@ async def trigger_cmd(client, message):
 async def search_triggers(client, message):
     if is_me(message) or message.edit_date is not None:
         return # pyrogram gets edit events as message events!
+    if message.chat is None:
+        return # wtf messages with no chat???
     if message.chat.type != "private" and not message.mentioned:
         return # in groups only get triggered in mentions
     msg_txt = get_text(message).lower()
