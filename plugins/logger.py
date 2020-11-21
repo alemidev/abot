@@ -59,7 +59,7 @@ def print_formatted(chat, user, message):
 @alemiBot.on_message(group=10)
 async def msglogger(client, message):
     global LOGGED_COUNT
-    print_formatted(message.chat, message.from_user, message)
+    # print_formatted(message.chat, message.from_user, message)
     data = convert_to_dict(message)
     if message.media and LOG_MEDIA:
         try: 
@@ -78,7 +78,7 @@ async def dellogger(client, message):
     for d in data:
         d["_"] = "Delete"
         d["date"] = datetime.now()
-        print(colored("[DELETED]", 'red', attrs=['bold']) + " " + str(d["message_id"]))
+        # print(colored("[DELETED]", 'red', attrs=['bold']) + " " + str(d["message_id"]))
         EVENTS.insert_one(d)
         LOGGED_COUNT += 1
 
