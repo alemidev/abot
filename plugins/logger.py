@@ -238,6 +238,9 @@ async def deleted_cmd(client, message): # This is a mess omg
         cursor = EVENTS.find({ "_": "Delete" }, {"message_id": 1, "date": 1} ).sort("_id", -1)
         res = []
         for deletion in cursor: # TODO make this part not a fucking mess!
+            if local_search and "chat" in deletion \
+            and deletion["chat"]["id"] != message.chat.id:
+                continue # don't make a 2nd query, should speed up a ton
             candidates = EVENTS.find({"_": "Message", "message_id": deletion["message_id"]}).sort("_id", -1).limit(10)
             for msg in candidates:
                 if local_search and msg["chat"]["id"] != message.chat.id:
