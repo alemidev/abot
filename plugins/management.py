@@ -14,6 +14,9 @@ from util.message import edit_or_reply, get_text
 from util.text import split_for_window
 from plugins.help import HelpCategory
 
+import logging
+logger = logging.getLogger(__name__)
+
 HELP = HelpCategory("MANAGEMENT")
 
 HELP.add_help("delme", "immediately delete message",
@@ -23,7 +26,7 @@ HELP.add_help("delme", "immediately delete message",
     r"(?:.*|)(?:-delme|-delete|-d)(?: |)(?P<time>[0-9]+|)$"
 ), group=5)
 async def deleteme(client, message):
-    print(" [ deleting sent message ]")
+    logger.info("Deleting sent message")
     t = message.matches[0]["time"]
     if t != "":
         await asyncio.sleep(float(t))
@@ -55,7 +58,7 @@ async def purge(client, message):
                     target = (await client.get_users(int(args["target"]))).id
                 except ValueError:
                     target = (await client.get_users(args["target"])).id
-        print(f" [ purging last {number} message from {args['target']} ]")
+        logger.info("Purging last {number} message from {args['target']}")
         n = 0
         async for message in client.iter_history(message.chat.id):
             if target is None or message.from_user.id == target:
@@ -99,7 +102,7 @@ async def manage_allowed_cmd(client, message):
             users_to_manage.append(user)
         else:
             return await message.edit(message.text.markdown + "\n`[!] → ` Provide an ID or reply to a msg")
-        print(" [ changing permissions ]")
+        logger.info("Changing permissions")
         out = ""
         action_allow = message.command[0] == "allow"
         for u in users_to_manage:
@@ -129,7 +132,7 @@ async def trusted_list(client, message):
         text = "`[` "
         issues = ""
         users = []
-        print(" [ listing allowed users ]")
+        logger.info("Listing allowed users")
         if len(message.command) > 1 and message.command[1] == "-s":
             for uid in list_allowed():
                 try:

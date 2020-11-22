@@ -9,6 +9,9 @@ from pyrogram import filters
 from util.permission import is_allowed
 from util.message import edit_or_reply, is_me
 
+import logging
+logger = logging.getLogger(__name__)
+
 CATEGORIES = {}
 ALIASES = {}
 
@@ -50,7 +53,7 @@ def get_all_short_text():
 # The help command
 @alemiBot.on_message(is_allowed & filters.command(["help", "h"], list(alemiBot.prefixes)))
 async def help_cmd(client, message):
-    print(" [ Help! ]")
+    logger.info("Help!")
     if len(message.command) > 1:
         for k in CATEGORIES:
             cat = CATEGORIES[k]

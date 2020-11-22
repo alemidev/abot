@@ -2,6 +2,7 @@ import subprocess
 import io
 import re
 import traceback
+import logging
 import sys
 import inspect
 
@@ -24,6 +25,8 @@ from util.parse import cleartermcolor
 from util.message import tokenize_json, tokenize_lines
 from util.serialization import convert_to_dict
 from plugins.help import HelpCategory
+
+logger = logging.getLogger(__name__)
 
 class GlobalThings():
     def __str__(self):
@@ -57,7 +60,7 @@ HELP.add_help(["run", "r"], "run command on server",
 async def runit(client, message):
     args = message.matches[0]["cmd"]
     try:
-        print(f" [ running command \"{args}\" ]")
+        logger.info(f"Running command \"{args}\"")
         result = subprocess.run(args, shell=True, stdout=subprocess.PIPE,
                                         stderr=subprocess.STDOUT, timeout=60)
         output = cleartermcolor(result.stdout.decode())
@@ -87,7 +90,7 @@ async def evalit(client, message):
     global GLOBALS
     args = message.matches[0]["expr"]
     try:
-        print(f" [ evaluating \"{args}\" ]")
+        logger.info(f"Evaluating \"{args}\"")
         with stdoutWrapper() as fake_stdout:
             result = eval(args)
             if inspect.iscoroutine(result):
@@ -128,7 +131,7 @@ async def execit(client, message):
     args = message.matches[0]["code"]
     fancy_args = args.replace("\n", "\n... ")
     try:
-        print(f" [ executing \"{args}\" ]")
+        logger.info(f"Executing \"{args}\"")
         with stdoutWrapper() as fake_stdout:
             await aexec(args, client, message)
         result = fake_stdout.getvalue()

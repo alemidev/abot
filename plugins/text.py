@@ -18,6 +18,9 @@ import pyfiglet
 
 from plugins.help import HelpCategory
 
+import logging
+logger = logging.getLogger(__name__)
+
 HELP = HelpCategory("TEXT")
 
 FIGLET_FONTS = pyfiglet.FigletFont.getFonts()
@@ -31,7 +34,7 @@ HELP.add_help(["slow", "sl"], "make text appear slowly",
 ), group=2)
 async def slowtype(client, message):
     args = message.matches[0]
-    print(f" [ making text appear slowly ]")
+    logger.info(f"Making text appear slowly")
     interval = 0.5
     batchsize = 1
     if args["timer"] != "":
@@ -59,7 +62,7 @@ HELP.add_help(["rc", "randomcase"], "make text randomly capitalized",
                 "will edit message applying random capitalization to every letter, like the spongebob meme.")
 @alemiBot.on_message(filters.me & filters.command(["rc", "randomcase"], list(alemiBot.prefixes)), group=2)
 async def randomcase(client, message):
-    print(f" [ making message randomly capitalized ]")
+    logger.info(f"Making message randomly capitalized")
     text = re.sub("[\.\/](?:rc|randomcase)(?: |)", "", message.text.markdown)
     if text == "":
         return 
@@ -88,12 +91,12 @@ HELP.add_help("shrug", "¯\_(ツ)_/¯", "will replace `.shrug` or `/shrug` or `!
                 "in yor message with the composite emoji. (this will ignore your custom prefixes)")
 @alemiBot.on_message(filters.me & filters.regex(pattern="[" + "\\".join(list(alemiBot.prefixes)) + "]shrug"), group=2)
 async def shrug(client, message):
-    print(f" [ ¯\_(ツ)_/¯ ]")
+    logger.info(f" ¯\_(ツ)_/¯ ")
     await message.edit(re.sub(r"[\.\/\!]shrug","¯\_(ツ)_/¯", message.text.markdown))
 
 @alemiBot.on_message(filters.me & filters.regex(pattern=r"<-|->|=>|<="), group=3)
 async def replace_arrows(client, message):
-    print(" [ arrow! ]")
+    logger.info("arrow!")
     await message.edit(message.text.markdown.replace("<-", "←")
                                             .replace("->", "→")
                                             .replace("=>", "⇨")
@@ -125,7 +128,7 @@ async def figlettext(client, message):
             font = f
     if args["text"] == "":
         return
-    print(f" [ figlet-ing {args['text']} ]")
+    logger.info(f"figlet-ing {args['text']}")
     result = pyfiglet.figlet_format(args["text"], font=font, width=width)
     await edit_or_reply(message, "<code> →\n" + result + "</code>", parse_mode="html")
     await client.set_offline()
@@ -135,7 +138,7 @@ HELP.add_help("fortune", "do you feel fortunate!?",
 @alemiBot.on_message(is_allowed & filters.command(["fortune"], list(alemiBot.prefixes)))
 async def fortune(client, message):
     try:
-        print(f" [ running command \"fortune\" ]")
+        logger.info(f"Running command \"fortune\"")
         result = subprocess.run("fortune", capture_output=True)
         output = cleartermcolor(result.stdout.decode())
         await edit_or_reply(message, "``` → " + output + "```")

@@ -7,6 +7,9 @@ from pyrogram import filters
 from util.message import get_text
 from plugins.help import HelpCategory
 
+import logging
+logger = logging.getLogger(__name__)
+
 HELP = HelpCategory("FILES")
 
 HELP.add_help("put", "save file to server",
@@ -19,7 +22,7 @@ async def upload(client, message):
         msg = message.reply_to_message
     if msg.media:
         try:
-            print(" [ downloading media ]")
+            logger.info("Downloading media")
             fpath = await client.download_media(msg)
             await message.edit(get_text(message) + '\n` → ` saved file as {}'.format(fpath))
         except Exception as e:
@@ -35,7 +38,7 @@ async def download(client, message):
     if len(message.command) < 2:
         return await message.edit(message.text.markdown + "\n`[!] → ` No filename provided")
     try:
-        print(" [ uploading media ]")
+        logger.info("Uploading media")
         await client.send_chat_action(message.chat.id, "upload_document")
         name = message.command[1]
         await client.send_document(message.chat.id, name, reply_to_message_id=message.message_id, caption=f'` → {name}`')

@@ -1,6 +1,7 @@
 import asyncio
 import subprocess
 import traceback
+import logging
 import re
 
 from pyrogram import filters
@@ -10,11 +11,13 @@ from bot import alemiBot
 from util.permission import is_allowed
 from plugins.help import HelpCategory
 
+logger = logging.getLogger(__name__)
+
 HELP = HelpCategory("BULLY")
 
 censoring = {}
 
-HELP.add_help(["censor", "bully"], "start censoring a chat",
+HELP.add_help(["censor"], "start censoring a chat",
             "will delete any message sent in this chat from target. If no target " +
             "is specified, all messages will be deleted as soon as they arrive",
             args="[<target>]")
@@ -22,7 +25,7 @@ HELP.add_help(["censor", "bully"], "start censoring a chat",
     filters.regex(pattern=r"^.(?:censor|bully)(?: |)(?P<target>@[^ ]+|)"
 ))
 async def startcensor(client, message):
-    print(" [ Censoring new chat ]")
+    logger.info("Censoring new chat")
     target = message.matches[0]["target"]
     if target in { "", "@all", "@everyone" }:
         censoring[message.chat.id] = None
@@ -49,17 +52,17 @@ async def bully(client, message):
         and message.text.startswith(".stop"):
             censoring.pop(message.chat.id, None)
             await message.edit(message.text.markdown + "\n` → ` You can speak again")
-            print(" [ No longer censoring a chat ]")
+            logger.info("No longer censoring a chat")
         else:
             if censoring[message.chat.id] is None:
                 await message.delete()
-                print(" [ Get bullied ]")
+                logger.info("Get bullied")
             else:
                 if message.from_user is None:
                     return
                 if message.from_user.id in censoring[message.chat.id]:
                     await message.delete()
-                    print(" [ Get bullied ]")
+                    logger.info("Get bullied")
         await client.set_offline()
 
 HELP.add_help(["spam", "flood"], "pretty self explainatory",
@@ -82,7 +85,7 @@ async def spam(client, message):
         number = 5
         if args["number"] is not None and args["number"] != "":
             number = int(args["number"].replace("-n ", "")) 
-        print(f" [ spamming \"{args['text']}\" for {number} times ]")
+        logger.info(f"Spamming \"{args['text']}\" for {number} times")
         if message.reply_to_message is not None:
             for i in range(number):
                 await message.reply_to_message.reply(args['text'])

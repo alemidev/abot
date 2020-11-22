@@ -1,6 +1,7 @@
 import asyncio
 import subprocess
 import time
+import logging
 import io
 import traceback
 import json
@@ -13,13 +14,15 @@ from util.permission import is_allowed
 from util.message import edit_or_reply, is_me
 from plugins.help import HelpCategory
 
+logger = logging.getLogger(__name__)
+
 HELP = HelpCategory("CORE")
 
 HELP.add_help(["asd", "ping"], "a sunny day!",
                 "The ping command.")
 @alemiBot.on_message(filters.me & filters.command(["asd", "ping"], list(alemiBot.prefixes)))
 async def ping(client, message):
-    print(" [ Pong ]")
+    logger.info("Pong")
     msg = message.text.markdown
     before = time.time()
     await message.edit(msg + "\n` → ` a sunny day")
@@ -34,7 +37,7 @@ HELP.add_help("update", "update and restart",
 async def update(client, message):
     msg = message.text.markdown
     try:
-        print(f" [ Updating bot ]")
+        logger.info(f"Updating bot ...")
         msg += "\n` → ` Updating"
         await message.edit(msg) 
         result = subprocess.run(["git", "pull"], capture_output=True, timeout=60)
@@ -64,7 +67,7 @@ async def where_cmd(client, message):
                 tgt = await client.get_chat(int(arg))
             else:
                 tgt = await client.get_chat(arg)
-        print(f" [ getting info of chat ]")
+        logger.info(f"Getting info of chat")
         if is_me(message):
             await message.edit(message.text.markdown + f"\n` → ` Getting data of chat `{tgt.id}`")
         out = io.BytesIO((str(tgt)).encode('utf-8'))
@@ -93,7 +96,7 @@ async def who_cmd(client, message):
             peer = message.reply_to_message.from_user
         else:
             peer = await client.get_users(message.from_user)
-        print(f" [ getting info of user ]")
+        logger.info("Getting info of user")
         if is_me(message):
             await message.edit(message.text.markdown + f"\n` → ` Getting data of user `{peer.id}`")
         out = io.BytesIO((str(peer)).encode('utf-8'))
@@ -119,7 +122,7 @@ async def what_cmd(client, message):
             if len(message.command) > 2 and message.command[2].isnumeric():
                 chat_id = int(message.command[2])
             msg = await client.get_messages(chat_id, int(message.command[1]))
-        print(f" [ getting info of msg ]")
+        logger.info("Getting info of msg")
         if is_me(message):
             await message.edit(message.text.markdown + f"\n` → ` Getting data of msg `{msg.message_id}`")
         out = io.BytesIO((str(msg)).encode('utf-8'))

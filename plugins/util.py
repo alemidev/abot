@@ -20,6 +20,9 @@ from bot import alemiBot
 
 from plugins.help import HelpCategory
 
+import logging
+logger = logging.getLogger(__name__)
+
 translator = Translator()
 
 HELP = HelpCategory("UTIL")
@@ -33,7 +36,7 @@ async def convert_cmd(client, message):
     if len(message.command) < 4:
         return await edit_or_reply(message, "`[!] → ` Not enough arguments")
     try:
-        print(" [ Converting units ]")
+        logger.info("Converting units")
         res = converts(message.command[1] + " " + message.command[2], message.command[3])
         await edit_or_reply(message, f"` → ` {res} {message.command[3]}")
     except Exception as e:
@@ -50,7 +53,7 @@ async def currency_convert_cmd(client, message):
     if len(message.command) < 4:
         return await edit_or_reply(message, "`[!] → ` Not enough arguments")
     try:
-        print(" [ Converting currency ]")
+        logger.info("Converting currency")
         await client.send_chat_action(message.chat.id, "choose_contact")
         res = json.loads(convert(message.command[2], message.command[3], float(message.command[1])))
         await edit_or_reply(message, f"` → ` {res['amount']} {res['to']}")
@@ -92,7 +95,7 @@ async def countdown(client, message):
             return await tgt_msg.edit("`[!] → ` argument must be a float")
     msg = tgt_msg.text + "\n` → Countdown ` **{:.1f}**"
     last = ""
-    print(f" [ countdown ]")
+    logger.info(f"Countdown")
     while time.time() < end:
         curr = msg.format(time.time() - end)
         if curr != last: # with fast counting down at the end it may try to edit with same value
@@ -121,14 +124,14 @@ async def rand_cmd(client, message):
             times = int(args["batch"].replace("-n ", ""))
         if args["max"] not in [ "", None ]: # this checking is kinda lame
             maxval = int(args["max"])
-            print(f" [ rolling d{maxval} ]")
+            logger.info(f"Rolling d{maxval}")
             for i in range(times):
                 res.append(secrets.randbelow(maxval) + 1)
             if times > 1:
                 out += f"`→ Rolled {times}d{maxval}` : **{sum(res)}**\n"
         elif args["values"] != None and args["values"] != "":
             choices = args["values"].split(" ")
-            print(f" [ rolling {choices} ]")
+            logger.info(f"Rolling {choices}")
             for i in range(times):
                 res.append(secrets.choice(choices))
             res_count = Counter(res)
@@ -136,7 +139,7 @@ async def rand_cmd(client, message):
                 out += "`→ Random choice ` **" + res_count.most_common(1)[0][0] + "**\n"
         else:
             choices = [ 1, 0 ]
-            print(f" [ rolling {choices} ]")
+            logger.info(f"Rolling {choices}")
             for i in range(times):
                 res.append(secrets.choice(choices))
             if times > 1:
@@ -169,7 +172,7 @@ async def translate_cmd(client, message):
     try:
         await client.send_chat_action(message.chat.id, "find_location")
         q = args["text"]
-        print(f" [ Translating {q} ]")
+        logger.info(f"Translating {q}")
         res = translator.translate(q, **tr_options)
         out = f"`[{res.extra_data['confidence']:.2f}] → ` {res.text}"
         await edit_or_reply(message, out)

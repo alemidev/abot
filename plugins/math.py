@@ -17,6 +17,9 @@ from sympy.parsing.sympy_parser import parse_expr
 from sympy import preview, plot
 from plugins.help import HelpCategory
 
+import logging
+logger = logging.getLogger(__name__)
+
 HELP = HelpCategory("MATH")
 
 HELP.add_help(["expr", "math"], "convert to LaTeX formula",
@@ -29,7 +32,7 @@ async def expr(client, message):
     try:
         arg = message.matches[0]["query"]
         opt = message.matches[0]["opt"]
-        print(f" [ mathifying {arg} ]")
+        logger.info(f"Mathifying \'{arg}\'")
         await client.send_chat_action(message.chat.id, "upload_document")
         if opt == "-latex":
             preview(arg, viewer='file', filename='expr.png', dvioptions=["-T", "bbox", "-D 300", "--truecolor", "-bg", "Transparent"])
@@ -54,7 +57,7 @@ async def graph(client, message):
     try:
         arg = message.matches[0]["query"]
         opt = message.matches[0]["opt"]
-        print(f" [ plotting {arg} ]")
+        logger.info(f"Plotting \'{arg}\'")
         eq = []
         for a in arg.split(", "):
             eq.append(parse_expr(a))
@@ -82,7 +85,7 @@ HELP.add_help("solve", "attempt to solve equation",
 async def solve_cmd(client, message):
     try:
         arg = message.matches[0]["query"]
-        print(f" [ solving {arg} ]")
+        logger.info(f"Solving \'{arg}\'")
         in_expr = parse_expr(arg).simplify()
         res = solve(in_expr)
         out = f"` → {str(in_expr)}`\n```" + str(res) + "```"

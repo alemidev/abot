@@ -9,6 +9,9 @@ from util.permission import is_allowed
 from util.message import is_me, get_text
 from plugins.help import HelpCategory
 
+import logging
+logger = logging.getLogger(__name__)
+
 HELP = HelpCategory("TRIGGER")
 
 triggers = {}
@@ -31,7 +34,7 @@ async def trigger_cmd(client, message):
     args = message.matches[0]
     changed = False
     if args["arg"] == "-l":
-        print(" [ listing triggers ]")
+        logger.info("Listing triggers")
         out = "\n"
         for t in triggers:
             out += f"`'{t}' → ` {triggers[t]}\n"
@@ -39,12 +42,12 @@ async def trigger_cmd(client, message):
             out += "` → Nothing to display`"
         await message.edit(message.text.markdown + out)
     elif args["arg"] == "-n" and args["trigger"] != "" and args["message"] != "":
-        print(" [ new trigger ]")
+        logger.info("New trigger")
         triggers[args["trigger"].strip("'")] = args["message"]
         await message.edit(message.text.markdown + f"\n` → ` Registered new trigger")
         changed = True
     elif args["arg"] == "-d" and args["trigger"] != "":
-        print(" [ removing trigger ]")
+        logger.info("Removing trigger")
         if triggers.pop(args["trigger"].strip("'"), None) is not None:
             await message.edit(message.text.markdown + "\n` → ` Removed trigger")
             changed = True
@@ -69,4 +72,4 @@ async def search_triggers(client, message):
         if trg.lower() in msg_txt:
             await message.reply(triggers[trg])
             await client.set_offline()
-            print(" [ T R I G G E R E D ]")
+            logger.info("T R I G G E R E D")

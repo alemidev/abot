@@ -6,6 +6,7 @@ import os
 import sys
 import json
 import subprocess
+import logging
 from datetime import datetime
 from pyrogram import Client, idle
 from configparser import ConfigParser
@@ -32,7 +33,7 @@ class alemiBot(Client):
 
     async def start(self):
         await super().start()
-        print("> Bot started\n")
+        logging.info("Bot started\n")
         try:
             with open("data/lastmsg.json", "r") as f:
                 m = json.load(f)
@@ -47,13 +48,34 @@ class alemiBot(Client):
 
     async def stop(self):
         await super().stop()
-        print("\n> Bot stopped")
+        logging.info("Bot stopped\n")
     
     async def restart(self):
         await self.stop()
         os.execv(__file__, sys.argv) # This will replace current process
 
 if __name__ == "__main__":
+    """
+    Default logging will only show the message on stdout (but up to INFO) 
+    and show time + type + module + message in file (data/debug.log)
+    """
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    # create file handler which logs even debug messages
+    fh = logging.FileHandler('data/debug.log')
+    fh.setLevel(logging.INFO)
+    # create console handler with a higher log level
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.INFO)
+    # create formatter and add it to the handlers
+    file_formatter = logging.Formatter("[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s", "%H:%M:%S")
+    print_formatter = logging.Formatter("> %(message)s")
+    fh.setFormatter(file_formatter)
+    ch.setFormatter(print_formatter)
+    # add the handlers to the logger
+    logger.addHandler(fh)
+    logger.addHandler(ch)
+
     app = alemiBot("alemibot")
     app.run()
 

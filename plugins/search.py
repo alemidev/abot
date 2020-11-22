@@ -18,6 +18,9 @@ from util.permission import is_allowed
 from util.message import edit_or_reply
 from plugins.help import HelpCategory
 
+import logging
+logger = logging.getLogger(__name__)
+
 HELP = HelpCategory("SEARCH")
 
 dictionary = PyDictionary()
@@ -50,7 +53,7 @@ async def diz(client, message):
     try:
         await client.send_chat_action(message.chat.id, "upload_document")
         arg = message.command[1]
-        print(f" [ searching \"{arg}\" on it dictionary ]")
+        logger.info(f"Searching \"{arg}\" on it dictionary")
         # Use this to get only the meaning 
         res = italian_dictionary.get_definition(arg) 
 
@@ -74,7 +77,7 @@ async def dic(client, message):
     try:
         await client.send_chat_action(message.chat.id, "upload_document")
         arg = message.command[1]
-        print(f" [ searching \"{arg}\" on eng dictionary ]")
+        logger.info(f"Searching \"{arg}\" on eng dictionary")
         res = dictionary.meaning(arg)
         if res is None:
             return await edit_or_reply(message, "` → No match`")
@@ -101,7 +104,7 @@ async def urbandict(client, message):
     try:
         await client.send_chat_action(message.chat.id, "upload_document")
         arg = message.command[1]
-        print(f" [ searching \"{arg}\" on urban dictionary ]")
+        logger.info(f"Searching \"{arg}\" on urban dictionary")
         res = ud_define(arg)
         if res is None:
             return await edit_or_reply(message, "`[!] → ` Not found")
@@ -127,7 +130,7 @@ async def wiki(client, message):
     try:
         await client.send_chat_action(message.chat.id, "upload_document")
         arg = message.command[1]
-        print(f" [ searching \"{arg}\" on wikipedia ]")
+        logger.info(f"Searching \"{arg}\" on wikipedia")
         page = wikipedia.page(arg)
         out = f"` → {page.title}`\n"
         out += page.content[:750]
@@ -156,7 +159,7 @@ async def lmgtfy(client, message):
         return await edit_or_reply(message, "`[!] → ` No query given")
     try:
         arg = message.command[1].replace(" ", "+") # fuck it probably is already split at spaces, TODO
-        print(f" [ lmgtfy {arg} ]")
+        logger.info(f"lmgtfy {arg}")
         await edit_or_reply(message, f"` → ` http://letmegooglethat.com/?q={arg}")
     except Exception as e:
         traceback.print_exc()
@@ -174,7 +177,7 @@ async def location_cmd(client, message):
     args = message.matches[0]
     latitude = 0.0
     longitude = 0.0
-    print(" [ getting a location ]")
+    logger.info("Getting a location")
     if args["lat"] is not None and args["long"] is not None:
         latitude = float(args["lat"])
         longitude = float(args["long"])
@@ -221,7 +224,7 @@ async def weather_cmd(client, message):
     # if APIKEY == "":
     #     return await edit_or_reply(message, "`[!] → ` No APIKEY provided in config")
     try:
-        print(" [ curl wttr.in ]")
+        logger.info("curl wttr.in")
         await client.send_chat_action(message.chat.id, "find_location")
         q = message.matches[0]["query"]
         r = requests.get(f"https://wttr.in/{q}?mnTC0&lang=en")

@@ -16,6 +16,9 @@ from util.permission import is_allowed
 from util.message import edit_or_reply, get_text
 from plugins.help import HelpCategory
 
+import logging
+logger = logging.getLogger(__name__)
+
 HELP = HelpCategory("MEME")
 
 # TODO make this an util and maybe pass **kwargs
@@ -44,7 +47,7 @@ async def getmeme(client, message):
         await client.send_chat_action(message.chat.id, "upload_photo")
         args = message.matches[0]
         if args["list"] == "-list":
-            print(" [ getting meme list ]")
+            logger.info("Getting meme list")
             memes = os.listdir("data/memes")
             memes.sort()
             out = f"` → ` **Meme list** ({len(memes)} total) :\n[ "
@@ -56,13 +59,13 @@ async def getmeme(client, message):
                         if s.lower().startswith(args["name"])] #  is nice or horrible
             if len(memes) > 0:
                 fname = memes[0]
-                print(f" [ getting specific meme : \"{fname}\" ]")
+                logger.info(f"Getting specific meme : \"{fname}\"")
                 await send_media_appropriately(client, message, fname)
             else:
                 await edit_or_reply(message, f"`[!] → ` no meme named {args['name']}")
         else: 
             fname = secrets.choice(os.listdir("data/memes"))
-            print(f" [ getting random meme : \"{fname}\" ]")
+            logger.info(f"Getting random meme : \"{fname}\"")
             await send_media_appropriately(client, message, fname, extra_text="Random meme : ")
     except Exception as e:
         traceback.print_exc()
@@ -82,7 +85,7 @@ async def steal(client, message):
         msg = message.reply_to_message
     if msg.media:
         try:                                                # TODO I need to get what file type it is!
-            print(" [ stealing meme ]")
+            logger.info("Stealing meme")
             fpath = await client.download_media(msg, file_name="data/memes/") # + message.command[1])
             # await message.edit(get_text(message) + '\n` → ` saved meme as {}'.format(fpath))
             path, fname = os.path.splitext(fpath) # this part below is trash, im waiting for my PR on pyrogram
@@ -147,7 +150,7 @@ async def deepfry(client, message):
         msg = message.reply_to_message
     if msg.media:
         await client.send_chat_action(message.chat.id, "upload_photo")
-        print(f" [ frying meme ]")
+        logger.info(f"Frying meme")
         try:
             count = 1
             if message.matches[0]["count"] != "":
@@ -216,7 +219,7 @@ async def ascii_cmd(client, message):
     if message.reply_to_message is not None:
         msg = message.reply_to_message
     if msg.media:
-        print(f" [ making ascii of img ]")
+        logger.info(f"Making ascii of img")
         try:
             fpath = await client.download_media(msg, file_name="toascii")
             image = Image.open(fpath)
