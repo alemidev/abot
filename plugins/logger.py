@@ -146,7 +146,7 @@ async def query_cmd(client, message):
             for doc in cursor:
                 buf.append(doc)
 
-            raw = json.dumps(buf, indent=2, default=str)
+            raw = json.dumps(buf, indent=2, default=str, ensure_ascii=False)
             if len(message.text.markdown) + len(tokenize_json(raw)) > 4090:
                 f = io.BytesIO(raw.encode("utf-8"))
                 f.name = "query.json"
@@ -238,7 +238,7 @@ async def deleted_cmd(client, message): # This is a mess omg
                 break
 
         if args["json"] == "-json":
-            f = io.BytesIO(json.dumps(res, indent=2, default=str).encode('utf-8'))
+            f = io.BytesIO(json.dumps(res, indent=2, default=str, ensure_ascii=False).encode('utf-8'))
             f.name = "peek.json"
             await client.send_document(message.chat.id, f, reply_to_message_id=message.message_id,
                                         caption=f"` → Peek result `")
