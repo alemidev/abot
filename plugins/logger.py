@@ -236,7 +236,8 @@ async def deleted_cmd(client, message): # This is a mess omg
             for msg in candidates:
                 if local_search and msg["chat"]["id"] != message.chat.id:
                     continue
-                res.append(msg)
+                if "service" not in msg or not msg["service"]:
+                    res.append(msg)
                 break # append just first valid match
             if len(res) >= limit:
                 break
