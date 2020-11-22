@@ -207,8 +207,9 @@ async def hist_cmd(client, message):
 
 HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
                 "request last edited messages, from channel or globally (-g, reserved to owner). A number of " +
-                "messages to peek can be specified. You can append `-json` at the end to get a json with all message data.",
-                public=True, args="[-t] [-g] [<num>] [-json]")
+                "messages to peek can be specified. You can append `-json` at the end to get a json with " +
+                "all message data. Messages from bots or system messages will be skipped in peek (use manual " +
+                "queries if you need to log those)", public=True, args="[-t] [-g] [<num>] [-json]")
 @alemiBot.on_message(is_allowed & filters.command(["peek", "deld", "deleted", "removed"], prefixes=".") & filters.regex(
     pattern=r"^.(?:peek|deld|deleted|removed)(?: |)(?P<time>-t|)(?: |)(?P<global>-g|)(?: |)(?P<number>[0-9]+|)(?: |)(?P<json>-json|)"
 ))
