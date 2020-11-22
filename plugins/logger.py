@@ -66,7 +66,7 @@ async def msglogger(client, message):
     global LOGGED_COUNT
     # print_formatted(message.chat, message.from_user, message)
     data = convert_to_dict(message)
-    if message.media and LOG_MEDIA:
+    if message.media and LOG_MEDIA and message.edit_date is None: # don't redownload media at edits!
         try: 
             fname = await client.download_media(message, file_name="data/scraped_media/")
             if fname is not None:
