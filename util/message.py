@@ -17,10 +17,12 @@ def get_text(message):
 def get_text_dict(message):
     if "markdown" in message:
         return message["markdown"]
+    elif "raw" in message:
+        return message["raw"]
     elif "text" in message:
         return get_text_dict(message["text"])
     elif "caption" in message:
-        return message["caption"]
+        return get_text_dict(message["caption"])
     else:
         return ""
 
