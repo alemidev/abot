@@ -69,7 +69,7 @@ async def graph(client, message):
         else:
             plot(*eq, show=False).save("graph.png")
         await client.send_photo(message.chat.id, "graph.png", reply_to_message_id=message.message_id,
-                                        caption=f"` → {eq} `")
+                                        caption=f"` → {', '.join(str(eq))} `")
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
