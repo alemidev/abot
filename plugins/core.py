@@ -95,7 +95,7 @@ async def who_cmd(client, message):
         and message.reply_to_message.from_user is not None:
             peer = message.reply_to_message.from_user
         else:
-            peer = await client.get_users(message.from_user)
+            peer = await client.get_me()
         logger.info("Getting info of user")
         if is_me(message):
             await message.edit(message.text.markdown + f"\n` → ` Getting data of user `{peer.id}`")
