@@ -60,7 +60,7 @@ async def graph(client, message):
         logger.info(f"Plotting \'{arg}\'")
         eq = []
         for a in arg.split(", "):
-            eq.append(parse_expr(a))
+            eq.append(parse_expr(a).simplify())
         await client.send_chat_action(message.chat.id, "upload_document")
         if opt == "-3d":
             plot3d(*eq, show=False).save("graph.png")
