@@ -205,6 +205,43 @@ async def hist_cmd(client, message):
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()
 
+
+async def lookup_deleted_messages(client, message, chat_id, limit, local_search=True, show_time=False):
+    response = await message.reply("`[PLACEHOLDER]`")
+    out = ""
+    count = 0
+    LINE = "<code>[{m_id}]</code> <b>{user}</b> <code>→ {where}</code> {text}\n"
+    try:
+        lgr.debug("Querying db for deletions")
+        cursor = EVENTS.find({ "_": "Delete" }).sort("_id", -1)
+        for deletion in cursor: # TODO make this part not a fucking mess!
+            if local_search and "chat" in deletion \
+            and deletion["chat"]["id"] != message.chat.id:
+                continue # don't make a 2nd query, should speed up a ton
+            candidates = EVENTS.find({"_": "Message", "message_id": deletion["message_id"]}).sort("_id", -1).limit(10)
+            lgr.debug("Querying db for possible deleted msg")
+            for msg in candidates:
+                if local_search and msg["chat"]["id"] != message.chat.id:
+                    continue
+                if limit == 1 and "attached_file" in msg:
+                    await client.send_document(message.chat.id, "data/scraped_media/"+doc["attached_file"], reply_to_message_id=message.message_id,
+                                        caption=f"<b>{get_username_dict(doc['from_user'])}</b> <code>→" +
+                                                (' ' + get_channel_dict(doc['chat']) + ' →' if not local_search else '') +
+                                                f"</code> {get_text_dict(doc)['raw']}", parse_mode="html")
+                else:
+                    out += LINE.format(m_id=msg["message_id"], user=get_username_dict(doc["from_user"]),
+                                    where='' if local_search else (' ' + get_channel_dict(doc["chat"]) + ' →'),
+                                    text=get_text_dict(doc)['raw'])
+                    await response.edit(out)
+                count += 1
+                break
+            if count >= limit:
+                break
+    except Exception as e:
+        traceback.print_exc()
+        await response.edit(out + "\n`[!] → ` " + str(e))
+    await client.set_offline() 
+
 HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
                 "request last edited messages, from channel or globally (-g, reserved to owner). A number of " +
                 "messages to peek can be specified. You can append `-json` at the end to get a json with " +
@@ -215,68 +252,14 @@ HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
 ))
 async def deleted_cmd(client, message): # This is a mess omg
     args = message.matches[0]
-
     show_time = args["time"] == "-t"
     local_search = args["global"] != "-g" or not is_me(message)
     limit = 1
     if args["number"] != "":
         limit = int(args["number"])
     lgr.info(f"Peeking {limit} messages")
-
-    try:
-        if is_me(message):
-            await message.edit(message.text + f"\n` → ` Peeking {limit} message{'s' if limit > 1 else ''}")
-        await client.send_chat_action(message.chat.id, "upload_document")
-        cursor = EVENTS.find({ "_": "Delete" }).sort("_id", -1)
-        lgr.debug("Querying db for deletions")
-        res = []
-        for deletion in cursor: # TODO make this part not a fucking mess!
-            if local_search and "chat" in deletion \
-            and deletion["chat"]["id"] != message.chat.id:
-                continue # don't make a 2nd query, should speed up a ton
-            candidates = EVENTS.find({"_": "Message", "message_id": deletion["message_id"]}).sort("_id", -1).limit(10)
-            lgr.debug("Querying db for possible deleted msg")
-            for msg in candidates:
-                if local_search and msg["chat"]["id"] != message.chat.id:
-                    continue
-                res.append(msg)
-                break # append just first valid match
-            if len(res) >= limit:
-                break
-
-        if args["json"] == "-json":
-            f = io.BytesIO(json.dumps(res, indent=2, default=str, ensure_ascii=False).encode('utf-8'))
-            f.name = "peek.json"
-            await client.send_document(message.chat.id, f, reply_to_message_id=message.message_id,
-                                        caption=f"` → Peek result `")
-        elif len(res) == 1 and "attached_file" in res[0]:
-            doc = res[0]
-            await client.send_document(message.chat.id, "data/scraped_media/"+doc["attached_file"], reply_to_message_id=message.message_id,
-                                        caption=f"<b>{get_username_dict(doc['from_user'])}</b> <code>→" +
-                                                (' ' + get_channel_dict(doc['chat']) + ' →' if not local_search else '') +
-                                                f"</code> {get_text_dict(doc)['raw']}", parse_mode="html")
-        else:
-            out = ""
-            for doc in res:
-                if show_time:
-                    out += f"{str(doc['date'])} "
-                out += f"<code>[{doc['message_id']}]</code> "
-                out += f"<b>{get_username_dict(doc['from_user'])}</b> <code>→</code> "
-                if not local_search:
-                    out += f"<code>{get_channel_dict(doc['chat'])} → </code>"
-                if "service" in doc and doc["service"]:
-                    out += "[SERVICE]"
-                else:
-                    out += f"{get_text_dict(doc)['raw']}"
-                if "attached_file" in doc:
-                    out += f" (<i>{doc['attached_file']}</i>)"
-                out += "\n"
-            if out == "":
-                out = "` → ` Nothing to display"
-            await message.reply(out, parse_mode="html") # always reply because just editing may retrigger the command
-    except Exception as e:
-        traceback.print_exc()
-        await edit_or_reply(message, "`[!] → ` " + str(e))
-    await client.send_chat_action(message.chat.id, "cancel")
+    if is_me(message):
+        await message.edit(message.text + f"\n` → ` Peeking {limit} message{'s' if limit > 1 else ''}")
+    asyncio.get_event_loop().create_task(lookup_deleted_messages(client, message, message.chat.id, limit, local_search, show_time))
     await client.set_offline()
 
