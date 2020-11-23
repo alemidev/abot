@@ -224,9 +224,11 @@ async def deleted_cmd(client, message): # This is a mess omg
     lgr.info(f"Peeking {limit} messages")
 
     try:
+        if is_me(message):
+            await message.edit(message.text.raw + f"\n` → ` Peeking {limit} message{'s' if limit > 1 else ''}")
         await client.send_chat_action(message.chat.id, "upload_document")
         cursor = EVENTS.find({ "_": "Delete" }).sort("_id", -1)
-        lgr.debug("Querying db for deletions ]")
+        lgr.debug("Querying db for deletions")
         res = []
         for deletion in cursor: # TODO make this part not a fucking mess!
             if local_search and "chat" in deletion \
@@ -273,7 +275,7 @@ async def deleted_cmd(client, message): # This is a mess omg
                 out += "\n"
             if out == "":
                 out = "` → ` Nothing to display"
-            await edit_or_reply(message, out, parse_mode="html")
+            await message.reply(out, parse_mode="html") # always reply because just editing may retrigger the command
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
