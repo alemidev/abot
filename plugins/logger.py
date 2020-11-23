@@ -207,7 +207,7 @@ async def hist_cmd(client, message):
 
 
 async def lookup_deleted_messages(client, message, chat_id, limit, local_search=True, show_time=False):
-    out = f"<code> → Peeking {limit} message{'s' if limit > 1 else ''}</code>\n\n")
+    out = f"<code> → Peeking {limit} message{'s' if limit > 1 else ''}</code>\n\n"
     response = await message.reply(out, parse_mode='html')
     count = 0
     LINE = "<code>[{m_id}]</code> <b>{user}</b> <code>→ {where}</code> {text}\n"
