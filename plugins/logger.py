@@ -220,16 +220,16 @@ async def lookup_deleted_messages(client, message, chat_id, limit, local_search=
                 continue # don't make a 2nd query, should speed up a ton
             candidates = EVENTS.find({"_": "Message", "message_id": deletion["message_id"]}).sort("_id", -1).limit(10)
             lgr.debug("Querying db for possible deleted msg")
-            for msg in candidates:
-                if local_search and msg["chat"]["id"] != message.chat.id:
+            for doc in candidates:
+                if local_search and doc["chat"]["id"] != message.chat.id:
                     continue
-                if limit == 1 and "attached_file" in msg:
+                if limit == 1 and "attached_file" in doc:
                     await client.send_document(message.chat.id, "data/scraped_media/"+doc["attached_file"], reply_to_message_id=message.message_id,
                                         caption=f"<b>{get_username_dict(doc['from_user'])}</b> <code>→" +
                                                 (' ' + get_channel_dict(doc['chat']) + ' →' if not local_search else '') +
                                                 f"</code> {get_text_dict(doc)['raw']}", parse_mode="html")
                 else:
-                    out += LINE.format(m_id=msg["message_id"], user=get_username_dict(doc["from_user"]),
+                    out += LINE.format(m_id=doc["message_id"], user=get_username_dict(doc["from_user"]),
                                     where='' if local_search else (' ' + get_channel_dict(doc["chat"]) + ' →'),
                                     text=get_text_dict(doc)['raw'])
                     await response.edit(out)
