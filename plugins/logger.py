@@ -256,7 +256,7 @@ HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
                 "queries if you need to log those). Owner can peek globally (`-g`) or in a specific group (`-g <id>`)",
                 public=True, args="[-t] [<num>] [-g [id]]")
 @alemiBot.on_message(is_allowed & filters.command(["peek", "deld", "deleted", "removed"], prefixes=".") & filters.regex(
-    pattern=r"^.(?:peek|deld|deleted|removed)(?: |)(?P<time>-t|)(?: |)(?P<number>[0-9]+|)(?: |)(?P<global>-g [0-9]+|-g|)"
+    pattern=r"^.(?:peek|deld|deleted|removed)(?: |)(?P<time>-t|)(?: |)(?P<number>[0-9]+|)(?: |)(?P<global>-g [0-9\-]+|-g|)"
 ))
 async def deleted_cmd(client, message): # This is a mess omg
     args = message.matches[0]
