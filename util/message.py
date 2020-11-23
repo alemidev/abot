@@ -24,10 +24,12 @@ def get_text_dict(message):
 
 async def edit_or_reply(message, text, *args, **kwargs):
     if is_me(message) and len(message.text.markdown + text) < 4090: 
-        await message.edit(message.text.markdown + "\n" + text, *args, **kwargs)
+        return await message.edit(message.text.markdown + "\n" + text, *args, **kwargs)
     else:
+        ret = None
         for m in batchify(text, 4090):
-            await message.reply(m, *args, **kwargs)
+            ret = await message.reply(m, *args, **kwargs)
+        return ret
 
 def tokenize_json(text):
     res = re.subn(
