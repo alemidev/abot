@@ -242,10 +242,13 @@ async def lookup_deleted_messages(client, message, chat_id, limit, show_time=Fal
                 break
             if count >= limit:
                 break
-        await edit_or_reply(message, out, parse_mode='html')
+        if count > 0:
+            await edit_or_reply(response, out, parse_mode='html')
+        else:
+            await edit_or_reply(response, out + "<b>N/A</b>", parse_mode='html')
     except Exception as e:
         traceback.print_exc()
-        await edit_or_reply(message, out + "\n\n<code>[!] → </code> " + str(e), parse_mode='html')
+        await edit_or_reply(response, out + "\n\n<code>[!] → </code> " + str(e), parse_mode='html')
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline() 
 
