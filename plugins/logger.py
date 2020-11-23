@@ -208,8 +208,8 @@ async def hist_cmd(client, message):
 
 
 async def lookup_deleted_messages(client, message, chat_id, limit, show_time=False):
-    out = f"<code> → Peeking {limit} message{'s' if limit > 1 else ''}</code>\n\n"
-    response = await edit_or_reply(message, out, parse_mode='html')
+    response = await edit_or_reply(message, "<code> → Peeking {limit} message{'s' if limit > 1 else ''}</code>", parse_mode='html')
+    out = ""
     count = 0
     LINE = "<code>[{m_id}]</code> <b>{user}</b> <code>→ {where}</code> {text} {media}\n"
     try:
@@ -220,7 +220,7 @@ async def lookup_deleted_messages(client, message, chat_id, limit, show_time=Fal
             if chat_id is not None and "chat" in deletion \
             and deletion["chat"]["id"] != chat_id:
                 continue # don't make a 2nd query, should speed up a ton
-            candidates = EVENTS.find({"_": "Message", "message_id": deletion["message_id"]}).sort("_id", -1).limit(10)
+            candidates = EVENTS.find({"_": "Message", "message_id": deletion["message_id"]}).sort("_id", -1).limit(50)
             lgr.debug("Querying db for possible deleted msg")
             for doc in candidates: # dank 'for': i only need one
                 if chat_id is not None and doc["chat"]["id"] != chat_id:
