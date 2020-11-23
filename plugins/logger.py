@@ -259,8 +259,6 @@ async def deleted_cmd(client, message): # This is a mess omg
     if args["number"] != "":
         limit = int(args["number"])
     lgr.info(f"Peeking {limit} messages")
-    if is_me(message):
-        await message.edit(message.text + f"\n` → ` Peeking {limit} message{'s' if limit > 1 else ''}")
     asyncio.get_event_loop().create_task(lookup_deleted_messages(client, message, message.chat.id, limit, local_search, show_time))
     await client.set_offline()
 
