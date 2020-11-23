@@ -207,22 +207,23 @@ async def hist_cmd(client, message):
     await client.set_offline()
 
 
-async def lookup_deleted_messages(client, message, chat_id, limit, local_search=True, show_time=False):
+async def lookup_deleted_messages(client, message, chat_id, limit, show_time=False):
     out = f"<code> → Peeking {limit} message{'s' if limit > 1 else ''}</code>\n\n"
-    response = await message.reply(out, parse_mode='html')
+    response = await edit_or_reply(message, out, parse_mode='html')
     count = 0
     LINE = "<code>[{m_id}]</code> <b>{user}</b> <code>→ {where}</code> {text} {media}\n"
     try:
         lgr.debug("Querying db for deletions")
+        await client.send_chat_action(message.chat.id, "upload_document")
         cursor = EVENTS.find({ "_": "Delete" }).sort("_id", -1)
         for deletion in cursor: # TODO make this part not a fucking mess!
-            if local_search and "chat" in deletion \
-            and deletion["chat"]["id"] != message.chat.id:
+            if chat_id is not None and "chat" in deletion \
+            and deletion["chat"]["id"] != chat_id:
                 continue # don't make a 2nd query, should speed up a ton
             candidates = EVENTS.find({"_": "Message", "message_id": deletion["message_id"]}).sort("_id", -1).limit(10)
             lgr.debug("Querying db for possible deleted msg")
-            for doc in candidates:
-                if local_search and doc["chat"]["id"] != message.chat.id:
+            for doc in candidates: # dank 'for': i only need one
+                if chat_id is not None and doc["chat"]["id"] != chat_id:
                     continue
                 if "service" in doc and doc["service"]:
                     break # we don't care about service messages!
@@ -231,38 +232,49 @@ async def lookup_deleted_messages(client, message, chat_id, limit, local_search=
                 if limit == 1 and "attached_file" in doc:
                     await client.send_document(message.chat.id, "data/scraped_media/"+doc["attached_file"], reply_to_message_id=message.message_id,
                                         caption=f"<b>{get_username_dict(doc['from_user'])}</b> <code>→" +
-                                                (' ' + get_channel_dict(doc['chat']) + ' →' if not local_search else '') +
+                                                (' ' + get_channel_dict(doc['chat']) + ' →' if chat_id is None else '') +
                                                 f"</code> {get_text_dict(doc)['raw']}", parse_mode="html")
                 else:
                     out += LINE.format(m_id=doc["message_id"], user=get_username_dict(doc["from_user"]),
-                                    where='' if local_search else (' ' + get_channel_dict(doc["chat"]) + ' →'),
+                                    where='' if chat_id is not None else (' ' + get_channel_dict(doc["chat"]) + ' →'),
                                     text=get_text_dict(doc)['raw'], media=('' if "attached_file" not in doc else ('(<i>' + doc["attached_file"] + '</i>)')))
                 count += 1
                 break
             if count >= limit:
                 break
-        await response.edit(out, parse_mode='html')
+        await edit_or_reply(message, out, parse_mode='html')
     except Exception as e:
         traceback.print_exc()
-        await response.edit(out + "\n\n<code>[!] → </code> " + str(e), parse_mode='html')
+        await edit_or_reply(message, out + "\n\n<code>[!] → </code> " + str(e), parse_mode='html')
+    await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline() 
 
 HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
-                "request last edited messages, from channel or globally (-g, reserved to owner). A number of " +
-                "messages to peek can be specified. You can append `-json` at the end to get a json with " +
-                "all message data. Messages from bots or system messages will be skipped in peek (use manual " +
-                "queries if you need to log those)", public=True, args="[-t] [-g] [<num>] [-json]")
+                "request last deleted messages in this channel. Use `-t` to add timestamps. A number of " +
+                "messages to peek can be specified. just message data. Messages " +
+                "from bots or system messages will be skipped in peek (use manual " +
+                "queries if you need to log those). Owner can peek globally (`-g`) or in a specific group (`-g <id>`)",
+                public=True, args="[-t] [-g [id]] [<num>]")
 @alemiBot.on_message(is_allowed & filters.command(["peek", "deld", "deleted", "removed"], prefixes=".") & filters.regex(
-    pattern=r"^.(?:peek|deld|deleted|removed)(?: |)(?P<time>-t|)(?: |)(?P<global>-g|)(?: |)(?P<number>[0-9]+|)(?: |)(?P<json>-json|)"
+    pattern=r"^.(?:peek|deld|deleted|removed)(?: |)(?P<time>-t|)(?: |)(?P<global>-g [0-9]+|-g|)(?: |)(?P<number>[0-9]+|)(?: |)(?P<json>-json|)"
 ))
 async def deleted_cmd(client, message): # This is a mess omg
     args = message.matches[0]
     show_time = args["time"] == "-t"
-    local_search = args["global"] != "-g" or not is_me(message)
+    target_group = message.chat.id
+    if is_me(message) and args["global"].startswith("-g"):
+        if args["global"] == "-g":
+            target_group = None
+        else:
+            target_group = (await client.get_chat(int(args["global"].replace("-g ", "")))).id
     limit = 1
     if args["number"] != "":
         limit = int(args["number"])
     lgr.info(f"Peeking {limit} messages")
-    asyncio.get_event_loop().create_task(lookup_deleted_messages(client, message, message.chat.id, limit, local_search, show_time))
-    await client.set_offline()
+    asyncio.get_event_loop().create_task( # launch the task async because it may take some time
+        lookup_deleted_messages(
+            client, message,
+            target_group, limit, show_time
+            )
+        )
 
