@@ -101,7 +101,7 @@ HELP.add_help(["stats", "stat"], "get stats",
 async def stats_cmd(client, message):
     lgr.info("Getting stats")
     global LOGGED_COUNT
-    count = EVENTS.count_documents({})
+    count = EVENTS.count({})
     size = DB.command("dbstats")['totalSize']
     memesize = float(subprocess.run( # this is bad and ugly
         ["du", "-b", "data/memes"],
