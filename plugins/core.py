@@ -62,7 +62,7 @@ HELP.add_help("where", "get info about chat",
 async def where_cmd(client, message):
     try:
         tgt = message.chat
-        if len(message.command) > 1:
+        if len(message.command) > 1 and message.command[1] != "-no":
             arg = message.command[1]
             if arg.isnumeric():
                 tgt = await client.get_chat(int(arg))
@@ -88,7 +88,7 @@ HELP.add_help("who", "get info about user",
 async def who_cmd(client, message):
     try:
         peer = None
-        if len(message.command) > 1:
+        if len(message.command) > 1 and message.command[1] != "-no":
             arg = message.command[1]
             if arg.isnumeric():
                 peer = await client.get_users(int(arg))
