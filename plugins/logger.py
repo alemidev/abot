@@ -207,8 +207,8 @@ async def hist_cmd(client, message):
 
 
 async def lookup_deleted_messages(client, message, chat_id, limit, local_search=True, show_time=False):
-    response = await message.reply("`[PLACEHOLDER]`")
-    out = ""
+    out = f"<code> → Peeking {limit} message{'s' if limit > 1 else ''}</code>\n\n")
+    response = await message.reply(out, parse_mode='html')
     count = 0
     LINE = "<code>[{m_id}]</code> <b>{user}</b> <code>→ {where}</code> {text}\n"
     try:
@@ -231,15 +231,16 @@ async def lookup_deleted_messages(client, message, chat_id, limit, local_search=
                 else:
                     out += LINE.format(m_id=doc["message_id"], user=get_username_dict(doc["from_user"]),
                                     where='' if local_search else (' ' + get_channel_dict(doc["chat"]) + ' →'),
-                                    text=get_text_dict(doc)['raw'])
-                    await response.edit(out)
+                                    text=get_text_dict(doc)['raw'], parse_mode='html')
+                    await response.edit(out) # TODO fix in case of message too long
                 count += 1
                 break
             if count >= limit:
                 break
+        await response.edit(out + "\n\n<code> → DONE</code>", parse_mode='html')
     except Exception as e:
         traceback.print_exc()
-        await response.edit(out + "\n`[!] → ` " + str(e))
+        await response.edit(out + "\n\n<code>[!] → </code> " + str(e), parse_mode='html')
     await client.set_offline() 
 
 HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
