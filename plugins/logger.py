@@ -208,8 +208,8 @@ async def hist_cmd(client, message):
 
 
 async def lookup_deleted_messages(client, message, chat_id, limit, show_time=False):
-    response = await edit_or_reply(message, "<code> → Peeking {limit} message{'s' if limit > 1 else ''}</code>", parse_mode='html')
-    out = ""
+    response = await edit_or_reply(message, f"<code> → Peeking {limit} message{'s' if limit > 1 else ''}</code>", parse_mode='html')
+    out = response.text.html + "\n\n"
     count = 0
     LINE = "<code>[{m_id}]</code> <b>{user}</b> <code>→ {where}</code> {text} {media}\n"
     try:
@@ -243,12 +243,12 @@ async def lookup_deleted_messages(client, message, chat_id, limit, show_time=Fal
             if count >= limit:
                 break
         if count > 0:
-            await edit_or_reply(response, out, parse_mode='html')
+            await response.edit(out, parse_mode='html')
         else:
-            await edit_or_reply(response, out + "<b>N/A</b>", parse_mode='html')
+            await response.edit(out + "<b>N/A</b>", parse_mode='html')
     except Exception as e:
         traceback.print_exc()
-        await edit_or_reply(response, out + "\n\n<code>[!] → </code> " + str(e), parse_mode='html')
+        await response.edit(out + "\n\n<code>[!] → </code> " + str(e), parse_mode='html')
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline() 
 
