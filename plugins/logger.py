@@ -239,10 +239,6 @@ async def deleted_cmd(client, message): # This is a mess omg
             for msg in candidates:
                 if local_search and msg["chat"]["id"] != message.chat.id:
                     continue
-                if "service" in msg and msg["service"]:
-                    break # don't peek service messages, like people joining chats
-                if msg["from_user"]["is_bot"]:
-                    break # don't peek messages from bots cause they get autodeleted!
                 res.append(msg)
                 break # append just first valid match
             if len(res) >= limit:
