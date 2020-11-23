@@ -15,6 +15,7 @@ from termcolor import colored
 
 from pyrogram import filters
 from pyrogram.types import Object
+from pyrogram.errors.exceptions.flood_420 import FloodWait
 
 from bot import alemiBot
 
@@ -210,7 +211,7 @@ async def lookup_deleted_messages(client, message, chat_id, limit, local_search=
     out = f"<code> → Peeking {limit} message{'s' if limit > 1 else ''}</code>\n\n"
     response = await message.reply(out, parse_mode='html')
     count = 0
-    LINE = "<code>[{m_id}]</code> <b>{user}</b> <code>→ {where}</code> {text}\n"
+    LINE = "<code>[{m_id}]</code> <b>{user}</b> <code>→ {where}</code> {text} {media}\n"
     try:
         lgr.debug("Querying db for deletions")
         cursor = EVENTS.find({ "_": "Delete" }).sort("_id", -1)
@@ -223,6 +224,10 @@ async def lookup_deleted_messages(client, message, chat_id, limit, local_search=
             for doc in candidates:
                 if local_search and doc["chat"]["id"] != message.chat.id:
                     continue
+                if "service" in doc and doc["service"]:
+                    break # we don't care about service messages!
+                if "from_user" in doc and doc["from_user"]["is_bot"]:
+                    break # we don't care about bot messages!
                 if limit == 1 and "attached_file" in doc:
                     await client.send_document(message.chat.id, "data/scraped_media/"+doc["attached_file"], reply_to_message_id=message.message_id,
                                         caption=f"<b>{get_username_dict(doc['from_user'])}</b> <code>→" +
@@ -231,13 +236,12 @@ async def lookup_deleted_messages(client, message, chat_id, limit, local_search=
                 else:
                     out += LINE.format(m_id=doc["message_id"], user=get_username_dict(doc["from_user"]),
                                     where='' if local_search else (' ' + get_channel_dict(doc["chat"]) + ' →'),
-                                    text=get_text_dict(doc)['raw'], parse_mode='html')
-                    await response.edit(out) # TODO fix in case of message too long
+                                    text=get_text_dict(doc)['raw'], media=('' if "attached_file" not in doc else ('(<i>' + doc["attached_media"] + '</i>)')))
                 count += 1
                 break
             if count >= limit:
                 break
-        await response.edit(out + "\n\n<code> → DONE</code>", parse_mode='html')
+        await response.edit(out, parse_mode='html')
     except Exception as e:
         traceback.print_exc()
         await response.edit(out + "\n\n<code>[!] → </code> " + str(e), parse_mode='html')
