@@ -55,8 +55,9 @@ async def update(client, message):
         await message.edit(msg) 
 
 HELP.add_help("where", "get info about chat",
-                "Get the complete information about current chat and attach as json",
-                args="[<target>]", public=True)
+                "Get complete information about a chat and send it as json. If no chat name " +
+                "or id is specified, current chat will be used. Add `-no` at the end if you just want the " +
+                "id : no file will be attached.", args="[<target>] [-no]", public=True)
 @alemiBot.on_message(is_allowed & filters.command("where", list(alemiBot.prefixes)))
 async def where_cmd(client, message):
     try:
@@ -70,17 +71,19 @@ async def where_cmd(client, message):
         logger.info(f"Getting info of chat")
         if is_me(message):
             await message.edit(message.text.markdown + f"\n` → ` Getting data of chat `{tgt.id}`")
-        out = io.BytesIO((str(tgt)).encode('utf-8'))
-        out.name = f"chat-{message.chat.id}.json"
-        await client.send_document(message.chat.id, out)
+        if len(message.command) < 3 or message.command[2] != "-no":
+            out = io.BytesIO((str(tgt)).encode('utf-8'))
+            out.name = f"chat-{message.chat.id}.json"
+            await client.send_document(message.chat.id, out)
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message,"`[!] → ` " + str(e))
     await client.set_offline()
 
 HELP.add_help("who", "get info about user",
-                "Get the complete information about an user (replied to or "+
-                "id given) and attach as json", public=True, args="[<target>]")
+                "Get complete information about user and attach as json. If replying to a message, author will be used. " +
+                "An id or @ can be specified. If neither is applicable, self will be used. Append `-no` if you just want the id.",
+                public=True, args="[<target>] [-no]")
 @alemiBot.on_message(is_allowed & filters.command("who", list(alemiBot.prefixes)))
 async def who_cmd(client, message):
     try:
@@ -99,18 +102,20 @@ async def who_cmd(client, message):
         logger.info("Getting info of user")
         if is_me(message):
             await message.edit(message.text.markdown + f"\n` → ` Getting data of user `{peer.id}`")
-        out = io.BytesIO((str(peer)).encode('utf-8'))
-        out.name = f"user-{peer.id}.json"
-        await client.send_document(message.chat.id, out)
+        if len(message.command) < 3 or message.command[2] != "-no":
+            out = io.BytesIO((str(peer)).encode('utf-8'))
+            out.name = f"user-{peer.id}.json"
+            await client.send_document(message.chat.id, out)
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()
 
 HELP.add_help("what", "get info about message",
-                "Get the complete information about a message (replied to, from specified id or "+
-                "the sent message) and attach as json. If no chat is specified, " +
-                "message will be searched in current chat", args="[<target> [<chat>]]", public=True)
+                "Get complete information about a message and attach as json. If replying, replied message will be used. "+
+                "id and chat can be passed as arguments. If no chat is specified, " +
+                "message will be searched in current chat. Append `-no` if you just want the id.",
+                args="[<target> [<chat>]] [-no]", public=True)
 @alemiBot.on_message(is_allowed & filters.command("what", list(alemiBot.prefixes)))
 async def what_cmd(client, message):
     msg = message
@@ -125,9 +130,10 @@ async def what_cmd(client, message):
         logger.info("Getting info of msg")
         if is_me(message):
             await message.edit(message.text.markdown + f"\n` → ` Getting data of msg `{msg.message_id}`")
-        out = io.BytesIO((str(msg)).encode('utf-8'))
-        out.name = f"msg-{msg.message_id}.json"
-        await client.send_document(message.chat.id, out)
+        if message.command[len(message.command)-1] != "-no":
+            out = io.BytesIO((str(msg)).encode('utf-8'))
+            out.name = f"msg-{msg.message_id}.json"
+            await client.send_document(message.chat.id, out)
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message,"`[!] → ` " + str(e))
