@@ -236,7 +236,7 @@ async def lookup_deleted_messages(client, message, chat_id, limit, local_search=
                 else:
                     out += LINE.format(m_id=doc["message_id"], user=get_username_dict(doc["from_user"]),
                                     where='' if local_search else (' ' + get_channel_dict(doc["chat"]) + ' →'),
-                                    text=get_text_dict(doc)['raw'], media=('' if "attached_file" not in doc else ('(<i>' + doc["attached_media"] + '</i>)')))
+                                    text=get_text_dict(doc)['raw'], media=('' if "attached_file" not in doc else ('(<i>' + doc["attached_file"] + '</i>)')))
                 count += 1
                 break
             if count >= limit:
