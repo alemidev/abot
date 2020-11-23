@@ -225,7 +225,7 @@ async def deleted_cmd(client, message): # This is a mess omg
 
     try:
         if is_me(message):
-            await message.edit(message.text.raw + f"\n` → ` Peeking {limit} message{'s' if limit > 1 else ''}")
+            await message.edit(message.text + f"\n` → ` Peeking {limit} message{'s' if limit > 1 else ''}")
         await client.send_chat_action(message.chat.id, "upload_document")
         cursor = EVENTS.find({ "_": "Delete" }).sort("_id", -1)
         lgr.debug("Querying db for deletions")
