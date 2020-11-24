@@ -100,12 +100,12 @@ async def evalit(client, message):
             await message.edit(f"```>>> {args}\n → Output too long, sending as file```")
             out = io.BytesIO((f">>> {args}\n" + result).encode('utf-8'))
             out.name = "output.txt"
-            await client.send_document(message.chat.id, out)
+            await client.send_document(message.chat.id, out, parse_mode="markdown")
         else:
-            await message.edit(tokenize_lines(f">>> {args}\n" + result))
+            await message.edit(tokenize_lines(f">>> {args}\n" + result), parse_mode="markdown")
     except Exception as e:
         traceback.print_exc()
-        await message.edit(f"`>>> {args}`\n`[!] → ` " + str(e))
+        await message.edit(f"`>>> {args}`\n`[!] → ` " + str(e), parse_mode='markdown')
 
 async def aexec(code, client, message): # client and message are passed so they are in scope
     global GLOBALS
@@ -139,9 +139,9 @@ async def execit(client, message):
             await message.edit(f"```>>> {fancy_args}\n → Output too long, sending as file```")
             out = io.BytesIO((f">>> {fancy_args}\n" + result).encode('utf-8'))
             out.name = "output.txt"
-            await client.send_document(message.chat.id, out)
+            await client.send_document(message.chat.id, out, parse_mode='markdown')
         else:
-            await message.edit(tokenize_lines(f">>> {fancy_args}\n\n" + result))
+            await message.edit(tokenize_lines(f">>> {fancy_args}\n\n" + result), parse_mode='markdown')
     except Exception as e:
         traceback.print_exc()
-        await message.edit(f"`>>> {args}`\n`[!] → ` " + str(e))
+        await message.edit(f"`>>> {args}`\n`[!] → ` " + str(e), parse_mode='markdown')
