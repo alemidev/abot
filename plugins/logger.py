@@ -208,12 +208,12 @@ async def hist_cmd(client, message):
 
 
 async def lookup_deleted_messages(client, message, target_group, limit, show_time=False):
-    response = await edit_or_reply(message, f"<code> → Peeking {limit} message{'s' if limit > 1 else ''} " +
-                                            ('in ' + target_group.title if target_group is not None else '') + "</code>", parse_mode='html')
+    response = await edit_or_reply(message, f"` → Peeking {limit} message{'s' if limit > 1 else ''} " +
+                                            ('in ' + target_group.title if target_group is not None else '') + "`")
     chat_id = target_group.id if target_group is not None else None
     out = response.text.html + "\n\n"
     count = 0
-    LINE = "<code>[{m_id}]</code> <b>{user}</b> <code>→ {where}</code> {text} {media}\n"
+    LINE = "`[{m_id}]` **{user}** `→ {where}` {text} {media}\n"
     try:
         lgr.debug("Querying db for deletions")
         await client.send_chat_action(message.chat.id, "upload_document")
@@ -233,24 +233,28 @@ async def lookup_deleted_messages(client, message, target_group, limit, show_tim
                     break # we don't care about bot messages!
                 if limit == 1 and "attached_file" in doc:
                     await client.send_document(message.chat.id, "data/scraped_media/"+doc["attached_file"], reply_to_message_id=message.message_id,
-                                        caption="<b>" + (get_username_dict(doc['from_user']) if "from_user" in doc else "UNKNOWN") + "</b> <code>→" +
+                                        caption="**" + (get_username_dict(doc['from_user']) if "from_user" in doc else "UNKNOWN") + "** `→" +
                                                 (' ' + get_channel_dict(doc['chat']) + ' →' if chat_id is None else '') +
-                                                f"</code> {get_text_dict(doc)['raw']}", parse_mode="html")
+                                                f"` {get_text_dict(doc)['raw']}")
                 else:
                     out += LINE.format(m_id=doc["message_id"], user=get_username_dict(doc["from_user"]),
                                     where='' if chat_id is not None else (' ' + get_channel_dict(doc["chat"]) + ' →'),
-                                    text=get_text_dict(doc)['raw'], media=('' if "attached_file" not in doc else ('(<u>' + doc["attached_file"] + '</u>)')))
+                                    text=get_text_dict(doc)['raw'], media=('' if "attached_file" not in doc else ('(--' + doc["attached_file"] + '--)')))
                 count += 1
                 break
             if count >= limit:
                 break
         if count > 0:
-            await response.edit(out, parse_mode='html')
+            if len(out) > 4096:
+                for m in batchify(out, 4090):
+                    await response.reply(m)
+            else:
+                await response.edit(out)
         else:
-            await response.edit(out + "<b>N/A</b>", parse_mode='html')
+            await response.edit(out + "**N/A**")
     except Exception as e:
         traceback.print_exc()
-        await response.edit(out + "\n\n<code>[!] → </code> " + str(e), parse_mode='html')
+        await response.edit(out + "\n\n`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline() 
 
