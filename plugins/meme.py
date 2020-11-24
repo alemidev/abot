@@ -13,7 +13,7 @@ from bot import alemiBot
 
 from util import batchify
 from util.permission import is_allowed
-from util.message import edit_or_reply, get_text
+from util.message import edit_or_reply, get_text, is_me
 from plugins.help import HelpCategory
 
 import logging
@@ -22,17 +22,17 @@ logger = logging.getLogger(__name__)
 HELP = HelpCategory("MEME")
 
 # TODO make this an util and maybe pass **kwargs
-async def send_media_appropriately(client, message, fname, extra_text=""):
+async def send_media_appropriately(client, message, fname, reply_to, extra_text=""):
     if fname.endswith((".jpg", ".jpeg", ".png")):
-        await client.send_photo(message.chat.id, "data/memes/"+fname, reply_to_message_id=message.message_id,
+        await client.send_photo(message.chat.id, "data/memes/"+fname, reply_to_message_id=reply_to,
                                 caption=f'` → {extra_text}` **{fname}**')
     elif fname.endswith((".gif", ".mp4", ".webm")):
-        await client.send_video(message.chat.id, "data/memes/"+fname, reply_to_message_id=message.message_id,
+        await client.send_video(message.chat.id, "data/memes/"+fname, reply_to_message_id=reply_to,
                                 caption=f'` → {extra_text}` **{fname}**')
     elif fname.endswith((".webp", ".tgs")):
-        await client.send_sticker(message.chat.id, "data/memes/"+fname, reply_to_message_id=message.message_id)
+        await client.send_sticker(message.chat.id, "data/memes/"+fname, reply_to_message_id=reply_to)
     else:
-        await client.send_document(message.chat.id, "data/memes/"+fname, reply_to_message_id=message.message_id,
+        await client.send_document(message.chat.id, "data/memes/"+fname, reply_to_message_id=reply_to,
                                         caption=f'` → {extra_text}` **{fname}**')
     
 
@@ -46,6 +46,9 @@ async def getmeme(client, message):
     try:
         await client.send_chat_action(message.chat.id, "upload_photo")
         args = message.matches[0]
+        reply_to = message.chat.id
+        if is_me(message) and message.reply_to_message is not None:
+            reply_to = message.reply_to_message.message_id
         if args["list"] == "-list":
             logger.info("Getting meme list")
             memes = os.listdir("data/memes")
@@ -60,13 +63,13 @@ async def getmeme(client, message):
             if len(memes) > 0:
                 fname = memes[0]
                 logger.info(f"Getting specific meme : \"{fname}\"")
-                await send_media_appropriately(client, message, fname)
+                await send_media_appropriately(client, message, fname, reply_to)
             else:
                 await edit_or_reply(message, f"`[!] → ` no meme named {args['name']}")
         else: 
             fname = secrets.choice(os.listdir("data/memes"))
             logger.info(f"Getting random meme : \"{fname}\"")
-            await send_media_appropriately(client, message, fname, extra_text="Random meme : ")
+            await send_media_appropriately(client, message, fname, reply_to, extra_text="Random meme : ")
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
