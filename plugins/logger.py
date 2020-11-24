@@ -209,7 +209,7 @@ async def hist_cmd(client, message):
 
 async def lookup_deleted_messages(client, message, target_group, limit, show_time=False):
     response = await edit_or_reply(message, f"` → Peeking {limit} message{'s' if limit > 1 else ''} " +
-                                            ('in ' + target_group.title if target_group is not None else '') + "`")
+                                            ('in ' + get_channel(target_group) if target_group is not None else '') + "`")
     chat_id = target_group.id if target_group is not None else None
     out = "\n\n"
     count = 0
