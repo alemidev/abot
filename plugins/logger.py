@@ -211,7 +211,7 @@ async def lookup_deleted_messages(client, message, target_group, limit, show_tim
     response = await edit_or_reply(message, f"` → Peeking {limit} message{'s' if limit > 1 else ''} " +
                                             ('in ' + target_group.title if target_group is not None else '') + "`")
     chat_id = target_group.id if target_group is not None else None
-    out = response.text.html + "\n\n"
+    out = "\n\n"
     count = 0
     LINE = "`[{m_id}]` **{user}** `→ {where}` {text} {media}\n"
     try:
@@ -249,12 +249,12 @@ async def lookup_deleted_messages(client, message, target_group, limit, show_tim
                 for m in batchify(out, 4090):
                     await response.reply(m)
             else:
-                await response.edit(out)
+                await response.edit(response.text.markdown + out)
         else:
-            await response.edit(out + "**N/A**")
+            await response.edit(response.text.markdown + "**N/A**")
     except Exception as e:
         traceback.print_exc()
-        await response.edit(out + "\n\n`[!] → ` " + str(e))
+        await response.edit(response.text.markdown + out + "\n\n`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline() 
 
