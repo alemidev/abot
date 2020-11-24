@@ -191,11 +191,10 @@ async def deepfry(client, message):
 #   This comes from https://github.com/anuragrana/Python-Scripts/blob/master/image_to_ascii.py
 #
 
-def ascii_image(img:Image) -> str:
+def ascii_image(img:Image, new_width:int=120) -> str:
     # resize the image
     width, height = img.size
     aspect_ratio = height/width
-    new_width = 120
     new_height = aspect_ratio * new_width * 0.55
     img = img.resize((new_width, int(new_height)))
     img = img.convert('L')
@@ -215,23 +214,31 @@ def ascii_image(img:Image) -> str:
 
 HELP.add_help("ascii", "make ascii art of picture",
                 "roughly convert a picture into ascii art. Code comes from `https://github.com/anuragrana/Python-Scripts/blob/master/image_to_ascii.py`. " +
-                "Result will be attached as `.txt`.", public=True)
+                "You can specify a width for the resulting image in characters (default is 120). If the requested width is lower than 50 characters, " +
+                "the result will be printed directly into telegram. Else, a txt will be attached.", args="[<width>]", public=True)
 @alemiBot.on_message(is_allowed & filters.command("ascii", list(alemiBot.prefixes)))
 async def ascii_cmd(client, message):
     msg = message
     if message.reply_to_message is not None:
         msg = message.reply_to_message
+    width = 120
+    if len(message.command) > 1:
+        width = int(message.command[1])
     if msg.media:
         logger.info(f"Making ascii of img")
         try:
             fpath = await client.download_media(msg, file_name="toascii")
             image = Image.open(fpath)
-            
-            out = io.BytesIO(ascii_image(image).encode('utf-8'))
-            out.name = "ascii.txt"
 
-            await client.send_document(message.chat.id, out, reply_to_message_id=message.message_id,
-                                        caption=f"` → Made ASCII art `")
+            ascii_result = ascii_image(image, new_width=width)
+
+            if width <= 50:
+                await edit_or_reply(message, "``` →\n" + ascii_result + "```")
+            else:
+                out = io.BytesIO(ascii_result.encode('utf-8'))
+                out.name = "ascii.txt"
+                await client.send_document(message.chat.id, out, reply_to_message_id=message.message_id,
+                                            caption=f"` → Made ASCII art `")
         except Exception as e:
             traceback.print_exc()
             await event.message.edit(event.raw_text + "\n`[!] → ` " + str(e))
