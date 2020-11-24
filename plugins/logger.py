@@ -207,8 +207,10 @@ async def hist_cmd(client, message):
     await client.set_offline()
 
 
-async def lookup_deleted_messages(client, message, chat_id, limit, show_time=False):
-    response = await edit_or_reply(message, f"<code> → Peeking {limit} message{'s' if limit > 1 else ''}</code>", parse_mode='html')
+async def lookup_deleted_messages(client, message, target_group, limit, show_time=False):
+    response = await edit_or_reply(message, f"<code> → Peeking {limit} message{'s' if limit > 1 else ''} " +
+                                            ('in ' + target_group.title if target_group is not None else '') + "</code>", parse_mode='html')
+    chat_id = target_group.id
     out = response.text.html + "\n\n"
     count = 0
     LINE = "<code>[{m_id}]</code> <b>{user}</b> <code>→ {where}</code> {text} {media}\n"
@@ -237,7 +239,7 @@ async def lookup_deleted_messages(client, message, chat_id, limit, show_time=Fal
                 else:
                     out += LINE.format(m_id=doc["message_id"], user=get_username_dict(doc["from_user"]),
                                     where='' if chat_id is not None else (' ' + get_channel_dict(doc["chat"]) + ' →'),
-                                    text=get_text_dict(doc)['raw'], media=('' if "attached_file" not in doc else ('(<i>' + doc["attached_file"] + '</i>)')))
+                                    text=get_text_dict(doc)['raw'], media=('' if "attached_file" not in doc else ('(<u>' + doc["attached_file"] + '</u>)')))
                 count += 1
                 break
             if count >= limit:
@@ -264,12 +266,12 @@ HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
 async def deleted_cmd(client, message): # This is a mess omg
     args = message.matches[0]
     show_time = args["time"] == "-t"
-    target_group = message.chat.id
+    target_group = message.chat
     if is_me(message) and args["global"].startswith("-g"):
         if args["global"] == "-g":
             target_group = None
         else:
-            target_group = (await client.get_chat(int(args["global"].replace("-g ", "")))).id
+            target_group = await client.get_chat(int(args["global"].replace("-g ", "")))
     limit = 1
     if args["number"] != "":
         limit = int(args["number"])
