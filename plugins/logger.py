@@ -237,7 +237,7 @@ async def lookup_deleted_messages(client, message, target_group, limit, show_tim
                                                 (' ' + get_channel_dict(doc['chat']) + ' →' if chat_id is None else '') +
                                                 f"` {get_text_dict(doc)['raw']}")
                 else:
-                    out += LINE.format(m_id=doc["message_id"], user=get_username_dict(doc["from_user"]),
+                    out += LINE.format(m_id=doc["message_id"], user=(get_username_dict(doc["from_user"]) if "from_user" in doc else "UNKNOWN"),
                                     where='' if chat_id is not None else (' ' + get_channel_dict(doc["chat"]) + ' →'),
                                     text=get_text_dict(doc)['raw'], media=('' if "attached_file" not in doc else ('(--' + doc["attached_file"] + '--)')))
                 count += 1
@@ -254,7 +254,7 @@ async def lookup_deleted_messages(client, message, target_group, limit, show_tim
             await response.edit(response.text.markdown + "**N/A**")
     except Exception as e:
         traceback.print_exc()
-        await response.edit(response.text.markdown + out + "\n\n`[!] → ` " + str(e))
+        await response.edit(response.text.markdown + "\n`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline() 
 
