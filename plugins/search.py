@@ -129,7 +129,7 @@ async def wiki(client, message):
         return await edit_or_reply(message, "`[!] → ` No query given")
     try:
         await client.send_chat_action(message.chat.id, "upload_document")
-        arg = message.command[1]
+        arg = " ".join(message.command[1:])
         logger.info(f"Searching \"{arg}\" on wikipedia")
         page = wikipedia.page(arg)
         out = f"` → {page.title}`\n"
