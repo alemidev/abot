@@ -158,7 +158,7 @@ async def lmgtfy(client, message):
     if len(message.command) < 2:
         return await edit_or_reply(message, "`[!] → ` No query given")
     try:
-        arg = message.command[1].replace(" ", "+") # fuck it probably is already split at spaces, TODO
+        arg = "+".join(message.command[1:])
         logger.info(f"lmgtfy {arg}")
         await edit_or_reply(message, f"` → ` http://letmegooglethat.com/?q={arg}")
     except Exception as e:
