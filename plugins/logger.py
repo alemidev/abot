@@ -233,7 +233,7 @@ async def lookup_deleted_messages(client, message, target_group, limit, show_tim
                     break # we don't care about bot messages!
                 if limit == 1 and "attached_file" in doc:
                     await client.send_document(message.chat.id, "data/scraped_media/"+doc["attached_file"], reply_to_message_id=message.message_id,
-                                        caption=f"<b>{get_username_dict(doc['from_user'])}</b> <code>→" +
+                                        caption="<b>" + (get_username_dict(doc['from_user']) if "from_user" in doc else "UNKNOWN") + "</b> <code>→" +
                                                 (' ' + get_channel_dict(doc['chat']) + ' →' if chat_id is None else '') +
                                                 f"</code> {get_text_dict(doc)['raw']}", parse_mode="html")
                 else:
