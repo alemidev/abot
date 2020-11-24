@@ -46,7 +46,7 @@ async def getmeme(client, message):
     try:
         await client.send_chat_action(message.chat.id, "upload_photo")
         args = message.matches[0]
-        reply_to = message.chat.id
+        reply_to = message.message_id
         if is_me(message) and message.reply_to_message is not None:
             reply_to = message.reply_to_message.message_id
         if args["list"] == "-list":
