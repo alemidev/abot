@@ -145,7 +145,7 @@ async def rand_cmd(client, message):
             if times > 1:
                 out += "` → Binary " + "".join(str(x) for x in res) + "`\n"
                 res = [] # so it won't do the thing below
-        if times < 10:
+        if times <= 20:
             for r in res:
                 out += f"` → ` **{r}**\n"
         else:
