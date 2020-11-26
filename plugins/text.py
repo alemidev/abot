@@ -10,7 +10,7 @@ from pyrogram import filters
 from util import batchify
 from util.parse import cleartermcolor
 from util.permission import is_allowed
-from util.message import edit_or_reply
+from util.message import edit_or_reply, is_me
 
 from bot import alemiBot
 
@@ -24,6 +24,8 @@ logger = logging.getLogger(__name__)
 HELP = HelpCategory("TEXT")
 
 FIGLET_FONTS = pyfiglet.FigletFont.getFonts()
+FIGLET_FONTS.sort()
+
 
 HELP.add_help(["slow", "sl"], "make text appear slowly",
                 "edit message adding batch of characters every time. If no batch size is " +
@@ -59,8 +61,9 @@ async def slowtype(client, message):
     await client.send_chat_action(message.chat.id, "cancel")
 
 HELP.add_help(["rc", "randomcase"], "make text randomly capitalized",
-                "will edit message applying random capitalization to every letter, like the spongebob meme.")
-@alemiBot.on_message(filters.me & filters.command(["rc", "randomcase"], list(alemiBot.prefixes)), group=2)
+                "will edit message applying random capitalization to every letter, like the spongebob meme.",
+                args="<text>", public=True)
+@alemiBot.on_message(is_allowed & filters.command(["rc", "randomcase"], list(alemiBot.prefixes)), group=2)
 async def randomcase(client, message):
     logger.info(f"Making message randomly capitalized")
     text = re.sub("[\.\/](?:rc|randomcase)(?: |)", "", message.text.markdown)
@@ -85,11 +88,15 @@ async def randomcase(client, message):
             else:
                 msg += c.upper()
                 upper = True
-    await message.edit(msg)
+    if is_me(message):
+        await message.edit(msg)
+    else:
+        await message.reply(msg)
+    await client.set_offline()
 
-HELP.add_help("shrug", "¯\_(ツ)_/¯", "will replace `.shrug` or `/shrug` or `!shrug` anywhere "+
+HELP.add_help("shrug", "¯\_(ツ)_/¯", "will replace `.shrug` anywhere "+
                 "in yor message with the composite emoji. (this will ignore your custom prefixes)")
-@alemiBot.on_message(filters.me & filters.regex(pattern="[" + "\\".join(list(alemiBot.prefixes)) + "]shrug"), group=2)
+@alemiBot.on_message(filters.me & filters.regex(pattern="[\\" + "\\".join(list(alemiBot.prefixes)) + "]shrug"), group=2)
 async def shrug(client, message):
     logger.info(f" ¯\_(ツ)_/¯ ")
     await message.edit(re.sub(r"[\.\/\!]shrug","¯\_(ツ)_/¯", message.text.markdown))
@@ -112,10 +119,10 @@ HELP.add_help("figlet", "make a figlet art",
 async def figlettext(client, message):
     args = message.matches[0]
     if args["list"] == "-l":
-        msg = f"` → ` **Figlet fonts : ({len(FIGLET_FONTS)})\n```[ "
+        msg = f"<code> → </code> <u>Figlet fonts</u> : <b>{len(FIGLET_FONTS)}</b>\n[ "
         msg += " ".join(FIGLET_FONTS)
-        msg += " ]```"
-        return await edit_or_reply(message, msg)
+        msg += " ]"
+        return await edit_or_reply(message, msg, parse_mode='html')
     width = 30
     if args["width"].startswith("-w "):
         width = int(args["width"].replace("-w ", ""))
