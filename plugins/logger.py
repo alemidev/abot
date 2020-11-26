@@ -222,7 +222,7 @@ async def lookup_deleted_messages(client, message, target_group, limit, show_tim
             if chat_id is not None and "chat" in deletion \
             and deletion["chat"]["id"] != chat_id:
                 continue # don't make a 2nd query, should speed up a ton
-            candidates = EVENTS.find({"_": "Message", "message_id": deletion["message_id"]}).sort("_id", -1).limit(50)
+            candidates = EVENTS.find({"_": "Message", "message_id": deletion["message_id"]}).sort("_id", -1)
             lgr.debug("Querying db for possible deleted msg")
             for doc in candidates: # dank 'for': i only need one
                 if chat_id is not None and doc["chat"]["id"] != chat_id:
