@@ -112,7 +112,8 @@ async def replace_arrows(client, message):
 
 HELP.add_help("figlet", "make a figlet art",
                 "run figlet and make a text art. You can specify a font (`-f`), or request a random one (`-r`). " +
-                "Get list of available fonts with `-list`.", args="[-l] [-r | -f <font>] [-w <n>]", public=True)
+                "Get list of available fonts with `-list`. You can specify max figlet width (`-w`), default is 30.",
+                args="[-l] [-r | -f <font>] [-w <n>]", public=True)
 @alemiBot.on_message(is_allowed & filters.regex(pattern=
     r"^[\.\/]figlet(?: |)(?:(?P<list>-l)|(?P<font>-f [^ ]+)|(?P<random>-r)|)(?: |)(?P<width>-w [0-9]+|)(?: |)(?P<text>.*)"
 ))
