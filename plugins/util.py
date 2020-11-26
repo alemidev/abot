@@ -149,7 +149,7 @@ async def rand_cmd(client, message):
             for r in res:
                 out += f"` → ` **{r}**\n"
         else:
-            out += f"` → ` [ " + " ".join(res) + "]"
+            out += f"` → ` [ " + " ".join(str(r) for r in res) + "]"
         await edit_or_reply(message, out)
     except Exception as e:
         traceback.print_exc()
