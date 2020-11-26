@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 import subprocess
 import time
 import logging
@@ -38,6 +39,8 @@ async def update(client, message):
     msg = message.text.markdown
     try:
         logger.info(f"Updating bot ...")
+        uptime = str(datetime.now() - client.start_time)
+        msg += f"\n`→ ` --online for-- `{uptime}`"
         msg += "\n` → ` Updating"
         await message.edit(msg) 
         result = subprocess.run(["git", "pull"], capture_output=True, timeout=60)
