@@ -66,33 +66,41 @@ async def bully(client, message):
         await client.set_offline()
 
 HELP.add_help(["spam", "flood"], "pretty self explainatory",
-            "will send many messages in this chat at a specific interval. " +
-            "If no number is given, will default to 5. If no interval is specified, " +
+            "will send many (`-n`) messages in this chat at a specific (`-t`) interval. " +
+            "If no number is given, will default to 3. If no interval is specified, " +
             "messages will be sent as soon as possible. You can reply to a message and " +
-            "all spammed msgs will reply to that one too",
-            args="[-n <n>] [-t <t>] <text>")
+            "all spammed msgs will reply to that one too. If you add `-delme`, messages will be " +
+            "immediately deleted.", args="[-n <n>] [-t <t>] <text>")
 @alemiBot.on_message(filters.me & filters.command("spam", list(alemiBot.prefixes)) & filters.regex(
         pattern=r"^.spam(?: |)(?P<number>(?:-n |)[0-9]+|)(?: |)(?P<time>-t [0-9.]+|)(?P<text>.*)", flags=re.DOTALL
 ))
 async def spam(client, message):
     args = message.matches[0]
+    wait = 0
+    number = 3
+    text = "."
+    delme = False
     try:
-        if args["text"] == "":
-            return
-        wait = 0
-        if args["time"] is not None and args["time"] != "":
+        delme = args["text"].endswith("-delme")
+        if args["text"] != "":
+            text = args["text"].replace("-delme", "") # in case
+        if args["time"] != "":
             wait = float(args["time"].replace("-t ", ""))
-        number = 5
-        if args["number"] is not None and args["number"] != "":
+        if args["number"] != "":
             number = int(args["number"].replace("-n ", "")) 
-        logger.info(f"Spamming \"{args['text']}\" for {number} times")
+        logger.info(f"Spamming \"{text}\" for {number} times")
         if message.reply_to_message is not None:
             for i in range(number):
-                await message.reply_to_message.reply(args['text'])
+                msg = await message.reply_to_message.reply(text)
+                if delme:
+                    await msg.delete()
                 await asyncio.sleep(wait) 
         else:
             for i in range(number):
-                await client.send_message(message.chat.id, args['text'])
+                msg = await client.send_message(message.chat.id, text)
+                if delme:
+                    await msg.delete()
                 await asyncio.sleep(wait) 
     except Exception as e:
         await message.edit(message.text.markdown + "`[!] → ` " + str(e))
+

@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 import subprocess
 import time
 import logging
@@ -38,12 +39,17 @@ async def update(client, message):
     msg = message.text.markdown
     try:
         logger.info(f"Updating bot ...")
-        msg += "\n` → ` Updating"
+        uptime = str(datetime.now() - client.start_time)
+        msg += f"\n`→ ` --runtime-- `{uptime}`"
+        await message.edit(msg) 
+        msg += "\n` → ` Fetching code"
         await message.edit(msg) 
         result = subprocess.run(["git", "pull"], capture_output=True, timeout=60)
+        msg += " [OK]\n` → ` Checking libraries"
+        await message.edit(msg) 
         result = subprocess.run(["pip", "install", "-r", "requirements.txt"],
                                                     capture_output=True, timeout=60)
-        msg += " [OK]\n` → ` Restarting"
+        msg += " [OK]\n` → ` Restarting process"
         await message.edit(msg) 
         with open("data/lastmsg.json", "w") as f:
             json.dump({"message_id": message.message_id,
