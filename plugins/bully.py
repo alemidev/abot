@@ -69,10 +69,10 @@ HELP.add_help(["spam", "flood"], "pretty self explainatory",
             "will send many (`-n`) messages in this chat at a specific (`-t`) interval. " +
             "If no number is given, will default to 3. If no interval is specified, " +
             "messages will be sent as soon as possible. You can reply to a message and " +
-            "all spammed msgs will reply to that one too. If you add `-del`, messages will be " +
-            "immediately deleted.", args="[-del] [-n <n>] [-t <t>] <text>")
+            "all spammed msgs will reply to that one too. If you add `-delme`, messages will be " +
+            "immediately deleted.", args="[-n <n>] [-t <t>] <text>")
 @alemiBot.on_message(filters.me & filters.command("spam", list(alemiBot.prefixes)) & filters.regex(
-        pattern=r"^.spam(?: |)(?P<del>-del|)(?: |)(?P<number>(?:-n |)[0-9]+|)(?: |)(?P<time>-t [0-9.]+|)(?P<text>.*)", flags=re.DOTALL
+        pattern=r"^.spam(?: |)(?P<number>(?:-n |)[0-9]+|)(?: |)(?P<time>-t [0-9.]+|)(?P<text>.*)", flags=re.DOTALL
 ))
 async def spam(client, message):
     args = message.matches[0]
@@ -81,9 +81,9 @@ async def spam(client, message):
     text = "."
     delme = False
     try:
-        delme = args["del"] == "-del"
+        delme = args["text"].endswith("-delme")
         if args["text"] != "":
-            text = args["text"]
+            text = args["text"].replace("-delme", "") # in case
         if args["time"] != "":
             wait = float(args["time"].replace("-t ", ""))
         if args["number"] != "":

@@ -20,10 +20,10 @@ logger = logging.getLogger(__name__)
 HELP = HelpCategory("MANAGEMENT")
 
 HELP.add_help("delme", "immediately delete message",
-                "add `-delme`, `-delete` or `-del` at the end of a message to have it deleted after a time. " +
+                "add `-delme` at the end of a message to have it deleted after a time. " +
                 "If no time is given, message will be immediately deleted", args="[<time>]")
 @alemiBot.on_message(filters.me & filters.regex(pattern=
-    r"(?:.*|)(?:-delme|-delete|-d)(?: |)(?P<time>[0-9]+|)$"
+    r"(?:.*|)(?:-delme)(?: |)(?P<time>[0-9]+|)$"
 ), group=5)
 async def deleteme(client, message):
     logger.info("Deleting sent message")
