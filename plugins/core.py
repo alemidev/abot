@@ -41,6 +41,7 @@ async def update(client, message):
         logger.info(f"Updating bot ...")
         uptime = str(datetime.now() - client.start_time)
         msg += f"\n`→ ` --runtime-- `{uptime}`"
+        await message.edit(msg) 
         msg += "\n` → ` Updating"
         await message.edit(msg) 
         result = subprocess.run(["git", "pull"], capture_output=True, timeout=60)
