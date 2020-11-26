@@ -145,8 +145,11 @@ async def rand_cmd(client, message):
             if times > 1:
                 out += "` → Binary " + "".join(str(x) for x in res) + "`\n"
                 res = [] # so it won't do the thing below
-        for r in res:
-            out += f"` → ` **{r}**\n"
+        if times < 10:
+            for r in res:
+                out += f"` → ` **{r}**\n"
+        else:
+            out += f"` → ` [ " + " ".join(res) + "]"
         await edit_or_reply(message, out)
     except Exception as e:
         traceback.print_exc()
