@@ -70,7 +70,7 @@ async def runit(client, message):
             out.name = "output.txt"
             await client.send_document(message.chat.id, out)
         else:
-            await message.edit(tokenize_lines(f"$ {args}\n\n" + output))
+            await message.edit(tokenize_lines(f"$ {args}\n\n" + output, mode='html'), parse_mode='html')
     except Exception as e:
         traceback.print_exc()
         await message.edit(f"`$ {args}`\n`[!] → ` " + str(e))

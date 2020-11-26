@@ -39,8 +39,10 @@ def tokenize_json(text):
         return tokenize_lines(text) # try to tokenize per line at least
     return "`" + res[0] + "`"
 
-def tokenize_lines(text):
-    res =  re.subn(r'(.+)', '`\g<1>`', text)
+def tokenize_lines(text, mode='markdown'):
+    res =  re.subn(r'(.+)', BEFORE+'\g<1>'+AFTER, text)
+    BEFORE = "```" if mode == "markdown" else "<code>"
+    AFTER = "```" if mode == "markdown" else "</code>"
     if res[1] * 2 > 100: # we generate 2 entities for every replace we do (kinda)
-        return "```" + text + "```"
+        return BEFORE + text + AFTER
     return res[0]
