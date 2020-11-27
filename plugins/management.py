@@ -64,7 +64,7 @@ async def purge(client, message):
                 elif tgt in { "@all", "@everyone" }:
                     target = None
                 else:
-                    target = (await get_user(args["target"])).id
+                    target = (await get_user(tgt)).id
                 number = int(args["cmd"][1])
             else:
                 number = int(args["arg"])
