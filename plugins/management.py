@@ -84,7 +84,7 @@ async def purge(client, message):
         n = 0
         async for msg in client.iter_history(message.chat.id):
             if ((target is None or msg.from_user.id == target)
-            and (keyword is None or keyword in msg.text.raw)):
+            and (keyword is None or keyword in msg.text)): # wait WTF why no raw here
                 print(colored("[DELETING] → ", "red", attrs=["bold"]) + split_for_window(get_text(msg), offset=13))
                 await msg.delete()
                 n += 1
