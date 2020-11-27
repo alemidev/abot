@@ -33,7 +33,7 @@ async def deleteme(client, message):
         await asyncio.sleep(float(t))
     await message.delete()
 
-async def get_user(arg):
+async def get_user(arg, client):
     if arg.isnumeric():
         return await client.get_users(int(arg))
     else:
@@ -64,7 +64,7 @@ async def purge(client, message):
                 elif tgt in { "@all", "@everyone" }:
                     target = None
                 else:
-                    target = (await get_user(tgt)).id
+                    target = (await get_user(tgt, client)).id
                 number = int(args["cmd"][1])
             else:
                 number = int(args["arg"])
@@ -78,7 +78,7 @@ async def purge(client, message):
             elif args["target"] in { "@all", "@everyone" }:
                 target = None
             else:
-                target = (await get_user(args["target"])).id
+                target = (await get_user(args["target"], client)).id
 
         logger.info("Purging last {number} message from {args['target']}")
         n = 0
