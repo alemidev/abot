@@ -269,7 +269,7 @@ HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
                 "from bots or system messages will be skipped in peek (use manual " +
                 "queries if you need to log those). Owner can peek globally (`-all`) or in a specific group (`-g <id>`)",
                 public=True, args="[-t] [-g [id]] [<num>]")
-@alemiBot.on_message(is_allowed & filters.command(["peek", "deld", "deleted", "removed"], list(alemiBot.prefixes), options={
+@alemiBot.on_message(is_allowed & newFilterCommand(["peek", "deld", "deleted", "removed"], list(alemiBot.prefixes), options={
     "group" : ["-g"]
 }, flags=["-t", "-all"]))
 async def deleted_cmd(client, message): # This is a mess omg
