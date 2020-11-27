@@ -122,29 +122,33 @@ async def figlettext(client, message):
         "width" : ["-w", "-width"]
     }, flags=["-list", "-r"]).parse(message.command)
 
-    if "-list" in args["flags"]:
-        msg = f"<code> → </code> <u>Figlet fonts</u> : <b>{len(FIGLET_FONTS)}</b>\n[ "
-        msg += " ".join(FIGLET_FONTS)
-        msg += " ]"
-        return await edit_or_reply(message, msg, parse_mode='html')
+    try:
+        if "-list" in args["flags"]:
+            msg = f"<code> → </code> <u>Figlet fonts</u> : <b>{len(FIGLET_FONTS)}</b>\n[ "
+            msg += " ".join(FIGLET_FONTS)
+            msg += " ]"
+            return await edit_or_reply(message, msg, parse_mode='html')
 
-    if "arg" not in args:
-        return # no text to figlet!
-    
-    width = 30
-    if "width" in args:
-        width = int(args["width"])
-    font = "slant"
-    if "-r" in args["flags"]:
-        font = secrets.choice(FIGLET_FONTS)
-    elif "font" in args:
-        f = args["font"]
-        if f != "" and f in FIGLET_FONTS:
-            font = f
-    
-    logger.info(f"figlet-ing {args['arg']}")
-    result = pyfiglet.figlet_format(args["arg"], font=font, width=width)
-    await edit_or_reply(message, "<code> →\n" + result + "</code>", parse_mode="html")
+        if "arg" not in args:
+            return # no text to figlet!
+
+        width = 30
+        if "width" in args:
+            width = int(args["width"])
+        font = "slant"
+        if "-r" in args["flags"]:
+            font = secrets.choice(FIGLET_FONTS)
+        elif "font" in args:
+            f = args["font"]
+            if f != "" and f in FIGLET_FONTS:
+                font = f
+
+        logger.info(f"figlet-ing {args['arg']}")
+        result = pyfiglet.figlet_format(args["arg"], font=font, width=width)
+        await edit_or_reply(message, "<code> →\n" + result + "</code>", parse_mode="html")
+    except Exception as e:
+        traceback.print_exc()
+        await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()
 
 HELP.add_help("fortune", "do you feel fortunate!?",
@@ -157,5 +161,6 @@ async def fortune(client, message):
         output = cleartermcolor(result.stdout.decode())
         await edit_or_reply(message, "``` → " + output + "```")
     except Exception as e:
+        traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()
