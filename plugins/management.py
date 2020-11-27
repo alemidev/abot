@@ -79,9 +79,6 @@ async def purge(client, message):
                 target = None
             else:
                 target = (await get_user(args["target"])).id
-        elif args["cmd"][0].startswith("@"):
-
-
 
         logger.info("Purging last {number} message from {args['target']}")
         n = 0
