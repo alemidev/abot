@@ -24,7 +24,8 @@ class CommandParser:
                     res[o] = cmd.pop(i) # it shifted 1 down
                     break
         if len(cmd) > 0: # not everything was consumed
-            res["arg"] = " ".join(cmd)
+            res["cmd"] = cmd # This is just for jank stuff
+            res["arg"] = " ".join(cmd) # This is handy
         return res
 
 def cleanhtml(raw_html):

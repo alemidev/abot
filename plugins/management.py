@@ -33,6 +33,12 @@ async def deleteme(client, message):
         await asyncio.sleep(float(t))
     await message.delete()
 
+async def get_user(arg):
+    if arg.isnumeric():
+        return await client.get_users(int(arg))
+    else:
+        return await client.get_users(arg)
+
 HELP.add_help(["purge", "wipe", "clear"], "batch delete messages",
                 "delete last <n> sent messages from <target> (`-t`). If <n> is not given, will default to 1. " +
                 "If no target is given, only self messages will be deleted. Target can be `@all` and `@everyone`. " +
@@ -44,24 +50,38 @@ async def purge(client, message):
         "target" : ["-t"],
         "keyword" : ["-k"],
     }).parse(message.command)
-    try:
-        number = 1
-        if "arg" in args:
-            number = int(args["arg"])
 
-        keyword = None
+    target = message.from_user.id
+    number = 1
+    keyword = None
+
+    try:
+        if "arg" in args:
+            if args["arg"].startswith("@"): # this to support older cmd usage
+                tgt = args["cmd"][0]
+                if tgt == "@me":
+                    pass
+                elif tgt in { "@all", "@everyone" }:
+                    target = None
+                else:
+                    target = (await get_user(args["target"])).id
+                number = int(args["cmd"][1])
+            else:
+                number = int(args["arg"])
+
         if "keyword" in args:
             keyword = args["keyword"]
 
-        target = message.from_user.id
-        if "target" in args and args["target"] != "@me":
-            if args["target"] in { "@all", "@everyone" }:
+        if "target" in args:
+            if args["target"] == "@me":
+                pass
+            elif args["target"] in { "@all", "@everyone" }:
                 target = None
             else:
-                if args["target"].isnumeric():
-                    target = (await client.get_users(int(args["target"]))).id
-                else:
-                    target = (await client.get_users(args["target"])).id
+                target = (await get_user(args["target"])).id
+        elif args["cmd"][0].startswith("@"):
+
+
 
         logger.info("Purging last {number} message from {args['target']}")
         n = 0
