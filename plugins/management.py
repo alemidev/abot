@@ -12,6 +12,7 @@ from util.permission import is_allowed, allow, disallow, serialize, list_allowed
 from util.user import get_username
 from util.message import edit_or_reply, get_text
 from util.text import split_for_window
+from util.parse import CommandParser
 from plugins.help import HelpCategory
 
 import logging
@@ -33,37 +34,42 @@ async def deleteme(client, message):
     await message.delete()
 
 HELP.add_help(["purge", "wipe", "clear"], "batch delete messages",
-                "delete last <n> sent messages from <target>. If <n> is not given, will default to 1. " +
-                "If no target is given, only self messages will be deleted. Target can be `@all` and `@everyone`",
-                args="[@<target>] [<number>]", public=False)
-@alemiBot.on_message(filters.me & filters.regex(pattern=
-    r"^[\.\/](?:purge|wipe|clear)(?: |)(?P<target>@[^ ]+|)(?: |)(?P<number>[0-9]+|)"
-))
+                "delete last <n> sent messages from <target> (`-t`). If <n> is not given, will default to 1. " +
+                "If no target is given, only self messages will be deleted. Target can be `@all` and `@everyone`. " +
+                "A keyword can be specified (`-k`) so that only messages containing that keyword will be deleted.",
+                args="[-t <target>] [-k <keyword>] [<number>]", public=False)
+@alemiBot.on_message(filters.me & filters.command(["purge", "wipe", "clear"], list(alemiBot.prefixes)))
 async def purge(client, message):
+    args = CommandParser({
+        "target" : ["-t"],
+        "keyword" : ["-k"],
+    }).parse(message.command)
     try:
-        args = message.matches[0]
         number = 1
-        if args["number"] != "":
-            try:
-                number = int(args["number"])
-            except:
-                pass # default to 1 on fail
+        if "arg" in args:
+            number = int(args["arg"])
+
+        keyword = None
+        if "keyword" in args:
+            keyword = args["keyword"]
 
         target = message.from_user.id
-        if args["target"] != "" and args["target"] != "@me":
-            if args["target"] == "@all" or args["target"] == "@everyone":
+        if "target" in args and args["target"] != "@me":
+            if args["target"] in { "@all", "@everyone" }:
                 target = None
             else:
-                try:
+                if args["target"].isnumeric():
                     target = (await client.get_users(int(args["target"]))).id
-                except ValueError:
+                else:
                     target = (await client.get_users(args["target"])).id
+
         logger.info("Purging last {number} message from {args['target']}")
         n = 0
-        async for message in client.iter_history(message.chat.id):
-            if target is None or message.from_user.id == target:
-                print(colored("[DELETING] → ", "red", attrs=["bold"]) + split_for_window(get_text(message), offset=13))
-                await message.delete()
+        async for msg in client.iter_history(message.chat.id):
+            if ((target is None or msg.from_user.id == target)
+            and (keyword is None or keyword in msg.text.raw)):
+                print(colored("[DELETING] → ", "red", attrs=["bold"]) + split_for_window(get_text(msg), offset=13))
+                await msg.delete()
                 n += 1
             if n >= number:
                 break
