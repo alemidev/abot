@@ -57,15 +57,15 @@ async def getmeme(client, message):
             out += ", ".join(memes)
             out += "]"
             await edit_or_reply(message, out)
-        elif "arg" in args:
+        elif "cmd" in args:
             memes = [ s for s in os.listdir("data/memes")      # I can't decide if this
-                        if s.lower().startswith(args["arg"])] #  is nice or horrible
+                        if s.lower().startswith(args["cmd"][0])] #  is nice or horrible
             if len(memes) > 0:
                 fname = memes[0]
                 logger.info(f"Getting specific meme : \"{fname}\"")
                 await send_media_appropriately(client, message, fname, reply_to)
             else:
-                await edit_or_reply(message, f"`[!] → ` no meme named {args['arg']}")
+                await edit_or_reply(message, f"`[!] → ` no meme named {args['cmd'][0]}")
         else: 
             fname = secrets.choice(os.listdir("data/memes"))
             logger.info(f"Getting random meme : \"{fname}\"")
