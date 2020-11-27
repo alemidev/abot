@@ -102,6 +102,7 @@ HELP.add_help(["stats", "stat"], "get stats",
 async def stats_cmd(client, message):
     lgr.info("Getting stats")
     global LOGGED_COUNT
+    original_text = message.text.markdown
     before = time.time()
     message = await edit_or_reply(message, "` → ` Fetching stats...")
     after = time.time()
@@ -118,8 +119,8 @@ async def stats_cmd(client, message):
 
     medianumber = len(os.listdir("data/scraped_media"))
     uptime = str(datetime.now() - client.start_time)
-    await message.edit(message.text.markdown + f"\n`→ online for {uptime} `" +
-                    f"\n` → ` latency **{latency}**ms" +
+    await message.edit(original_text + f"\n`→ online for {uptime} `" +
+                    f"\n` → ` latency **{latency:.0f}**ms" +
                     f"\n` → ` **{LOGGED_COUNT}** events logged (**{count}** total)" +
                     f"\n` → ` DB size **{order_suffix(size)}**" +
                     f"\n` → ` **{memenumber}** memes collected" +
