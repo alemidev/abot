@@ -20,7 +20,7 @@ from pyrogram.errors.exceptions.flood_420 import FloodWait
 from bot import alemiBot
 
 from util import batchify
-from util.parse import cleartermcolor
+from util.parse import CommandParser, cleartermcolor
 from util.text import split_for_window
 from util.permission import is_allowed
 from util.message import tokenize_json, edit_or_reply, get_text, get_text_dict, is_me
@@ -126,23 +126,24 @@ async def stats_cmd(client, message):
 HELP.add_help(["query", "q", "log"], "interact with db",
                 "make queries to the underlying database (MongoDB) to request documents. " +
                 "Filters, limits and fields can be configured with arguments.", args="[-l <n>] [-f <{filter}>] <{query}>")
-@alemiBot.on_message(filters.me & filters.command(["query", "q", "log"], prefixes=".") & filters.regex(pattern=
-    r"^.(?:log|query|q)(?: |)(?P<limit>-l [0-9]+|)(?: |)(?P<filter>-f [^ ]+|)(?: |)(?P<query>[^ ]+|)"
-))
+@alemiBot.on_message(filters.me & filters.command(["query", "q", "log"], list(alemiBot.prefixes)))
 async def query_cmd(client, message):
-    args = message.matches[0]
+    args = CommandParser({
+        "limit" : ["-l", "-limit"],
+        "filter" : ["-f", "-filter"],
+    }).parse(message.command)
+
     try:
-        await client.send_chat_action(message.chat.id, "upload_document")
-        if args["query"] != "":
+        if "arg" in args:
             buf = []
-            q = json.loads(args["query"])
+            q = json.loads(args["arg"])
             cursor = None
             lim = 10
-            if args["limit"] != "":
-                lim = int(args["limit"].replace("-l ", ""))
-            lgr.info("Querying db : {args['query']}")
+            if "limit" in args:
+                lim = int(args["limit"])
+            lgr.info("Querying db : {args['arg']}")
 
-            if args["filter"] != "":
+            if "filter" in args:
                 filt = json.loads(args["filter"].replace("-f ", ""))
                 cursor = EVENTS.find(q, filt).sort("_id", -1).limit(lim)
             else:
@@ -162,27 +163,27 @@ async def query_cmd(client, message):
     except Exception as e:
         traceback.print_exc()
         await message.edit(message.text.markdown + "\n`[!] → ` " + str(e))
-    await client.send_chat_action(message.chat.id, "cancel")
 
 HELP.add_help(["hist", "history"], "get edit history of a message",
                 "request edit history of a message. You can specify an id or reply to a message.",
                 public=True, args="[-t] [-g <g>] [<id>]")
-@alemiBot.on_message(is_allowed & filters.command(["history", "hist"], prefixes=".") & filters.regex(
-    pattern=r"^.hist(?:ory|)(?: |)(?P<time>-t|)(?: |)(?P<group>-g [0-9]+|)(?: |)(?P<id>[0-9]+|)"
-))
+@alemiBot.on_message(is_allowed & filters.command(["history", "hist"], list(alemiBot.prefixes)))
 async def hist_cmd(client, message):
+    args = CommandParser({
+        "group" : ["-g"],
+    }, flags=["-t"]).parse(message.command)
+
     m_id = None
     c_id = message.chat.id
-    args = message.matches[0]
-    show_time = args["time"] == "-t"
+    show_time = "-t" in args["flags"]
     if message.reply_to_message is not None:
         m_id = message.reply_to_message.message_id
-    elif args["id"] != "":
-        m_id = int(args["id"])
+    elif "arg" in args:
+        m_id = int(args["arg"])
     if m_id is None:
         return
-    if args["group"].startswith("-g "):
-        c_id = int(args["group"].replace("-g ", ""))
+    if "group" in args:
+        c_id = int(args["group"])
     try:
         await client.send_chat_action(message.chat.id, "upload_document")
         cursor = EVENTS.find( {"_": "Message", "message_id": m_id, "chat.id": c_id},
@@ -262,23 +263,24 @@ HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
                 "request last deleted messages in this channel. Use `-t` to add timestamps. A number of " +
                 "messages to peek can be specified. just message data. Messages " +
                 "from bots or system messages will be skipped in peek (use manual " +
-                "queries if you need to log those). Owner can peek globally (`-g`) or in a specific group (`-g <id>`)",
-                public=True, args="[-t] [<num>] [-g [id]]")
-@alemiBot.on_message(is_allowed & filters.command(["peek", "deld", "deleted", "removed"], prefixes=".") & filters.regex(
-    pattern=r"^.(?:peek|deld|deleted|removed)(?: |)(?P<time>-t|)(?: |)(?P<number>[0-9]+|)(?: |)(?P<global>-g [0-9\-]+|-g|)"
-))
+                "queries if you need to log those). Owner can peek globally (`-all`) or in a specific group (`-g <id>`)",
+                public=True, args="[-t] [-g [id]] [<num>]")
+@alemiBot.on_message(is_allowed & filters.command(["peek", "deld", "deleted", "removed"], list(alemiBot.prefixes)))
 async def deleted_cmd(client, message): # This is a mess omg
-    args = message.matches[0]
-    show_time = args["time"] == "-t"
+    args = CommandParser({
+        "group" : ["-g"],
+    }, flags=["-t", "-all"]).parse(message.command)
+
+    show_time = "-t" in args["flags"]
     target_group = message.chat
-    if is_me(message) and args["global"].startswith("-g"):
-        if args["global"] == "-g":
+    if is_me(message):
+        if "-all" in args["flags"]:
             target_group = None
-        else:
-            target_group = await client.get_chat(int(args["global"].replace("-g ", "")))
+        elif "group" in args:
+            target_group = await client.get_chat(int(args["group"]))
     limit = 1
-    if args["number"] != "":
-        limit = int(args["number"])
+    if "arg" in args:
+        limit = int(args["arg"])
     lgr.info(f"Peeking {limit} messages")
     asyncio.get_event_loop().create_task( # launch the task async because it may take some time
         lookup_deleted_messages(

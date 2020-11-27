@@ -16,6 +16,8 @@ import requests
 from util import batchify
 from util.permission import is_allowed
 from util.message import edit_or_reply
+from util.parse import CommandParser
+
 from plugins.help import HelpCategory
 
 import logging
@@ -170,34 +172,34 @@ HELP.add_help(["loc", "location"], "send a location",
                 "send a location for specific latitude and longitude. Both has " +
                 "to be given and are in range [-90, 90]. If a title is given with the `-t` " +
                 "option, the location will be sent as venue.", args="[-t <title>] (<lat> <long> | <loc>)", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["loc", "location"], list(alemiBot.prefixes)) & filters.regex(
-    pattern=r".(?:location|loc)(?: |)(?P<title>-t '.*'|-t [^ ]+|)(?: |)(?:(?:(?P<lat>[0-9.]+) (?P<long>[0-9.]+))|(?P<address>.*))"
-))
+@alemiBot.on_message(is_allowed & filters.command(["loc", "location"], list(alemiBot.prefixes)))
 async def location_cmd(client, message):
-    args = message.matches[0]
+    args = CommandParser({
+        "title" : ["-t"]
+    }).parse(message.command)
     latitude = 0.0
     longitude = 0.0
     logger.info("Getting a location")
-    if args["lat"] is not None and args["long"] is not None:
-        latitude = float(args["lat"])
-        longitude = float(args["long"])
-    elif args["address"] is not None:
-        await client.send_chat_action(message.chat.id, "find_location")
-        location = geolocator.geocode(args["address"])
-        await client.send_chat_action(message.chat.id, "cancel")
-        if location is None:
-            return await edit_or_reply(message, "`[!] → ` Not found")
-        latitude = location.latitude
-        longitude = location.longitude
+    if "arg" in args:
+        try:
+            coords = args["arg"].split(" ", 2)
+            latitude = float(coords[0])
+            longitude = float(coords[1])
+        except (ValueError, IndexError):
+            await client.send_chat_action(message.chat.id, "find_location")
+            location = geolocator.geocode(args["arg"])
+            await client.send_chat_action(message.chat.id, "cancel")
+            if location is None:
+                return await edit_or_reply(message, "`[!] → ` Not found")
+            latitude = location.latitude
+            longitude = location.longitude
     if latitude > 90 or latitude < -90 or longitude > 90 or longitude < -90:
         return await edit_or_reply(message, "`[!] → ` Invalid coordinates")
     try:
-        if args["title"].startswith("-t "):
-            tit = re.sub("-t (?:'(.*)'|([^ ]+))", r"\g<1>\g<2>", args["title"])
-            adr = (args["address"] if args["address"] is not None 
-                            else f"{latitude:.2f} {longitude:.2f}")
+        if "title" in args:
+            adr = (args["arg"] if "arg" in args else f"{latitude:.2f} {longitude:.2f}")
             await client.send_venue(message.chat.id, latitude, longitude,
-                                        title=tit, address=adr)
+                                        title=args["title"], address=adr)
         else:
             await client.send_location(message.chat.id, latitude, longitude)
     except Exception as e:
@@ -214,9 +216,7 @@ HELP.add_help(["weather", "wttr"], "get weather of location",
                 # "searches OpenWeatherMap for specified location. To make queries to OpenWeatherMap " +
                 # "an API key is necessary, thus registering to OpenWeatherMap. This is super early and shows very little.",
                 args="<location>", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["weather", "wttr"], list(alemiBot.prefixes)) & filters.regex(
-    pattern=r".(?:weather|wttr)(?: |)(?P<query>.*)"
-))
+@alemiBot.on_message(is_allowed & filters.command(["weather", "wttr"], list(alemiBot.prefixes)))
 async def weather_cmd(client, message):
     if len(message.command) < 2:
         return await edit_or_reply(message, "`[!] → ` Not enough arguments")
@@ -226,7 +226,7 @@ async def weather_cmd(client, message):
     try:
         logger.info("curl wttr.in")
         await client.send_chat_action(message.chat.id, "find_location")
-        q = message.matches[0]["query"]
+        q = " ".join(message.command[1:])
         r = requests.get(f"https://wttr.in/{q}?mnTC0&lang=en")
         await edit_or_reply(message, "<code> → " + r.text + "</code>", parse_mode="html")
         # # Why bother with OpenWeatherMap?

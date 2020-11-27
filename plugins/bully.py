@@ -9,6 +9,8 @@ from pyrogram import filters
 from bot import alemiBot
 
 from util.permission import is_allowed
+from util.parse import CommandParser
+
 from plugins.help import HelpCategory
 
 logger = logging.getLogger(__name__)
@@ -21,13 +23,13 @@ HELP.add_help(["censor"], "start censoring a chat",
             "will delete any message sent in this chat from target. If no target " +
             "is specified, all messages will be deleted as soon as they arrive",
             args="[<target>]")
-@alemiBot.on_message(filters.me & filters.command(["censor","bully"], list(alemiBot.prefixes)) &
-    filters.regex(pattern=r"^.(?:censor|bully)(?: |)(?P<target>@[^ ]+|)"
-))
+@alemiBot.on_message(filters.me & filters.command(["censor","bully"], list(alemiBot.prefixes)))
 async def startcensor(client, message):
     logger.info("Censoring new chat")
-    target = message.matches[0]["target"]
-    if target in { "", "@all", "@everyone" }:
+    target = None
+    if len(message.command) > 1:
+        target = message.command[1]
+    if target in { None, "@all", "@everyone" }:
         censoring[message.chat.id] = None
     else:
         tgt = await client.get_users(target)
@@ -37,7 +39,7 @@ async def startcensor(client, message):
         or censoring[message.chat.id] is None:
             censoring[message.chat.id] = []
         censoring[message.chat.id].append(tgt.id)
-    await message.edit(message.text.markdown + f"\n` → ` Censoring {target}")
+    await message.edit(message.text.markdown + f"\n` → ` Censoring {target if target is not None else 'everyone'}")
 
 HELP.add_help("stop", "stop censoring a chat",
             "typing .stop in a chat that is being censored will stop all censoring")
@@ -71,23 +73,27 @@ HELP.add_help(["spam", "flood"], "pretty self explainatory",
             "messages will be sent as soon as possible. You can reply to a message and " +
             "all spammed msgs will reply to that one too. If you add `-delme`, messages will be " +
             "immediately deleted.", args="[-n <n>] [-t <t>] <text>")
-@alemiBot.on_message(filters.me & filters.command("spam", list(alemiBot.prefixes)) & filters.regex(
-        pattern=r"^.spam(?: |)(?P<number>(?:-n |)[0-9]+|)(?: |)(?P<time>-t [0-9.]+|)(?P<text>.*)", flags=re.DOTALL
-))
+@alemiBot.on_message(filters.me & filters.command("spam", list(alemiBot.prefixes)))
 async def spam(client, message):
-    args = message.matches[0]
+    args = CommandParser({
+        "number" : ["-n"],
+        "time" : ["-t"],
+    }).parse(message.command)
     wait = 0
     number = 3
     text = "."
     delme = False
     try:
-        delme = args["text"].endswith("-delme")
-        if args["text"] != "":
-            text = args["text"].replace("-delme", "") # in case
-        if args["time"] != "":
-            wait = float(args["time"].replace("-t ", ""))
-        if args["number"] != "":
-            number = int(args["number"].replace("-n ", "")) 
+        if "arg" in args:
+            delme = args["arg"].endswith("-delme")
+            text = args["arg"].replace("-delme", "") # in case
+        if "time" in args:
+            wait = float(args["time"])
+        if "number" in args:
+            number = int(args["number"])
+        elif text.split(" ", 1)[0].isnumeric(): # this is to support how it worked originally
+            number = int(text.split(" ", 1)[0])
+            text = text.split(" ", 1)[1]
         logger.info(f"Spamming \"{text}\" for {number} times")
         if message.reply_to_message is not None:
             for i in range(number):
@@ -102,5 +108,6 @@ async def spam(client, message):
                     await msg.delete()
                 await asyncio.sleep(wait) 
     except Exception as e:
-        await message.edit(message.text.markdown + "`[!] → ` " + str(e))
+        traceback.print_exc()
+        await message.edit(message.text.markdown + "\n`[!] → ` " + str(e))
 

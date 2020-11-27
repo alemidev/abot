@@ -11,6 +11,7 @@ from pyrogram import filters
 
 from util.permission import is_allowed
 from util.message import edit_or_reply, is_me
+from util.parse import CommandParser
 
 from googletrans import Translator
 from google_currency import convert
@@ -111,7 +112,7 @@ HELP.add_help(["rand", "random", "roll"], "get random choices",
                 "You can specify how many extractions to make", args="[-n <n>] [choices] | [n]d<max>", public=True)
 @alemiBot.on_message(is_allowed & filters.command(["rand", "random", "roll"], list(alemiBot.prefixes)) & filters.regex(pattern=
     r"^.(?:random|rand|roll)(?: |)(?:(?:(?P<num>[0-9]+|)d(?P<max>[0-9]+))|(?:(?P<batch>-n [0-9]+|)(?: |)(?P<values>.*)))"
-))
+)) # this is better with a regex because allows the "dice roller" format, aka 3d6
 async def rand_cmd(client, message):
     args = message.matches[0]
     try:
@@ -160,21 +161,24 @@ HELP.add_help(["translate", "tran", "tr"], "translate to/from",
                 "translate text from a language (autodetected if not specified, `-s`) to another " +
                 "specified lang (defaults to eng, `-d`). It will show the confidence for detected lang. This " +
                 "uses google translate. The lang codes must be 2 letter long (en, ja...)", args="[-s <src>] [-d <des>]", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["translate", "tran", "tr"], list(alemiBot.prefixes)) & filters.regex(pattern=
-    r"^.(?:translate|tran|tr)(?: |)(?P<src>-s [^ ]+|)(?: |)(?P<dest>-d [^ ]+|)(?: |)(?P<text>.*)"
-))
+@alemiBot.on_message(is_allowed & filters.command(["translate", "tran", "tr"], list(alemiBot.prefixes)))
 async def translate_cmd(client, message):
-    args = message.matches[0]
-    if args["text"] is None or args["text"] == "":
+    args = CommandParser({
+        "src" : ["-s", "-src"],
+        "dest" : ["-d", "-dest"]
+    }).parse(message.command)
+
+    if "arg" not in args:
         return await edit_or_reply(message, "`[!] → ` Nothing to translate")
     tr_options = {}
-    if args["src"].startswith("-s "):
-        tr_options["src"] = args["src"].replace("-s ", "")
-    if args["dest"].startswith("-d "):
-        tr_options["dest"] = args["dest"].replace("-d ", "")
+    # lmao I can probably pass **args directly
+    if "src" in args:
+        tr_options["src"] = args["src"]
+    if "dest" in args:
+        tr_options["dest"] = args["dest"]
     try:
         await client.send_chat_action(message.chat.id, "find_location")
-        q = args["text"]
+        q = args["arg"]
         logger.info(f"Translating {q}")
         res = translator.translate(q, **tr_options)
         out = f"`[{res.extra_data['confidence']:.2f}] → ` {res.text}"

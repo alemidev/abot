@@ -14,6 +14,8 @@ from bot import alemiBot
 from util import batchify
 from util.permission import is_allowed
 from util.message import edit_or_reply, get_text, is_me
+from util.parse import CommandParser
+
 from plugins.help import HelpCategory
 
 import logging
@@ -39,17 +41,15 @@ async def send_media_appropriately(client, message, fname, reply_to, extra_text=
 HELP.add_help("meme", "get a meme",
                 "get a specific meme is a name is given, otherwise a random one. " +
                 "Use argument `-list` to gett all meme names.", public=True, args="[-list] [<name>]")
-@alemiBot.on_message(is_allowed & filters.command("meme", list(alemiBot.prefixes)) & filters.regex(pattern=
-    r"meme(?: |$)(?P<list>-list|)(?: |$ |)(?P<name>[^ ]*)"
-))
+@alemiBot.on_message(is_allowed & filters.command("meme", list(alemiBot.prefixes)))
 async def getmeme(client, message):
+    args = CommandParser({}, flags=["-list"]).parse(message.command)
     try:
         await client.send_chat_action(message.chat.id, "upload_photo")
-        args = message.matches[0]
         reply_to = message.message_id
         if is_me(message) and message.reply_to_message is not None:
             reply_to = message.reply_to_message.message_id
-        if args["list"] == "-list":
+        if "-list" in args["flags"]:
             logger.info("Getting meme list")
             memes = os.listdir("data/memes")
             memes.sort()
@@ -57,15 +57,15 @@ async def getmeme(client, message):
             out += ", ".join(memes)
             out += "]"
             await edit_or_reply(message, out)
-        elif args["name"] != "":
+        elif "arg" in args:
             memes = [ s for s in os.listdir("data/memes")      # I can't decide if this
-                        if s.lower().startswith(args["name"])] #  is nice or horrible
+                        if s.lower().startswith(args["arg"])] #  is nice or horrible
             if len(memes) > 0:
                 fname = memes[0]
                 logger.info(f"Getting specific meme : \"{fname}\"")
                 await send_media_appropriately(client, message, fname, reply_to)
             else:
-                await edit_or_reply(message, f"`[!] → ` no meme named {args['name']}")
+                await edit_or_reply(message, f"`[!] → ` no meme named {args['arg']}")
         else: 
             fname = secrets.choice(os.listdir("data/memes"))
             logger.info(f"Getting random meme : \"{fname}\"")
@@ -144,10 +144,11 @@ async def fry_image(img: Image) -> Image:
 HELP.add_help("fry", "fry a meme",
                 "fry a meme. Sadly, no stars on eyes (yet!). Code comes from `https://github.com/Ovyerus/deeppyer`. " +
                 "The number of frying rounds can be specified, will default to 1.", args="[-c <n>]", public=True)
-@alemiBot.on_message(is_allowed & filters.command("fry", list(alemiBot.prefixes)) & filters.regex(pattern=
-    r"fry(?: |)(?P<count>-c [0-9]+|)"
-))
+@alemiBot.on_message(is_allowed & filters.command("fry", list(alemiBot.prefixes)))
 async def deepfry(client, message):
+    args = CommandParser({
+        "count": ["-c"]
+    }).parse(message.command)
     msg = message
     if message.reply_to_message is not None:
         msg = message.reply_to_message
@@ -156,8 +157,8 @@ async def deepfry(client, message):
         logger.info(f"Frying meme")
         try:
             count = 1
-            if message.matches[0]["count"] != "":
-                count = int(message.matches[0]["count"].replace("-c ", ""))
+            if "count" in args:
+                count = int(args["count"])
             if message.from_user is not None and message.from_user.is_self: # lmao these checks, just message.outgoing doesn't work in self msgs
                 await message.edit(message.text.markdown + "\n` → ` Downloading...")
             fpath = await client.download_media(msg, file_name="tofry")

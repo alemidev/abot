@@ -7,6 +7,7 @@ from bot import alemiBot
 
 from util.permission import is_allowed
 from util.message import is_me, get_text
+from util.parse import CommandParser
 from plugins.help import HelpCategory
 
 import logging
@@ -24,16 +25,18 @@ except:
 HELP.add_help(["trigger", "trig"], "register a new trigger",
             "Add a new trigger sequence and corresponding message. Use " +
             "sigle quotes `'` to wrap triggers with spaces (no need to wrap message). " +
-            "Use this command to list triggers (`-l`), add new (`-n`) and delete (`-d`). " +
+            "Use this command to list triggers (`-list`), add new (`-n`) and delete (`-d`). " +
             "Triggers will always work in private chats, but only work when mentioned in groups." ,
-            args="( -l | -d <trigger> | -n <trigger> <message> )")
-@alemiBot.on_message(filters.me & filters.command(["trigger","trig"], list(alemiBot.prefixes)) & filters.regex(pattern=
-    r"^.(?:trigger|trig)(?: |)(?P<arg>-l|-n|-d)(?: |)(?P<trigger>'.+'|[^ ]+|)(?: |)(?P<message>.+|)"
-))
+            args="( -list | -d <trigger> | -n <trigger> <message> )")
+@alemiBot.on_message(filters.me & filters.command(["trigger", "trig"], list(alemiBot.prefixes)))
 async def trigger_cmd(client, message):
-    args = message.matches[0]
+    args = CommandParser({
+        "new" : ["-n", "-new"],
+        "del" : ["-d", "-del"]
+    }, flags=["-list"]).parse(message.command)
+
     changed = False
-    if args["arg"] == "-l":
+    if "-list" in args["flags"]:
         logger.info("Listing triggers")
         out = "\n"
         for t in triggers:
@@ -41,14 +44,14 @@ async def trigger_cmd(client, message):
         if out == "\n":
             out += "` → Nothing to display`"
         await message.edit(message.text.markdown + out)
-    elif args["arg"] == "-n" and args["trigger"] != "" and args["message"] != "":
+    elif "new" in args and "arg" in args:
         logger.info("New trigger")
-        triggers[args["trigger"].strip("'")] = args["message"]
+        triggers[args["new"]] = args["arg"]
         await message.edit(message.text.markdown + f"\n` → ` Registered new trigger")
         changed = True
-    elif args["arg"] == "-d" and args["trigger"] != "":
+    elif "del" in args:
         logger.info("Removing trigger")
-        if triggers.pop(args["trigger"].strip("'"), None) is not None:
+        if triggers.pop(args["del"], None) is not None:
             await message.edit(message.text.markdown + "\n` → ` Removed trigger")
             changed = True
     else:
@@ -59,7 +62,7 @@ async def trigger_cmd(client, message):
 
 @alemiBot.on_message(group=8)
 async def search_triggers(client, message):
-    if is_me(message) or message.edit_date is not None:
+    if is_me(message) or message.edit_date is not None: # TODO allow triggers for self?
         return # pyrogram gets edit events as message events!
     if message.chat is None:
         return # wtf messages with no chat???

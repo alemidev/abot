@@ -8,7 +8,7 @@ import traceback
 from pyrogram import filters
 
 from util import batchify
-from util.parse import cleartermcolor
+from util.parse import CommandParser, cleartermcolor
 from util.permission import is_allowed
 from util.message import edit_or_reply, is_me
 
@@ -31,23 +31,24 @@ HELP.add_help(["slow", "sl"], "make text appear slowly",
                 "edit message adding batch of characters every time. If no batch size is " +
                 "given, it will default to 1. If no time is given, it will default to 0.5s.",
                 args="[-t <time>] [-b <batch>] <text>")
-@alemiBot.on_message(filters.me & filters.regex(pattern=
-    r"^[\.\/](?:sl|slow)(?: |)(?P<timer>-t [0-9.]+|)(?: |)(?P<batch>-b [0-9]+|)(?P<text>.*)"
-), group=2)
+@alemiBot.on_message(filters.me & filters.command(["slow", "sl"], list(alemiBot.prefixes)), group=2)
 async def slowtype(client, message):
-    args = message.matches[0]
+    args = CommandParser({
+        "time" : ["-t"],
+        "batch" : ["-b"],
+    }).parse(message.command)
+    if "arg" not in args:
+        return
     logger.info(f"Making text appear slowly")
     interval = 0.5
     batchsize = 1
-    if args["timer"] != "":
-        interval = float(args["timer"].replace("-t ", ""))
-    if args["batch"] != "":
-        batchsize = int(args["batch"].replace("-b ", ""))
-    if args["text"] == "":
-        return 
+    if "time" in args:
+        interval = float(args["time"])
+    if "batch" in args:
+        batchsize = int(args["batch"])
     msg = ""
     try:
-        for seg in batchify(args["text"], batchsize):
+        for seg in batchify(args["arg"], batchsize):
             msg += seg
             if seg.isspace() or seg == "":
                 continue # important because sending same message twice causes an exception
@@ -113,31 +114,36 @@ async def replace_arrows(client, message):
 HELP.add_help("figlet", "make a figlet art",
                 "run figlet and make a text art. You can specify a font (`-f`), or request a random one (`-r`). " +
                 "Get list of available fonts with `-list`. You can specify max figlet width (`-w`), default is 30.",
-                args="[-l] [-r | -f <font>] [-w <n>]", public=True)
-@alemiBot.on_message(is_allowed & filters.regex(pattern=
-    r"^[\.\/]figlet(?: |)(?:(?P<list>-l)|(?P<font>-f [^ ]+)|(?P<random>-r)|)(?: |)(?P<width>-w [0-9]+|)(?: |)(?P<text>.*)"
-))
+                args="[-list] [-r | -f <font>] [-w <n>] <text>", public=True)
+@alemiBot.on_message(is_allowed & filters.command("figlet", list(alemiBot.prefixes)))
 async def figlettext(client, message):
-    args = message.matches[0]
-    if args["list"] == "-l":
+    args = CommandParser({
+        "font" : ["-f", "-font"],
+        "width" : ["-w", "-width"]
+    }, flags=["-list", "-r"]).parse(message.command)
+
+    if "-list" in args["flags"]:
         msg = f"<code> → </code> <u>Figlet fonts</u> : <b>{len(FIGLET_FONTS)}</b>\n[ "
         msg += " ".join(FIGLET_FONTS)
         msg += " ]"
         return await edit_or_reply(message, msg, parse_mode='html')
+
+    if "arg" not in args:
+        return # no text to figlet!
+    
     width = 30
-    if args["width"].startswith("-w "):
-        width = int(args["width"].replace("-w ", ""))
+    if "width" in args:
+        width = int(args["width"])
     font = "slant"
-    if args["random"] == "-r":
+    if "-r" in args["flags"]:
         font = secrets.choice(FIGLET_FONTS)
-    elif args["font"] is not None and args["font"] != "":
-        f = args["font"].replace("-f ", "")
+    elif "font" in args:
+        f = args["font"]
         if f != "" and f in FIGLET_FONTS:
             font = f
-    if args["text"] == "":
-        return
-    logger.info(f"figlet-ing {args['text']}")
-    result = pyfiglet.figlet_format(args["text"], font=font, width=width)
+    
+    logger.info(f"figlet-ing {args['arg']}")
+    result = pyfiglet.figlet_format(args["arg"], font=font, width=width)
     await edit_or_reply(message, "<code> →\n" + result + "</code>", parse_mode="html")
     await client.set_offline()
 
