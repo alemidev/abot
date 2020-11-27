@@ -4,8 +4,12 @@ import json
 
 ALLOWED = {}
 
-with open("data/perms.json") as f:
-    ALLOWED = json.load(f)
+try:
+    with open("data/perms.json") as f:
+        ALLOWED = json.load(f)
+except FileNotFoundError:
+    with open("data/perms.json", "w") as f:
+        json.dump({}, f)
 
 def check_allowed(_, __, message):
     if message.from_user is None:
