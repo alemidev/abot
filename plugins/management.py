@@ -80,7 +80,7 @@ async def purge(client, message):
             else:
                 target = (await get_user(args["target"], client)).id
 
-        logger.info("Purging last {number} message from {args['target']}")
+        logger.info(f"Purging last {number} message from {target}")
         n = 0
         async for msg in client.iter_history(message.chat.id):
             if ((target is None or msg.from_user.id == target)
