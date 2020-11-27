@@ -20,7 +20,7 @@ from pyrogram.errors.exceptions.flood_420 import FloodWait
 from bot import alemiBot
 
 from util import batchify
-from util.parse import CommandParser, cleartermcolor
+from util.parse import newFilterCommand, cleartermcolor
 from util.text import split_for_window
 from util.permission import is_allowed
 from util.message import tokenize_json, edit_or_reply, get_text, get_text_dict, is_me
@@ -132,13 +132,12 @@ async def stats_cmd(client, message):
 HELP.add_help(["query", "q", "log"], "interact with db",
                 "make queries to the underlying database (MongoDB) to request documents. " +
                 "Filters, limits and fields can be configured with arguments.", args="[-l <n>] [-f <{filter}>] <{query}>")
-@alemiBot.on_message(filters.me & filters.command(["query", "q", "log"], list(alemiBot.prefixes)))
+@alemiBot.on_message(filters.me & newFilterCommand(["query", "q", "log"], list(alemiBot.prefixes), options={
+    "limit" : ["-l", "-limit"],
+    "filter" : ["-f", "-filter"]
+}))
 async def query_cmd(client, message):
-    args = CommandParser({
-        "limit" : ["-l", "-limit"],
-        "filter" : ["-f", "-filter"],
-    }).parse(message.command)
-
+    args = message.command
     try:
         if "arg" in args:
             buf = []
@@ -173,12 +172,11 @@ async def query_cmd(client, message):
 HELP.add_help(["hist", "history"], "get edit history of a message",
                 "request edit history of a message. You can specify an id or reply to a message.",
                 public=True, args="[-t] [-g <g>] [<id>]")
-@alemiBot.on_message(is_allowed & filters.command(["history", "hist"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & newFilterCommand(["history", "hist"], list(alemiBot.prefixes), options={
+    "group" : ["-g"]
+}, flags=["-t"]))
 async def hist_cmd(client, message):
-    args = CommandParser({
-        "group" : ["-g"],
-    }, flags=["-t"]).parse(message.command)
-
+    args = message.command
     m_id = None
     c_id = message.chat.id
     show_time = "-t" in args["flags"]
@@ -271,12 +269,11 @@ HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
                 "from bots or system messages will be skipped in peek (use manual " +
                 "queries if you need to log those). Owner can peek globally (`-all`) or in a specific group (`-g <id>`)",
                 public=True, args="[-t] [-g [id]] [<num>]")
-@alemiBot.on_message(is_allowed & filters.command(["peek", "deld", "deleted", "removed"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filters.command(["peek", "deld", "deleted", "removed"], list(alemiBot.prefixes), options={
+    "group" : ["-g"]
+}, flags=["-t", "-all"]))
 async def deleted_cmd(client, message): # This is a mess omg
-    args = CommandParser({
-        "group" : ["-g"],
-    }, flags=["-t", "-all"]).parse(message.command)
-
+    args = message.command
     show_time = "-t" in args["flags"]
     target_group = message.chat
     if is_me(message):

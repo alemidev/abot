@@ -11,7 +11,7 @@ from pyrogram import filters
 
 from util.permission import is_allowed
 from util.message import edit_or_reply, is_me
-from util.parse import CommandParser
+from util.parse import newFilterCommand
 
 from googletrans import Translator
 from google_currency import convert
@@ -161,13 +161,12 @@ HELP.add_help(["translate", "tran", "tr"], "translate to/from",
                 "translate text from a language (autodetected if not specified, `-s`) to another " +
                 "specified lang (defaults to eng, `-d`). It will show the confidence for detected lang. This " +
                 "uses google translate. The lang codes must be 2 letter long (en, ja...)", args="[-s <src>] [-d <des>]", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["translate", "tran", "tr"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & newFilterCommand(["translate", "tran", "tr"], list(alemiBot.prefixes), options={
+    "src" : ["-s", "-src"],
+    "dest" : ["-d", "-dest"]
+}))
 async def translate_cmd(client, message):
-    args = CommandParser({
-        "src" : ["-s", "-src"],
-        "dest" : ["-d", "-dest"]
-    }).parse(message.command)
-
+    args = message.command
     if "arg" not in args:
         return await edit_or_reply(message, "`[!] → ` Nothing to translate")
     tr_options = {}

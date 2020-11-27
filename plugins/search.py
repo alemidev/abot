@@ -16,7 +16,7 @@ import requests
 from util import batchify
 from util.permission import is_allowed
 from util.message import edit_or_reply
-from util.parse import CommandParser
+from util.parse import newFilterCommand
 
 from plugins.help import HelpCategory
 
@@ -172,11 +172,11 @@ HELP.add_help(["loc", "location"], "send a location",
                 "send a location for specific latitude and longitude. Both has " +
                 "to be given and are in range [-90, 90]. If a title is given with the `-t` " +
                 "option, the location will be sent as venue.", args="[-t <title>] (<lat> <long> | <loc>)", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["loc", "location"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & newFilterCommand(["loc", "location"], list(alemiBot.prefixes), options={
+    "title" : ["-t"]
+}))
 async def location_cmd(client, message):
-    args = CommandParser({
-        "title" : ["-t"]
-    }).parse(message.command)
+    args = message.command
     latitude = 0.0
     longitude = 0.0
     logger.info("Getting a location")

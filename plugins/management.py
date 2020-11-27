@@ -12,7 +12,7 @@ from util.permission import is_allowed, allow, disallow, serialize, list_allowed
 from util.user import get_username
 from util.message import edit_or_reply, get_text
 from util.text import split_for_window
-from util.parse import CommandParser
+from util.parse import newFilterCommand
 from plugins.help import HelpCategory
 
 import logging
@@ -44,13 +44,12 @@ HELP.add_help(["purge", "wipe", "clear"], "batch delete messages",
                 "If no target is given, only self messages will be deleted. Target can be `@all` and `@everyone`. " +
                 "A keyword can be specified (`-k`) so that only messages containing that keyword will be deleted.",
                 args="[-t <target>] [-k <keyword>] [<number>]", public=False)
-@alemiBot.on_message(filters.me & filters.command(["purge", "wipe", "clear"], list(alemiBot.prefixes)))
+@alemiBot.on_message(filters.me & newFilterCommand(["purge", "wipe", "clear"], list(alemiBot.prefixes), options={
+    "target" : ["-t"],
+    "keyword" : ["-k"]
+}))
 async def purge(client, message):
-    args = CommandParser({
-        "target" : ["-t"],
-        "keyword" : ["-k"],
-    }).parse(message.command)
-
+    args = message.command
     target = message.from_user.id
     number = 1
     keyword = None

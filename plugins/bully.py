@@ -9,7 +9,7 @@ from pyrogram import filters
 from bot import alemiBot
 
 from util.permission import is_allowed
-from util.parse import CommandParser
+from util.parse import newFilterCommand
 
 from plugins.help import HelpCategory
 
@@ -73,12 +73,12 @@ HELP.add_help(["spam", "flood"], "pretty self explainatory",
             "messages will be sent as soon as possible. You can reply to a message and " +
             "all spammed msgs will reply to that one too. If you add `-delme`, messages will be " +
             "immediately deleted.", args="[-n <n>] [-t <t>] <text>")
-@alemiBot.on_message(filters.me & filters.command("spam", list(alemiBot.prefixes)))
+@alemiBot.on_message(filters.me & newFilterCommand("spam", list(alemiBot.prefixes), options={
+    "number" : ["-n"],
+    "time" : ["-t"],
+}))
 async def spam(client, message):
-    args = CommandParser({
-        "number" : ["-n"],
-        "time" : ["-t"],
-    }).parse(message.command)
+    args = message.command
     wait = 0
     number = 3
     text = "."

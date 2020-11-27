@@ -8,7 +8,7 @@ import traceback
 from pyrogram import filters
 
 from util import batchify
-from util.parse import CommandParser, cleartermcolor
+from util.parse import newFilterCommand, cleartermcolor
 from util.permission import is_allowed
 from util.message import edit_or_reply, is_me
 
@@ -31,12 +31,12 @@ HELP.add_help(["slow", "sl"], "make text appear slowly",
                 "edit message adding batch of characters every time. If no batch size is " +
                 "given, it will default to 1. If no time is given, it will default to 0.5s.",
                 args="[-t <time>] [-b <batch>] <text>")
-@alemiBot.on_message(filters.me & filters.command(["slow", "sl"], list(alemiBot.prefixes)), group=2)
-async def slowtype(client, message):
-    args = CommandParser({
+@alemiBot.on_message(filters.me & newFilterCommand(["slow", "sl"], list(alemiBot.prefixes), options={
         "time" : ["-t"],
-        "batch" : ["-b"],
-    }).parse(message.command)
+        "batch" : ["-b"]
+}), group=2)
+async def slowtype(client, message):
+    args = message.command
     if "arg" not in args:
         return
     logger.info(f"Making text appear slowly")
@@ -115,13 +115,12 @@ HELP.add_help("figlet", "make a figlet art",
                 "run figlet and make a text art. You can specify a font (`-f`), or request a random one (`-r`). " +
                 "Get list of available fonts with `-list`. You can specify max figlet width (`-w`), default is 30.",
                 args="[-list] [-r | -f <font>] [-w <n>] <text>", public=True)
-@alemiBot.on_message(is_allowed & filters.command("figlet", list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & newFilterCommand("figlet", list(alemiBot.prefixes), options={
+    "font" : ["-f", "-font"],
+    "width" : ["-w", "-width"]
+}, flags=["-list", "-r"]))
 async def figlettext(client, message):
-    args = CommandParser({
-        "font" : ["-f", "-font"],
-        "width" : ["-w", "-width"]
-    }, flags=["-list", "-r"]).parse(message.command)
-
+    args = message.command
     try:
         if "-list" in args["flags"]:
             msg = f"<code> → </code> <u>Figlet fonts</u> : <b>{len(FIGLET_FONTS)}</b>\n[ "
