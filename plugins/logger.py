@@ -220,7 +220,7 @@ async def lookup_deleted_messages(client, message, target_group, limit, show_tim
     chat_id = target_group.id if target_group is not None else None
     out = "\n\n"
     count = 0
-    LINE = "`[{m_id}]` **{user}** ` → {where}` {text} {media}\n"
+    LINE = "`[{m_id}]` **{user}** ` → {where}` {system}{text} {media}\n"
     try:
         lgr.debug("Querying db for deletions")
         await client.send_chat_action(message.chat.id, "upload_document")
@@ -245,7 +245,7 @@ async def lookup_deleted_messages(client, message, target_group, limit, show_tim
                                                 f"` {get_text_dict(doc)['raw']}")
                 else:
                     out += LINE.format(m_id=doc["message_id"], user=(get_username_dict(doc["from_user"]) if "from_user" in doc else "UNKNOWN"),
-                                    where='' if chat_id is not None else (get_channel_dict(doc["chat"]) + ' → '),
+                                    where='' if chat_id is not None else (get_channel_dict(doc["chat"]) + ' → '), system=("[SERVICE] " if "service" in doc and doc["service"] else ""),
                                     text=get_text_dict(doc)['raw'], media=('' if "attached_file" not in doc else ('(--' + doc["attached_file"] + '--)')))
                 count += 1
                 break
