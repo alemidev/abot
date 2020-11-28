@@ -9,7 +9,7 @@ from util import batchify
 from util.globals import PREFIX
 from util.permission import is_allowed
 from util.message import edit_or_reply
-from util.parse import CommandParser
+from util.parse import newFilterCommand
 
 import sympy
 from sympy.solvers import solve
@@ -26,9 +26,9 @@ HELP = HelpCategory("MATH")
 HELP.add_help(["expr", "math"], "convert to LaTeX formula",
                 "this command accepts sympy syntax and will spit out a LaTeX formula as image. " +
                 "You can add the `-latex` argument and pass LaTeX directly.", args="[-latex] <expr>", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["expr", "math"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & newFilterCommand(["expr", "math"], list(alemiBot.prefixes), flags=["-latex"]))
 async def expr(client, message):
-    args = CommandParser({}, flags=["-latex"]).parse(message.command)
+    args = message.command
     try:
         if "arg" not in args:
             return # nothing to do!
@@ -51,11 +51,9 @@ async def expr(client, message):
 HELP.add_help(["plot", "graph"], "plot provided function",
                 "this command will run sympy `plot` and return result as image. Foruma passing is wonky. " +
                 "You can add the `-3d` argument to plot in 3d.", args="[-3d] <expr>", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["plot", "graph"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & newFilterCommand(["plot", "graph"], list(alemiBot.prefixes), flags=["-3d"]))
 async def graph(client, message):
-    args = CommandParser({
-        "parametric" : ["-par", "-p"] # unsupported for now
-    }, flags=["-3d"]).parse(message.command)
+    args = message.command
     try:
         if "arg" not in args:
             return # nothing to plot
