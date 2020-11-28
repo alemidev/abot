@@ -22,6 +22,32 @@ def get_text_dict(message):
     else:
         return {"markdown": "", "raw": ""}
 
+def parse_sys_dict(msg):
+    events = []
+    if "left_chat_member" in msg:
+        events.append("member left")
+    if "new_chat_title" in msg:
+        events.append("chat title changed")
+    if "new_chat_photo" in msg:
+        events.append("chat photo changed")
+    if "delete_chat_photo" in msg:
+        events.append("chat photo deleted")
+    if "group_chat_created" in msg:
+        events.append("group chat created")
+    if "supergroup_chat_created" in msg:
+        events.append("supergroup created")
+    if "channel_chat_created" in msg:
+        events.append("channel created")
+    if "migrate_to_chat_id" in msg:
+        events.append("migrate to chat id")
+    if "migrate_from_chat_id" in msg:
+        events.append("migrate from chat id")
+    if "pinned_message" in msg:
+        events.append("pinned msg")
+    if "game_score" in msg:
+        events.append("game score")
+    return "SYS[ " + " | ".join(events) + " ]"
+
 async def edit_or_reply(message, text, *args, **kwargs):
     if is_me(message) and len(message.text.markdown + text) < 4090: 
         return await message.edit(message.text.markdown + "\n" + text, *args, **kwargs)

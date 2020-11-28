@@ -23,7 +23,7 @@ from util import batchify
 from util.parse import newFilterCommand, cleartermcolor
 from util.text import split_for_window
 from util.permission import is_allowed
-from util.message import tokenize_json, edit_or_reply, get_text, get_text_dict, is_me
+from util.message import tokenize_json, edit_or_reply, get_text, get_text_dict, is_me, parse_sys_dict
 from util.user import get_username, get_username_dict # lmaoo bad
 from util.chat import get_channel, get_channel_dict
 from util.serialization import convert_to_dict
