@@ -214,7 +214,7 @@ async def hist_cmd(client, message):
     await client.set_offline()
 
 
-async def lookup_deleted_messages(client, message, target_group, limit, show_time=False):
+async def lookup_deleted_messages(client, message, target_group, limit, show_time=False, include_system=False):
     response = await edit_or_reply(message, f"` → Peeking {limit} message{'s' if limit > 1 else ''} " +
                                             ('in ' + get_channel(target_group) if target_group is not None else '') + "`")
     chat_id = target_group.id if target_group is not None else None
@@ -234,11 +234,11 @@ async def lookup_deleted_messages(client, message, target_group, limit, show_tim
             for doc in candidates: # dank 'for': i only need one
                 if chat_id is not None and doc["chat"]["id"] != chat_id:
                     continue
-                if "service" in doc and doc["service"]:
+                if not include_system and "service" in doc and doc["service"]:
                     break # we don't care about service messages!
-                if "from_user" in doc and doc["from_user"]["is_bot"]:
+                if not include_system and "from_user" in doc and doc["from_user"]["is_bot"]:
                     break # we don't care about bot messages!
-                if limit == 1 and "attached_file" in doc:
+                if limit == 1 and "attached_file" in doc: # Doing this here forces me to do ugly stuff below, eww!
                     await client.send_document(message.chat.id, "data/scraped_media/"+doc["attached_file"], reply_to_message_id=message.message_id,
                                         caption="**" + (get_username_dict(doc['from_user']) if "from_user" in doc else "UNKNOWN") + "** `→" +
                                                 (get_channel_dict(doc['chat']) + ' → ' if chat_id is None else '') +
@@ -255,7 +255,7 @@ async def lookup_deleted_messages(client, message, target_group, limit, show_tim
             if len(out) > 4096:
                 for m in batchify(out, 4090):
                     await response.reply(m)
-            else:
+            elif out.strip() != "": # This is bad!
                 await response.edit(response.text.markdown + out)
         else:
             await response.edit(response.text.markdown + "**N/A**")
@@ -268,17 +268,18 @@ async def lookup_deleted_messages(client, message, target_group, limit, show_tim
 HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
                 "request last deleted messages in this channel. Use `-t` to add timestamps. A number of " +
                 "messages to peek can be specified. just message data. Messages " +
-                "from bots or system messages will be skipped in peek (use manual " +
-                "queries if you need to log those). Owner can peek globally (`-all`) or in a specific group (`-g <id>`)",
-                public=True, args="[-t] [-g [id]] [<num>]")
+                "from bots or system messages will be skipped in peek if the `-sys` flag is not given (use manual " +
+                "queries if you need to log those properly). Owner can peek globally (`-all`) or in a specific group (`-g <id>`)",
+                public=True, args="[-t] [-g [id] | -all] [-sys] [<num>]")
 @alemiBot.on_message(is_allowed & filters.command(["peek", "deld", "deleted", "removed"], list(alemiBot.prefixes)))
 async def deleted_cmd(client, message): # This is a mess omg
     args = CommandParser({
         "group" : ["-g"],
-    }, flags=["-t", "-all"]).parse(message.command)
+    }, flags=["-t", "-all", "-sys"]).parse(message.command)
 
     show_time = "-t" in args["flags"]
     target_group = message.chat
+    include_system = "-sys" in args["flags"]
     if is_me(message):
         if "-all" in args["flags"]:
             target_group = None
@@ -291,7 +292,7 @@ async def deleted_cmd(client, message): # This is a mess omg
     asyncio.get_event_loop().create_task( # launch the task async because it may take some time
         lookup_deleted_messages(
             client, message,
-            target_group, limit, show_time
+            target_group, limit, show_time, include_system
             )
         )
 
