@@ -243,7 +243,8 @@ async def lookup_deleted_messages(client, message, target_group, limit, show_tim
                                                 f"` {get_text_dict(doc)['raw']}")
                 else:
                     out += LINE.format(m_id=doc["message_id"], user=(get_username_dict(doc["from_user"]) if "from_user" in doc else "UNKNOWN"),
-                                    where='' if chat_id is not None else (get_channel_dict(doc["chat"]) + ' → '), system=("[SERVICE] " if "service" in doc and doc["service"] else ""),
+                                    where='' if chat_id is not None else (get_channel_dict(doc["chat"]) + ' → '),
+                                    system=("--" + parse_sys_dict(doc) + "-- " if "service" in doc and doc["service"] else ""),
                                     text=get_text_dict(doc)['raw'], media=('' if "attached_file" not in doc else ('(--' + doc["attached_file"] + '--)')))
                 count += 1
                 break
@@ -264,10 +265,12 @@ async def lookup_deleted_messages(client, message, target_group, limit, show_tim
     await client.set_offline() 
 
 HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
-                "request last deleted messages in this channel. Use `-t` to add timestamps. A number of " +
-                "messages to peek can be specified. just message data. Messages " +
-                "from bots or system messages will be skipped in peek if the `-sys` flag is not given (use manual " +
-                "queries if you need to log those properly). Owner can peek globally (`-all`) or in a specific group (`-g <id>`)",
+                "request last deleted messages in this channel. Use `-t` to add timestamps. A number of messages to peek can be specified. " +
+                "If only one message is being peeked, any media attached will be included, otherwise the filename will be appended to message text. " +
+                "Service messages and bot messages will be excluded from peek by default, add `-sys` flag to include them. "
+                "Owner can peek globally (`-all`) or in a specific group (`-g <id>`). Keep in mind that Telegram doesn't send easy to use " +
+                "deletion data, so the bot needs to lookup ids and messages in the database, making cross searches. Big peeks, or peeks of very old deletions " +
+                "will take some time to complete. For specific searches, use the query (`.q`) command.",
                 public=True, args="[-t] [-g [id] | -all] [-sys] [<num>]")
 @alemiBot.on_message(is_allowed & newFilterCommand(["peek", "deld", "deleted", "removed"], list(alemiBot.prefixes), options={
     "group" : ["-g"]
