@@ -24,6 +24,8 @@ def get_text_dict(message):
 
 def parse_sys_dict(msg):
     events = []
+    if "new_chat_members" in msg:
+        events.append("new chat members")
     if "left_chat_member" in msg:
         events.append("member left")
     if "new_chat_title" in msg:
