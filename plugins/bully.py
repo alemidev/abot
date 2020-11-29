@@ -31,7 +31,11 @@ try: # TODO THIS IS BAD MAYBE DON'T USE JSON FFS NICE CODE BRUUH
         censoring["MASS"] = [ int(e) for e in buf["MASS"] ]
         censoring["FREE"] = [ int(u) for u in buf["FREE"] ]
 except FileNotFoundError:
-    pass
+    with open("data/censoring.json", "w") as f:
+        json.dump(censoring, f)
+except:
+    traceback.print_exc()
+    # ignore
 
 HELP.add_help(["censor", "c"], "immediately delete messages from users",
             "Start censoring someone in current chat. Use flag `-mass` to toggle mass censorship in current chat. " +
