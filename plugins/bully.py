@@ -9,6 +9,8 @@ from pyrogram import filters
 from bot import alemiBot
 
 from util.permission import is_allowed
+from util.message import is_me
+from util.user import get_username
 from util.parse import newFilterCommand
 
 from plugins.help import HelpCategory
@@ -17,55 +19,142 @@ logger = logging.getLogger(__name__)
 
 HELP = HelpCategory("BULLY")
 
-censoring = {}
+censoring = {"MASS": [],
+             "FREE": [],
+             "SPEC" : {} }
+try: # TODO THIS IS BAD MAYBE DON'T USE JSON FFS NICE CODE BRUUH
+    with open("data/censoring.json") as f:
+        buf = json.load(f)
+        for k in buf:
+            censoring["SPEC"][int(k)] = buf[k]
+        censoring["MASS"] = [ int(e) for e in buf["MASS"] ]
+        censoring["FREE"] = [ int(u) for u in buf["FREE"] ]
+except FileNotFoundError:
+    pass
 
-HELP.add_help(["censor"], "start censoring a chat",
-            "will delete any message sent in this chat from target. If no target " +
-            "is specified, all messages will be deleted as soon as they arrive",
-            args="[<target>]")
-@alemiBot.on_message(filters.me & filters.command(["censor","bully"], list(alemiBot.prefixes)))
-async def startcensor(client, message):
-    logger.info("Censoring new chat")
-    target = None
-    if len(message.command) > 1:
-        target = message.command[1]
-    if target in { None, "@all", "@everyone" }:
-        censoring[message.chat.id] = None
-    else:
-        tgt = await client.get_users(target)
-        if target is None:
-            return
-        if message.chat.id not in censoring \
-        or censoring[message.chat.id] is None:
-            censoring[message.chat.id] = []
-        censoring[message.chat.id].append(tgt.id)
-    await message.edit(message.text.markdown + f"\n` → ` Censoring {target if target is not None else 'everyone'}")
+HELP.add_help(["censor", "c"], "immediately delete messages from users",
+            "Start censoring someone in current chat. Use flag `-mass` to toggle mass censorship in current chat. " +
+            "Add flag -free to stop istead stop censoring target. Use flag `-list` to get censored " +
+            "users in current chat. Messages from self will never be censored. More than one target can be specified",
+            args="[-list] [-i] [-mass] <targets>")
+@alemiBot.on_message(filters.me & newFilterCommand(["censor", "c"], list(alemiBot.prefixes), flags=["-list", "-i", "-mass"]))
+async def censor_cmd(client, message):
+    global censoring
+    args = message.command
+    out = message.text.markdown + "\n"
+    changed = False
+    try:
+        if "-list" in args["flags"]:
+            if message.chat.id not in censoring["SPEC"]:
+                out += "` → ` Nothing to display\n"
+            else:
+                usr_list = await client.get_users(censoring["SPEC"][message.chat.id])
+                for u in usr_list:
+                    out += "` → ` {get_username(u)}\n"
+        elif "-mass" in args["flags"]:
+            logger.info("Mass censoring chat")
+            if message.chat.id not in censoring["MASS"]:
+                censoring["MASS"].append(message.chat.id)
+                out += "` → ` Mass censoring\n"
+                changed = True
+        else:
+            logger.info("Censoring users")
+            users_to_censor = []
+            for target in args["cmd"]:
+                usr = await client.get_users(target)
+                if usr is None:
+                    out += f"`[!] → ` {target} not found\n"
+                else:
+                    users_to_censor.append(usr)
+            if "-i" in args["flags"]:
+                for u in users_to_censor:
+                    if u.id in censoring["FREE"]:
+                        censoring["FREE"].remove(u.id)
+                        out += "` → ` {get_username(u)} is no longer immune immune\n"
+                        changed = True
+            else:
+                for u in users_to_censor:
+                    censoring["SPEC"][message.chat.id].append(u.id)
+                    out += "` → ` Censoring {get_username(u)}\n"
+                    changed = True
+        if out != message.text.markdown + "\n":
+            await message.edit(out)
+    except Exception as e:
+        traceback.print_exc()
+        await message.edit(out + "\n`[!] → ` " + str(e))
+    if changed:
+        with open("data/censoring.json", "w") as f:
+            json.dump(censoring, f)
 
-HELP.add_help("stop", "stop censoring a chat",
-            "typing .stop in a chat that is being censored will stop all censoring")
+HELP.add_help(["free", "f"], "stop censoring someone",
+            "Stop censoring someone in current chat. Use flag `-mass` to stop mass censorship current chat. " +
+            "You can add `-i` to make target immune to mass censoring. More than one target can be specified (separate with spaces). " +
+            "Add `-list` flag to list immune users (censor immunity is global but doesn't bypass specific censorship)",
+            args="[-mass] [-list] [-i] <targets>")
+@alemiBot.on_message(filters.me & newFilterCommand(["censor", "c"], list(alemiBot.prefixes), flags=["-list", "-free", "-mass"]))
+async def free_cmd(client, message):
+    global censoring
+    args = message.command
+    out = message.text.markdown + "\n"
+    changed = False
+    try:
+        if "-list" in args["flags"]:
+            immune_users = await client.get_users(censoring["FREE"])
+            for u in immune_users:
+                out += "` → ` {get_username(u)}\n"
+        elif "-mass" in args["flags"]:
+            logger.info("Disabling mass censorship")
+            censoring["MASS"].remove(message.chat.id)
+            out += "\n` → ` Restored freedom of speech"
+            changed = True
+        else:
+            logger.info("Freeing censored users")
+            users_to_free = []
+            for target in args["cmd"]:
+                usr = await client.get_users(target)
+                if usr is None:
+                    out += f"`[!] → ` {target} not found\n"
+                else:
+                    users_to_free.append(usr)
+            if "-i" in args["flags"]:
+                for u in users_to_free:
+                    censoring["FREE"].append(u.id)
+                    out += "` → ` {get_username(u)} is now immune\n"
+                    changed = True
+            else:
+                for u in users_to_free:
+                    if u.id in censoring["SPEC"][message.chat.id]:
+                        censoring["SPEC"][message.chat.id].remove(u.id)
+                        out += "` → ` Freeing {get_username(u)}\n"
+                        changed = True
+        if out != message.text.markdown + "\n":
+            await message.edit(out)
+    except Exception as e:
+        traceback.print_exc()
+        await message.edit(out + "\n`[!] → ` " + str(e))
+    if changed:
+        with open("data/censoring.json", "w") as f:
+            json.dump(censoring, f)
+
 @alemiBot.on_message(group=9)
 async def bully(client, message):
     if message.edit_date is not None:
         return # pyrogram gets edit events as message events!
-    if message.chat is None:
-        return # can't censor messages outside of chats
-    if message.chat.id in censoring:
-        if message.from_user is not None and message.from_user.is_self \
-        and message.text.startswith(".stop"):
-            censoring.pop(message.chat.id, None)
-            await message.edit(message.text.markdown + "\n` → ` You can speak again")
-            logger.info("No longer censoring a chat")
-        else:
-            if censoring[message.chat.id] is None:
-                await message.delete()
-                logger.info("Get bullied")
-            else:
-                if message.from_user is None:
-                    return
-                if message.from_user.id in censoring[message.chat.id]:
-                    await message.delete()
-                    logger.info("Get bullied")
-        await client.set_offline()
+    if message.chat is None or is_me(message):
+        return # can't censor messages outside of chats or from self
+    if message.from_user is None:
+        return # Don't censory anonymous msgs
+    if message.chat.id in censoring["MASS"] \
+    and message.from_user.id not in censoring["FREE"]:
+        await message.delete()
+        logger.info("Get bullied")
+    else:
+        if message.chat.id not in censoring["SPEC"] \
+        or message.from_user.id not in censoring["SPEC"][message.chat.id]:
+            return # Don't censor innocents!
+        await message.delete()
+        logger.info("Get bullied noob")
+    await client.set_offline()
 
 HELP.add_help(["spam", "flood"], "pretty self explainatory",
             "will send many (`-n`) messages in this chat at a specific (`-t`) interval. " +
