@@ -91,7 +91,7 @@ HELP.add_help(["free", "f"], "stop censoring someone",
             "You can add `-i` to make target immune to mass censoring. More than one target can be specified (separate with spaces). " +
             "Add `-list` flag to list immune users (censor immunity is global but doesn't bypass specific censorship)",
             args="[-mass] [-list] [-i] <targets>")
-@alemiBot.on_message(filters.me & newFilterCommand(["censor", "c"], list(alemiBot.prefixes), flags=["-list", "-free", "-mass"]))
+@alemiBot.on_message(filters.me & newFilterCommand(["free", "f"], list(alemiBot.prefixes), flags=["-list", "-i", "-mass"]))
 async def free_cmd(client, message):
     global censoring
     args = message.command
