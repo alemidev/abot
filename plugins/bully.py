@@ -57,7 +57,7 @@ async def censor_cmd(client, message):
                 censoring["MASS"].append(message.chat.id)
                 out += "` → ` Mass censoring\n"
                 changed = True
-        else:
+        elif "cmd" in args:
             logger.info("Censoring users")
             users_to_censor = []
             for target in args["cmd"]:
@@ -79,6 +79,8 @@ async def censor_cmd(client, message):
                     changed = True
         if out != message.text.markdown + "\n":
             await message.edit(out)
+        else:
+            await message.edit(out + "` → ` Nothing to display")
     except Exception as e:
         traceback.print_exc()
         await message.edit(out + "\n`[!] → ` " + str(e))
@@ -99,15 +101,18 @@ async def free_cmd(client, message):
     changed = False
     try:
         if "-list" in args["flags"]:
-            immune_users = await client.get_users(censoring["FREE"])
-            for u in immune_users:
-                out += "` → ` {get_username(u)}\n"
+            if censoring["FREE"] == []:
+                out += "` → ` Nothing to display\n"
+            else:
+                immune_users = await client.get_users(censoring["FREE"])
+                for u in immune_users:
+                    out += "` → ` {get_username(u)}\n"
         elif "-mass" in args["flags"]:
             logger.info("Disabling mass censorship")
             censoring["MASS"].remove(message.chat.id)
             out += "\n` → ` Restored freedom of speech"
             changed = True
-        else:
+        elif "cmd" in args:
             logger.info("Freeing censored users")
             users_to_free = []
             for target in args["cmd"]:
@@ -129,6 +134,8 @@ async def free_cmd(client, message):
                         changed = True
         if out != message.text.markdown + "\n":
             await message.edit(out)
+        else:
+            await message.edit(out + "` → ` Nothing to display")
     except Exception as e:
         traceback.print_exc()
         await message.edit(out + "\n`[!] → ` " + str(e))
