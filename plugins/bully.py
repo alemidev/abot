@@ -70,14 +70,14 @@ async def censor_cmd(client, message):
                 for u in users_to_censor:
                     if u.id in censoring["FREE"]:
                         censoring["FREE"].remove(u.id)
-                        out += "` → ` {get_username(u)} is no longer immune immune\n"
+                        out += f"` → ` {get_username(u)} is no longer immune immune\n"
                         changed = True
             else:
                 for u in users_to_censor:
                     if message.chat.id not in censoring["SPEC"]:
                         censoring["SPEC"][message.chat.id] = []
                     censoring["SPEC"][message.chat.id].append(u.id)
-                    out += "` → ` Censoring {get_username(u)}\n"
+                    out += f"` → ` Censoring {get_username(u)}\n"
                     changed = True
         if out != message.text.markdown + "\n":
             await message.edit(out)
@@ -108,11 +108,11 @@ async def free_cmd(client, message):
             else:
                 immune_users = await client.get_users(censoring["FREE"])
                 for u in immune_users:
-                    out += "` → ` {get_username(u)}\n"
+                    out += f"` → ` {get_username(u)}\n"
         elif "-mass" in args["flags"]:
             logger.info("Disabling mass censorship")
             censoring["MASS"].remove(message.chat.id)
-            out += "\n` → ` Restored freedom of speech"
+            out += "` → ` Restored freedom of speech\n"
             changed = True
         elif "cmd" in args:
             logger.info("Freeing censored users")
@@ -126,13 +126,13 @@ async def free_cmd(client, message):
             if "-i" in args["flags"]:
                 for u in users_to_free:
                     censoring["FREE"].append(u.id)
-                    out += "` → ` {get_username(u)} is now immune\n"
+                    out += f"` → ` {get_username(u)} is now immune\n"
                     changed = True
             else:
                 for u in users_to_free:
                     if u.id in censoring["SPEC"][message.chat.id]:
                         censoring["SPEC"][message.chat.id].remove(u.id)
-                        out += "` → ` Freeing {get_username(u)}\n"
+                        out += f"` → ` Freeing {get_username(u)}\n"
                         changed = True
         if out != message.text.markdown + "\n":
             await message.edit(out)
