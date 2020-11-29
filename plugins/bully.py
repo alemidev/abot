@@ -74,6 +74,8 @@ async def censor_cmd(client, message):
                         changed = True
             else:
                 for u in users_to_censor:
+                    if message.chat.id not in censoring["SPEC"]:
+                        censoring["SPEC"][message.chat.id] = []
                     censoring["SPEC"][message.chat.id].append(u.id)
                     out += "` → ` Censoring {get_username(u)}\n"
                     changed = True
