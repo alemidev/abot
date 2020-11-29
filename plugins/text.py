@@ -152,11 +152,15 @@ async def figlettext(client, message):
 
 HELP.add_help("fortune", "do you feel fortunate!?",
                 "run `fortune` to get a random sentence. Like fortune bisquits!", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["fortune"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & newFilterCommand(["fortune"], list(alemiBot.prefixes), flags=["-cow"]))
 async def fortune(client, message):
     try:
         logger.info(f"Running command \"fortune\"")
-        result = subprocess.run("fortune", capture_output=True)
+        result = b""
+        if "-cow" in message.command["flags"]:
+            result = subprocess.run(["fortune", "|", "cowsay", "-W", "30"], capture_output=True)
+        else:
+            result = subprocess.run("fortune", capture_output=True)
         output = cleartermcolor(result.stdout.decode())
         await edit_or_reply(message, "``` → " + output + "```")
     except Exception as e:
