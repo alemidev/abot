@@ -207,17 +207,17 @@ async def qrcode_cmd(client, message):
     if "arg" not in args:
         return await edit_or_reply(message, "`[!] → ` No text given")
     text = args["arg"]
-    size = int(args["size"]) if "size" in args else 10
-    box_size = int(args["boxsize"]) if "boxsize" in args else None
+    size = int(args["size"]) if "size" in args else None
+    box_size = int(args["boxsize"]) if "boxsize" in args else 10
     border = int(args["border"]) if "border" in args else 4
     bg_color = args["back"] if "back" in args else "black"
     fg_color = args["front"] if "front" in args else "white"
     try:
         await client.send_chat_action(message.chat.id, "upload_photo")
         qr = qrcode.QRCode(
-            version=box_size,
+            version=size,
             error_correction=qrcode.constants.ERROR_CORRECT_L,
-            box_size=size,
+            box_size=box_size,
             border=border,
         )
         qr.add_data(text)
