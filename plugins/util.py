@@ -204,7 +204,7 @@ async def qrcode_cmd(client, message):
     args = message.command
     if "arg" not in args:
         return await edit_or_reply(message, "`[!] → ` No text given")
-    text = args["text"]
+    text = args["arg"]
     size = int(args["size"]) if "size" in args else 10
     border = int(args["border"]) if "border" in args else 4
     bg_color = args["back"] if "back" in args else "black"
