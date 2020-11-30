@@ -150,9 +150,9 @@ async def query_cmd(client, message):
 
             if "filter" in args:
                 filt = json.loads(args["filter"].replace("-f ", ""))
-                cursor = EVENTS.find(q, filt).sort("_id", -1).limit(lim)
+                cursor = EVENTS.find(q, filt).sort("date", -1).limit(lim)
             else:
-                cursor = EVENTS.find(q).sort("_id", -1).limit(lim)
+                cursor = EVENTS.find(q).sort("date", -1).limit(lim)
 
             for doc in cursor:
                 buf.append(doc)
@@ -191,7 +191,7 @@ async def hist_cmd(client, message):
     try:
         await client.send_chat_action(message.chat.id, "upload_document")
         cursor = EVENTS.find( {"_": "Message", "message_id": m_id, "chat.id": c_id},
-                {"text": 1, "date": 1, "edit_date": 1} ).sort("_id", -1)
+                {"text": 1, "date": 1, "edit_date": 1} ).sort("date", -1)
         lgr.info("Querying db for message history")
         out = ""
         for doc in cursor:
@@ -222,12 +222,12 @@ async def lookup_deleted_messages(client, message, target_group, limit, show_tim
     try:
         lgr.debug("Querying db for deletions")
         await client.send_chat_action(message.chat.id, "upload_document")
-        cursor = EVENTS.find({ "_": "Delete" }).sort("_id", -1)
+        cursor = EVENTS.find({ "_": "Delete" }).sort("date", -1)
         for deletion in cursor: # TODO make this part not a fucking mess!
             if chat_id is not None and "chat" in deletion \
             and deletion["chat"]["id"] != chat_id:
                 continue # don't make a 2nd query, should speed up a ton
-            candidates = EVENTS.find({"_": "Message", "message_id": deletion["message_id"]}).sort("_id", -1)
+            candidates = EVENTS.find({"_": "Message", "message_id": deletion["message_id"]}).sort("date", -1)
             lgr.debug("Querying db for possible deleted msg")
             for doc in candidates: # dank 'for': i only need one
                 if chat_id is not None and doc["chat"]["id"] != chat_id:
