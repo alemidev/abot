@@ -64,10 +64,10 @@ async def slowtype(client, message):
 HELP.add_help(["rc", "randomcase"], "make text randomly capitalized",
                 "will edit message applying random capitalization to every letter, like the spongebob meme.",
                 args="<text>", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["rc", "randomcase"], list(alemiBot.prefixes)), group=2)
+@alemiBot.on_message(is_allowed & newFilterCommand(["rc", "randomcase"], list(alemiBot.prefixes)), group=2)
 async def randomcase(client, message):
     logger.info(f"Making message randomly capitalized")
-    text = re.sub("[\.\/](?:rc|randomcase)(?: |)", "", message.text.markdown)
+    text = message.command["arg"]
     if text == "":
         return 
     msg = "" # omg this part is done so badly
