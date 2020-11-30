@@ -173,7 +173,7 @@ async def deepfry(client, message):
                     "\n` → ` Downloading [OK]\n` → ` Frying [OK]\n` → ` Uploading...")
     
             fried_io = io.BytesIO()
-            fried_io.name = "fried.jpeg"
+            fried_io.name = "fried.jpg"
             image.save(fried_io, "JPEG")
             fried_io.seek(0)
             await client.send_photo(message.chat.id, fried_io, reply_to_message_id=message.message_id,

@@ -16,6 +16,7 @@ from util.parse import newFilterCommand
 from googletrans import Translator
 from google_currency import convert
 from unit_converter.converter import converts
+import qrcode
 
 from bot import alemiBot
 
@@ -182,6 +183,50 @@ async def translate_cmd(client, message):
         res = translator.translate(q, **tr_options)
         out = f"`[{res.extra_data['confidence']:.2f}] → ` {res.text}"
         await edit_or_reply(message, out)
+    except Exception as e:
+        traceback.print_exc()
+        await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.send_chat_action(message.chat.id, "cancel")
+    await client.set_offline()
+
+HELP.add_help(["qrcode", "qr"], "make qr code",
+                "make a qr code with given text. Many parameters can be specified : image size (`-s`), " +
+                "image border (`-border`), qrcode version (`-version`). QR colors can be specified too: " +
+                "background with `-b` and front color with `-f`",
+                args="[-border <n>] [-s <n>] [-b <color>] [-f <color>] <text>", public=True)
+@alemiBot.on_message(is_allowed & newFilterCommand(["qrcode", "qr"], list(alemiBot.prefixes), options={
+    "border" : ["-border"],
+    "size" : ["-s"],
+    "back" : ["-b"],
+    "front" : ["-f"]
+}))
+async def qrcode_cmd(client, message):
+    args = message.command
+    if "arg" not in args:
+        return await edit_or_reply(message, "`[!] → ` No text given")
+    text = args["text"]
+    size = int(args["size"]) if "size" in args else 10
+    border = int(args["border"]) if "border" in args else 4
+    bg_color = args["back"] if "back" in args else "black"
+    fg_color = args["front"] if "front" in args else "white"
+    try:
+        await client.send_chat_action(message.chat.id, "upload_photo")
+        qr = qrcode.QRCode(
+            version=None, # auto determine best size
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=size,
+            border=border,
+        )
+        qr.add_data(text)
+        qr.make(fit=True)
+
+        imgage = qr.make_image(fill_color=bg_color, back_color=fg_color)
+        image = qrcode.make(text)
+        fried_io = io.BytesIO()
+        fried_io.name = "qrcode.jpg"
+        image.save(fried_io, "JPEG")
+        fried_io.seek(0)
+        await client.send_photo(message.chat.id, fried_io, reply_to_message_id=message.message_id)
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
