@@ -191,13 +191,14 @@ async def translate_cmd(client, message):
     await client.set_offline()
 
 HELP.add_help(["qrcode", "qr"], "make qr code",
-                "make a qr code with given text. Many parameters can be specified : image size (`-s`), " +
-                "image border (`-border`), qrcode version (`-version`). QR colors can be specified too: " +
+                "make a qr code with given text. Many parameters can be specified : size of specific boxes (`-box`), " +
+                "image border (`-border`), qrcode size (`-size`). QR colors can be specified too: " +
                 "background with `-b` and front color with `-f`",
-                args="[-border <n>] [-s <n>] [-b <color>] [-f <color>] <text>", public=True)
+                args="[-border <n>] [-size <n>] [-box <n>] [-b <color>] [-f <color>] <text>", public=True)
 @alemiBot.on_message(is_allowed & newFilterCommand(["qrcode", "qr"], list(alemiBot.prefixes), options={
     "border" : ["-border"],
-    "size" : ["-s"],
+    "size" : ["-size"],
+    "boxsize" : ["-box"],
     "back" : ["-b"],
     "front" : ["-f"]
 }))
@@ -207,13 +208,14 @@ async def qrcode_cmd(client, message):
         return await edit_or_reply(message, "`[!] → ` No text given")
     text = args["arg"]
     size = int(args["size"]) if "size" in args else 10
+    box_size = int(args["boxsize"]) if "boxsize" in args else None
     border = int(args["border"]) if "border" in args else 4
     bg_color = args["back"] if "back" in args else "black"
     fg_color = args["front"] if "front" in args else "white"
     try:
         await client.send_chat_action(message.chat.id, "upload_photo")
         qr = qrcode.QRCode(
-            version=None, # auto determine best size
+            version=box_size
             error_correction=qrcode.constants.ERROR_CORRECT_L,
             box_size=size,
             border=border,
