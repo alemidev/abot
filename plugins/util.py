@@ -221,7 +221,7 @@ async def qrcode_cmd(client, message):
         qr.add_data(text)
         qr.make(fit=True)
 
-        imgage = qr.make_image(fill_color=bg_color, back_color=fg_color)
+        image = qr.make_image(fill_color=bg_color, back_color=fg_color)
         fried_io = io.BytesIO()
         fried_io.name = "qrcode.jpg"
         image.save(fried_io, "JPEG")
