@@ -215,7 +215,7 @@ async def qrcode_cmd(client, message):
     try:
         await client.send_chat_action(message.chat.id, "upload_photo")
         qr = qrcode.QRCode(
-            version=box_size
+            version=box_size,
             error_correction=qrcode.constants.ERROR_CORRECT_L,
             box_size=size,
             border=border,
