@@ -215,7 +215,7 @@ async def spam(client, message):
             await asyncio.sleep(wait)
             if INTERRUPT:
                 INTERRUPT = False
-                await message.edit(message.text.markdown + f"\n` → ` Canceled after {i} events")
+                await message.edit(message.text.markdown + f"\n` → ` Canceled after {i + 1} events")
                 break
     except Exception as e:
         traceback.print_exc()
