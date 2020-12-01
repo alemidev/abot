@@ -4,6 +4,7 @@ from bot import alemiBot
 
 from pyrogram import filters
 
+from util.parse import newFilterCommand
 from util.message import get_text
 from plugins.help import HelpCategory
 
@@ -32,15 +33,18 @@ async def upload(client, message):
 
 HELP.add_help("get", "request a file from server",
                 "will upload a file from server to this chat. The path can be " +
-                "global.", args="<path>")
-@alemiBot.on_message(filters.me & filters.command("get", list(alemiBot.prefixes)))
+                "global. Use flag `-log` to automatically include `/data/scraped_media`.",
+                args="[-log] <path>")
+@alemiBot.on_message(filters.me & newFilterCommand("get", list(alemiBot.prefixes), flags=["-log"]))
 async def download(client, message):
-    if len(message.command) < 2:
+    if "cmd" not in message.command:
         return await message.edit(message.text.markdown + "\n`[!] → ` No filename provided")
     try:
         logger.info("Uploading media")
         await client.send_chat_action(message.chat.id, "upload_document")
-        name = message.command[1]
+        name = message.command["cmd"][0]
+        if "-log" in message.command["flags"]:
+            name = "/data/scraped_media/" + name
         await client.send_document(message.chat.id, name, reply_to_message_id=message.message_id, caption=f'` → {name}`')
     except Exception as e:
         await message.edit(message.text.markdown + "\n`[!] → ` " + str(e))
