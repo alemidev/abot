@@ -58,7 +58,7 @@ HELP.add_help(["run", "r"], "run command on server",
     pattern=r"^.(?:run|r) (?P<cmd>.*)", flags=re.DOTALL
 ))
 async def runit(client, message):
-    args = message.matches[0]["cmd"]
+    args = message.matches[0]["cmd"].replace("-delme", "")
     try:
         logger.info(f"Running command \"{args}\"")
         result = subprocess.run(args, shell=True, stdout=subprocess.PIPE,
@@ -88,7 +88,7 @@ HELP.add_help(["eval", "e"], "eval a python expression",
 ))
 async def evalit(client, message):
     global GLOBALS
-    args = message.matches[0]["expr"]
+    args = message.matches[0]["expr"].replace("-delme", "")
     try:
         logger.info(f"Evaluating \"{args}\"")
         with stdoutWrapper() as fake_stdout:
@@ -128,7 +128,7 @@ HELP.add_help(["exec", "ex"], "execute python code",
     pattern=r"^.(?:exec|ex) (?P<code>.*)", flags=re.DOTALL
 ))
 async def execit(client, message):
-    args = message.matches[0]["code"]
+    args = message.matches[0]["code"].replace("-delme", "")
     fancy_args = args.replace("\n", "\n... ")
     try:
         logger.info(f"Executing \"{args}\"")
