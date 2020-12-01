@@ -274,8 +274,9 @@ HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
                 "Service messages and bot messages will be excluded from peek by default, add `-sys` flag to include them. "
                 "Owner can peek globally (`-all`) or in a specific group (`-g <id>`). Keep in mind that Telegram doesn't send easy to use " +
                 "deletion data, so the bot needs to lookup ids and messages in the database, making cross searches. Big peeks, or peeks of very old deletions " +
-                "will take some time to complete. For specific searches, use the query (`.q`) command.",
-                public=True, args="[-t] [-g [id] | -all] [-sys] [<num>]")
+                "will take some time to complete. For specific searches, use the query (`.q`) command. An offset can be specified with `-o` : if given, " +
+                "the most `<offset>` recent messages will be skipped and older messages will be peeked.",
+                public=True, args="[-t] [-g [id] | -all] [-sys] [-o <n>] [<num>]")
 @alemiBot.on_message(is_allowed & newFilterCommand(["peek", "deld", "deleted", "removed"], list(alemiBot.prefixes), options={
     "group" : ["-g", "-group"],
     "offset" : ["-o", "-offset"]
