@@ -207,7 +207,7 @@ async def qrcode_cmd(client, message):
     args = message.command
     if "arg" not in args:
         return await edit_or_reply(message, "`[!] → ` No text given")
-    text = args["arg"]
+    text = args["arg"].replace("-delme", "") # just in case
     size = int(args["size"]) if "size" in args else None
     box_size = int(args["boxsize"]) if "boxsize" in args else 10
     border = int(args["border"]) if "border" in args else 4
