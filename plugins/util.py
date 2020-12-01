@@ -255,7 +255,7 @@ async def color_cmd(client, message):
         return await edit_or_reply(message, "`[!] → ` Not enough args given")
     try:
         await client.send_chat_action(message.chat.id, "upload_photo")
-        image = Image.new("RGB", (100, 100), clr)
+        image = Image.new("RGB", (200, 200), clr)
         color_io = io.BytesIO()
         color_io.name = "color.jpg"
         image.save(color_io, "JPEG")
