@@ -187,7 +187,7 @@ async def spam(client, message):
     global INTERRUPT
     args = message.command
     if "-cancel" in args["flags"]:
-        await message.edit(message.text.markdow + "\n` → ` Canceled current spam")
+        await message.edit(message.text.markdown + "\n` → ` Canceled current spam")
         INTERRUPT = True
     wait = 0
     number = 3
