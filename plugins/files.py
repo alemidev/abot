@@ -44,7 +44,7 @@ async def download(client, message):
         await client.send_chat_action(message.chat.id, "upload_document")
         name = message.command["cmd"][0]
         if "-log" in message.command["flags"]:
-            name = "/data/scraped_media/" + name
+            name = "data/scraped_media/" + name
         await client.send_document(message.chat.id, name, reply_to_message_id=message.message_id, caption=f'` → {name}`')
     except Exception as e:
         await message.edit(message.text.markdown + "\n`[!] → ` " + str(e))
