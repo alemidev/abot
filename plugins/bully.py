@@ -37,6 +37,8 @@ except:
     traceback.print_exc()
     # ignore
 
+INTERRUPT = False
+
 HELP.add_help(["censor", "c"], "immediately delete messages from users",
             "Start censoring someone in current chat. Use flag `-mass` to toggle mass censorship in current chat. " +
             "Add flag -free to stop istead stop censoring target. Use flag `-list` to get censored " +
@@ -175,13 +177,18 @@ HELP.add_help(["spam", "flood"], "pretty self explainatory",
             "If no number is given, will default to 3. If no interval is specified, " +
             "messages will be sent as soon as possible. You can reply to a message and " +
             "all spammed msgs will reply to that one too. If you add `-delme`, messages will be " +
-            "immediately deleted.", args="[-n <n>] [-t <t>] <text>")
+            "immediately deleted. To stop an ongoing spam, you can do `.spam -cancel`.",
+            args="[-cancel] [-n <n>] [-t <t>] <text>")
 @alemiBot.on_message(filters.me & newFilterCommand("spam", list(alemiBot.prefixes), options={
     "number" : ["-n"],
     "time" : ["-t"],
-}))
+}, flags=["-cancel"]))
 async def spam(client, message):
+    global INTERRUPT
     args = message.command
+    if "-cancel" in args["flags"]:
+        await message.edit(message.text.markdow + "\n` → ` Canceled current spam")
+        INTERRUPT = True
     wait = 0
     number = 3
     text = "."
@@ -198,18 +205,17 @@ async def spam(client, message):
             number = int(text.split(" ", 1)[0])
             text = text.split(" ", 1)[1]
         logger.info(f"Spamming \"{text}\" for {number} times")
+        extra = {}
         if message.reply_to_message is not None:
-            for i in range(number):
-                msg = await message.reply_to_message.reply(text)
-                if delme:
-                    await msg.delete()
-                await asyncio.sleep(wait) 
-        else:
-            for i in range(number):
-                msg = await client.send_message(message.chat.id, text)
-                if delme:
-                    await msg.delete()
-                await asyncio.sleep(wait) 
+            extra["reply_to_message_id"] = message.reply_to_message.message_id
+        for i in range(number):
+            msg = await client.send_message(message.chat.id, text, **extra)
+            if delme:
+                await msg.delete()
+            await asyncio.sleep(wait)
+            if INTERRUPT:
+                INTERRUPT = False
+                break
     except Exception as e:
         traceback.print_exc()
         await message.edit(message.text.markdown + "\n`[!] → ` " + str(e))
