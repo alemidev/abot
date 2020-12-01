@@ -212,13 +212,13 @@ async def hist_cmd(client, message):
     await client.set_offline()
 
 
-async def lookup_deleted_messages(client, message, target_group, limit, show_time=False, include_system=False):
+async def lookup_deleted_messages(client, message, target_group, limit, show_time=False, include_system=False, offset=0):
     response = await edit_or_reply(message, f"` → Peeking {limit} message{'s' if limit > 1 else ''} " +
                                             ('in ' + get_channel(target_group) if target_group is not None else '') + "`")
     chat_id = target_group.id if target_group is not None else None
     out = "\n\n"
     count = 0
-    LINE = "`[{m_id}]` **{user}** {where} → {system}{text} {media}\n"
+    LINE = "{time}`[{m_id}]` **{user}** {where} → {system}{text} {media}\n"
     try:
         lgr.debug("Querying db for deletions")
         await client.send_chat_action(message.chat.id, "upload_document")
@@ -236,13 +236,17 @@ async def lookup_deleted_messages(client, message, target_group, limit, show_tim
                     break # we don't care about service messages!
                 if not include_system and "from_user" in doc and doc["from_user"]["is_bot"]:
                     break # we don't care about bot messages!
+                if offset > 0: # We found a message but we don't want it because an offset was set
+                    offset -=1 #   skip adding this to output
+                    break
                 if limit == 1 and "attached_file" in doc: # Doing this here forces me to do ugly stuff below, eww!
                     await client.send_document(message.chat.id, "data/scraped_media/"+doc["attached_file"], reply_to_message_id=message.message_id,
                                         caption="**" + (get_username_dict(doc['from_user']) if "from_user" in doc else "UNKNOWN") + "** `→" +
                                                 (get_channel_dict(doc['chat']) + ' → ' if chat_id is None else '') +
                                                 f"` {get_text_dict(doc)['raw']}")
                 else:
-                    out += LINE.format(m_id=doc["message_id"], user=(get_username_dict(doc["from_user"]) if "from_user" in doc else "UNKNOWN"),
+                    out += LINE.format(time=(str(doc["date"]) + " ") if show_time else "",
+                                    m_id=doc["message_id"], user=(get_username_dict(doc["from_user"]) if "from_user" in doc else "UNKNOWN"),
                                     where='' if chat_id is not None else ("| --" + get_channel_dict(doc["chat"]) + '-- '),
                                     system=("--" + parse_sys_dict(doc) + "-- " if "service" in doc and doc["service"] else ""),
                                     text=get_text_dict(doc)['raw'], media=('' if "attached_file" not in doc else ('(`' + doc["attached_file"] + '`)')))
@@ -273,13 +277,15 @@ HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
                 "will take some time to complete. For specific searches, use the query (`.q`) command.",
                 public=True, args="[-t] [-g [id] | -all] [-sys] [<num>]")
 @alemiBot.on_message(is_allowed & newFilterCommand(["peek", "deld", "deleted", "removed"], list(alemiBot.prefixes), options={
-    "group" : ["-g"]
+    "group" : ["-g", "-group"],
+    "offset" : ["-o", "-offset"]
 }, flags=["-t", "-all", "-sys"]))
 async def deleted_cmd(client, message): # This is a mess omg
     args = message.command
     show_time = "-t" in args["flags"]
     target_group = message.chat
     include_system = "-sys" in args["flags"]
+    offset = args["offset"] if "offset" in args else 0
     if is_me(message):
         if "-all" in args["flags"]:
             target_group = None
@@ -292,7 +298,7 @@ async def deleted_cmd(client, message): # This is a mess omg
     asyncio.get_event_loop().create_task( # launch the task async because it may take some time
         lookup_deleted_messages(
             client, message,
-            target_group, limit, show_time, include_system
-            )
+            target_group, limit, show_time, include_system, offset
         )
+    )
 
