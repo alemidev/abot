@@ -26,8 +26,8 @@ censoring = {"MASS": [],
 try: # TODO THIS IS BAD MAYBE DON'T USE JSON FFS NICE CODE BRUUH
     with open("data/censoring.json") as f:
         buf = json.load(f)
-        for k in buf:
-            censoring["SPEC"][int(k)] = buf[k]
+        for k in buf["SPEC"]:
+            censoring["SPEC"][int(k)] = buf["SPEC"][k]
         censoring["MASS"] = [ int(e) for e in buf["MASS"] ]
         censoring["FREE"] = [ int(u) for u in buf["FREE"] ]
 except FileNotFoundError:
