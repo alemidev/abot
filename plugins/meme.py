@@ -242,8 +242,7 @@ async def ascii_cmd(client, message):
                                             caption=f"` → Made ASCII art `")
         except Exception as e:
             traceback.print_exc()
-            await event.message.edit(event.raw_text + "\n`[!] → ` " + str(e))
+            await edit_or_reply(message, "`[!] → ` " + str(e))
     else:
-        await event.message.edit(event.raw_text + 
-                "\n`[!] → ` you need to attach or reply to a file, dummy")
+        await edit_or_reply(message, "`[!] → ` you need to attach or reply to a file, dummy")
     await client.set_offline()
