@@ -240,7 +240,7 @@ HELP.add_help(["color"], "send solid color image",
                 "create a solid color image and send it. Color can be given as hex (`-hex`) or " +
                 "by specifying each channel individally. Each channel can range from 0 to 256. ",
                 args="[-hex <hex>] <r> <g> <b>", public=True)
-@alemiBot.on_message(is_allowed & newFilterCommand(["qrcode", "qr"], list(alemiBot.prefixes), options={
+@alemiBot.on_message(is_allowed & newFilterCommand(["color"], list(alemiBot.prefixes), options={
     "hex" : ["-hex"],
 }))
 async def color_cmd(client, message):
