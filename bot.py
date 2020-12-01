@@ -33,7 +33,7 @@ class alemiBot(Client):
 
     async def start(self):
         await super().start()
-        logging.info("Bot started\n")
+        logging.warning("Bot started\n")
         try:
             with open("data/lastmsg.json", "r") as f:
                 m = json.load(f)
@@ -48,7 +48,7 @@ class alemiBot(Client):
 
     async def stop(self):
         await super().stop()
-        logging.info("Bot stopped\n")
+        logging.warning("Bot stopped\n")
     
     async def restart(self):
         await self.stop()
