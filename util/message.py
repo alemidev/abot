@@ -3,7 +3,8 @@ from . import batchify
 
 def is_me(message):
     return message.from_user is not None \
-    and message.from_user.is_self
+    and message.from_user.is_self \
+    and message.via_bot is None # can't edit messages from inline bots
 
 def get_text(message):
     if message.text is not None:
