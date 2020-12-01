@@ -285,7 +285,7 @@ async def deleted_cmd(client, message): # This is a mess omg
     show_time = "-t" in args["flags"]
     target_group = message.chat
     include_system = "-sys" in args["flags"]
-    offset = args["offset"] if "offset" in args else 0
+    offset = int(args["offset"]) if "offset" in args else 0
     if is_me(message):
         if "-all" in args["flags"]:
             target_group = None
