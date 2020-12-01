@@ -250,7 +250,7 @@ async def color_cmd(client, message):
         if not clr.startswith("#"):
             clr = "#" + clr
     elif "cmd" in message.command and len(message.command["cmd"]) > 2:
-        clr = tuple([int(k) for k in message.command["cmd"][:3])
+        clr = tuple([int(k) for k in message.command["cmd"]][:3])
     else:
         return await edit_or_reply(message, "`[!] → ` Not enough args given")
     try:
