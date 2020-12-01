@@ -17,6 +17,7 @@ from util.parse import newFilterCommand
 from googletrans import Translator
 from google_currency import convert
 from unit_converter.converter import converts
+from PIL import Image
 import qrcode
 
 from bot import alemiBot
@@ -224,11 +225,42 @@ async def qrcode_cmd(client, message):
         qr.make(fit=True)
 
         image = qr.make_image(fill_color=fg_color, back_color=bg_color)
-        fried_io = io.BytesIO()
-        fried_io.name = "qrcode.jpg"
-        image.save(fried_io, "JPEG")
-        fried_io.seek(0)
-        await client.send_photo(message.chat.id, fried_io, reply_to_message_id=message.message_id)
+        qr_io = io.BytesIO()
+        qr_io.name = "qrcode.jpg"
+        image.save(qr_io, "JPEG")
+        qr_io.seek(0)
+        await client.send_photo(message.chat.id, qr_io, reply_to_message_id=message.message_id)
+    except Exception as e:
+        traceback.print_exc()
+        await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.send_chat_action(message.chat.id, "cancel")
+    await client.set_offline()
+
+HELP.add_help(["color"], "send solid color image",
+                "create a solid color image and send it. Color can be given as hex (`-hex`) or " +
+                "by specifying each channel individally. Each channel can range from 0 to 256. ",
+                args="[-hex <hex>] <r> <g> <b>", public=True)
+@alemiBot.on_message(is_allowed & newFilterCommand(["qrcode", "qr"], list(alemiBot.prefixes), options={
+    "hex" : ["-hex"],
+}))
+async def color_cmd(client, message):
+    clr = None
+    if "hex" in message.command:
+        clr = message.command["hex"]
+        if not clr.startswith("#"):
+            clr = "#" + clr
+    elif "cmd" in message.command and len(message.command["cmd"]) > 2:
+        clr = tuple([int(k) for k in message.command["cmd"][:3])
+    else:
+        return await edit_or_reply(message, "`[!] → ` Not enough args given")
+    try:
+        await client.send_chat_action(message.chat.id, "upload_photo")
+        image = Image.new("RGB", (100, 100), clr)
+        color_io = io.BytesIO()
+        color_io.name = "color.jpg"
+        image.save(color_io, "JPEG")
+        color_io.seek(0)
+        await client.send_photo(message.chat.id, color_io, reply_to_message_id=message.message_id)
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
