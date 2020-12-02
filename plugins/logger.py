@@ -104,7 +104,7 @@ async def stats_cmd(client, message):
     global LOGGED_COUNT
     original_text = message.text.markdown
     before = time.time()
-    message = await edit_or_reply(message, "` → ` Fetching stats...")
+    msg = await edit_or_reply(message, "` → ` Fetching stats...")
     after = time.time()
     latency = (after - before) * 1000
     count = EVENTS.count({})
@@ -119,7 +119,7 @@ async def stats_cmd(client, message):
 
     medianumber = len(os.listdir("data/scraped_media"))
     uptime = str(datetime.now() - client.start_time)
-    await message.edit(original_text + f"\n`→ online for {uptime} `" +
+    await msg.edit(original_text + f"\n`→ online for {uptime} `" +
                     f"\n` → ` latency **{latency:.0f}**ms" +
                     f"\n` → ` **{LOGGED_COUNT}** events logged (**{count}** total)" +
                     f"\n` → ` DB size **{order_suffix(size)}**" +
@@ -259,12 +259,12 @@ async def lookup_deleted_messages(client, message, target_group, limit, show_tim
                 for m in batchify(out, 4090):
                     await response.reply(m)
             elif out.strip() != "": # This is bad!
-                await response.edit(response.text.markdown + out)
+                await response.edit(response.text + out)
         else:
-            await response.edit(response.text.markdown + "**N/A**")
+            await response.edit(response.text + "**N/A**")
     except Exception as e:
         traceback.print_exc()
-        await response.edit(response.text.markdown + "\n`[!] → ` " + str(e))
+        await response.edit(response.text + "\n`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline() 
 
