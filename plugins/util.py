@@ -153,13 +153,13 @@ async def rand_cmd(client, message):
             for i in range(times):
                 res.append(secrets.randbelow(2))
             if times > 1:
-                out += "` → Binary " + "".join(str(x) for x in res) + "`\n"
+                out += "`→ Binary " + "".join(str(x) for x in res) + "`\n"
                 res = [] # so it won't do the thing below
         if times <= 20:
             for r in res:
-                out += f"` → ` **{r}**\n"
+                out += f"` → ` ** {r} **\n"
         else:
-            out += f"` → ` [ " + " ".join(str(r) for r in res) + "]"
+            out += f"` → ` [ " + " ".join(str(r) for r in res) + " ]"
         await edit_or_reply(message, out)
     except Exception as e:
         traceback.print_exc()
