@@ -125,11 +125,11 @@ async def rand_cmd(client, message):
         maxval = None
         if "arg" in args:
             pattern = r"(?P<batch>[0-9]*)d(?P<max>[0-9]+)"
-            res = re.search(pattern, args["arg"])
-            if res is not None:
-                maxval = int(res["max"])
-                if res["batch"] != "":
-                    times = int(res["batch"])
+            m = re.search(pattern, args["arg"])
+            if m is not None:
+                maxval = int(m["max"])
+                if m["batch"] != "":
+                    times = int(m["batch"])
             elif len(args["cmd"]) == 1 and args["cmd"][0].isnumeric():
                 maxval = int(args["cmd"][0])
         if "batchsize" in args:
