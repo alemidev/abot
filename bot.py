@@ -45,6 +45,7 @@ class alemiBot(Client):
                 json.dump({}, f)
         except:
             pass # ignore
+        self.me = await self.get_me() # this is used to quickly parse /<cmd>@<who> format for commands
 
     async def stop(self):
         await super().stop()
