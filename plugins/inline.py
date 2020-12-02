@@ -7,6 +7,7 @@ from pyrogram.types import (
 )
 from bot import alemiBot
 
+from util.command import filterCommand
 from util.user import get_username
 from plugins.help import CATEGORIES
 
@@ -14,12 +15,12 @@ import logging
 lgr = logging.getLogger(__name__)
 
 
-@alemiBot.on_message(filters.command("start", list(alemiBot.prefixes)))
+@alemiBot.on_message(filterCommand("start", list(alemiBot.prefixes)))
 async def cmd_start(client, message):
     await message.reply("` → ` This bot provides inline help for my userbot commands.\n"
                         "It will also run (for everyone) the public commands, so you can try those!")
 
-@alemiBot.on_message(filters.command("make_botfather_list", list(alemiBot.prefixes)))
+@alemiBot.on_message(filterCommand("make_botfather_list", list(alemiBot.prefixes)))
 async def cmd_start(client, message):
     out = ""
     for k in CATEGORIES:
