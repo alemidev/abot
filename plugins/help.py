@@ -55,14 +55,15 @@ def get_all_short_text():
 @alemiBot.on_message(is_allowed & filterCommand(["help", "h"], list(alemiBot.prefixes)))
 async def help_cmd(client, message):
     logger.info("Help!")
-    if len(message.command) > 1:
+    if "cmd" in message.command:
+        arg = message.command["cmd"][0]
         for k in CATEGORIES:
             cat = CATEGORIES[k]
-            if message.command[1] in cat.HELP_ENTRIES:
-                e = cat.HELP_ENTRIES[message.command[1]]
+            if arg in cat.HELP_ENTRIES:
+                e = cat.HELP_ENTRIES[arg]
                 return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode="markdown")
-            elif message.command[1] in ALIASES and ALIASES[message.command[1]] in cat.HELP_ENTRIES:
-                e = cat.HELP_ENTRIES[ALIASES[message.command[1]]]
+            elif arg in ALIASES and ALIASES[arg] in cat.HELP_ENTRIES:
+                e = cat.HELP_ENTRIES[ALIASES[arg]]
                 return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode="markdown")
     await edit_or_reply(message, f"`ᚨᛚᛖᛗᛁᛒᛟᛏ v{client.app_version}`\n" +
                         "`→ .help [cmd] ` get help, give cmd for specific help\n" +

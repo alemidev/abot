@@ -65,12 +65,12 @@ HELP.add_help("where", "get info about chat",
                 "Get complete information about a chat and send it as json. If no chat name " +
                 "or id is specified, current chat will be used. Add `-no` at the end if you just want the " +
                 "id : no file will be attached.", args="[<target>] [-no]", public=True)
-@alemiBot.on_message(is_allowed & filterCommand("where", list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filterCommand("where", list(alemiBot.prefixes), flags=["-no"]))
 async def where_cmd(client, message):
     try:
         tgt = message.chat
-        if len(message.command) > 1 and message.command[1] != "-no":
-            arg = message.command[1]
+        if "cmd" in message.command:
+            arg = message.command["cmd"][0]
             if arg.isnumeric():
                 tgt = await client.get_chat(int(arg))
             else:
@@ -78,7 +78,7 @@ async def where_cmd(client, message):
         logger.info(f"Getting info of chat")
         if is_me(message):
             await message.edit(message.text.markdown + f"\n` → ` Getting data of chat `{tgt.id}`")
-        if len(message.command) < 3 or message.command[2] != "-no":
+        if not "-no" in message.command["flags"]:
             out = io.BytesIO((str(tgt)).encode('utf-8'))
             out.name = f"chat-{message.chat.id}.json"
             await client.send_document(message.chat.id, out)
@@ -91,12 +91,12 @@ HELP.add_help("who", "get info about user",
                 "Get complete information about user and attach as json. If replying to a message, author will be used. " +
                 "An id or @ can be specified. If neither is applicable, self will be used. Append `-no` if you just want the id.",
                 public=True, args="[<target>] [-no]")
-@alemiBot.on_message(is_allowed & filterCommand("who", list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filterCommand("who", list(alemiBot.prefixes), flags=["-no"]))
 async def who_cmd(client, message):
     try:
         peer = None
-        if len(message.command) > 1 and message.command[1] != "-no":
-            arg = message.command[1]
+        if "cmd" in message.command:
+            arg = message.command["cmd"][0]
             if arg.isnumeric():
                 peer = await client.get_users(int(arg))
             else:
@@ -109,7 +109,7 @@ async def who_cmd(client, message):
         logger.info("Getting info of user")
         if is_me(message):
             await message.edit(message.text.markdown + f"\n` → ` Getting data of user `{peer.id}`")
-        if len(message.command) < 3 or message.command[2] != "-no":
+        if not "-no" in message.command["flags"]:
             out = io.BytesIO((str(peer)).encode('utf-8'))
             out.name = f"user-{peer.id}.json"
             await client.send_document(message.chat.id, out)
@@ -120,24 +120,29 @@ async def who_cmd(client, message):
 
 HELP.add_help("what", "get info about message",
                 "Get complete information about a message and attach as json. If replying, replied message will be used. "+
-                "id and chat can be passed as arguments. If no chat is specified, " +
+                "id and chat can be passed as arguments. If no chat is specified with `-g`, " +
                 "message will be searched in current chat. Append `-no` if you just want the id.",
-                args="[<target> [<chat>]] [-no]", public=True)
-@alemiBot.on_message(is_allowed & filterCommand("what", list(alemiBot.prefixes)))
+                args="[<target>] [-g <chatId>] [-no]", public=True)
+@alemiBot.on_message(is_allowed & filterCommand("what", list(alemiBot.prefixes), options={
+    "group" : ["-g", "-group"]
+}, flags=["-no"]))
 async def what_cmd(client, message):
     msg = message
     try:
         if message.reply_to_message is not None:
             msg = await client.get_messages(message.chat.id, message.reply_to_message.message_id)
-        elif len(message.command) > 1 and message.command[1].isnumeric():
+        elif "cmd" in message.command and message.command["cmd"][0].isnumeric():
             chat_id = message.chat.id
-            if len(message.command) > 2 and message.command[2].isnumeric():
-                chat_id = int(message.command[2])
-            msg = await client.get_messages(chat_id, int(message.command[1]))
+            if "group" in message.command:
+                if message.command["group"].isnumeric():
+                    chat_id = int(message.command["group"])
+                else:
+                    chat_id = (await client.get_chat(message.command["group"])).id
+            msg = await client.get_messages(chat_id, int(message.command["cmd"][0]))
         logger.info("Getting info of msg")
         if is_me(message):
             await message.edit(message.text.markdown + f"\n` → ` Getting data of msg `{msg.message_id}`")
-        if message.command[len(message.command)-1] != "-no":
+        if not "-no" in message.command["flags"]:
             out = io.BytesIO((str(msg)).encode('utf-8'))
             out.name = f"msg-{msg.message_id}.json"
             await client.send_document(message.chat.id, out)

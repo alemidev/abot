@@ -50,11 +50,11 @@ HELP.add_help(["diz", "dizionario"], "search in ita dict",
                 args="<word>", public=True)
 @alemiBot.on_message(is_allowed & filterCommand(["diz", "dizionario"], list(alemiBot.prefixes)))
 async def diz(client, message):
-    if len(message.command) < 2:
+    if "arg" not in message.command:
         return await edit_or_reply(message, "`[!] → ` No query given")
     try:
         await client.send_chat_action(message.chat.id, "upload_document")
-        arg = message.command[1]
+        arg = message.command["arg"]
         logger.info(f"Searching \"{arg}\" on it dictionary")
         # Use this to get only the meaning 
         res = italian_dictionary.get_definition(arg) 
@@ -74,11 +74,11 @@ HELP.add_help(["dic", "dictionary"], "search in eng dict",
                 args="<word>", public=True)
 @alemiBot.on_message(is_allowed & filterCommand(["dic", "dictionary"], list(alemiBot.prefixes)))
 async def dic(client, message):
-    if len(message.command) < 2:
+    if "arg" not in message.command:
         return await edit_or_reply(message, "`[!] → ` No query given")
     try:
         await client.send_chat_action(message.chat.id, "upload_document")
-        arg = message.command[1]
+        arg = message.command["arg"]
         logger.info(f"Searching \"{arg}\" on eng dictionary")
         res = dictionary.meaning(arg)
         if res is None:
@@ -101,11 +101,11 @@ HELP.add_help(["ud", "urban"], "search in urban dict",
                 args="<word>", public=True)
 @alemiBot.on_message(is_allowed & filterCommand(["ud", "urban"], list(alemiBot.prefixes)))
 async def urbandict(client, message):
-    if len(message.command) < 2:
+    if "arg" not in message.command:
         return await edit_or_reply(message, "`[!] → ` No query given")
     try:
         await client.send_chat_action(message.chat.id, "upload_document")
-        arg = message.command[1]
+        arg = message.command["arg"]
         logger.info(f"Searching \"{arg}\" on urban dictionary")
         res = ud_define(arg)
         if res is None:
@@ -127,11 +127,11 @@ HELP.add_help("wiki", "search on wikipedia",
                 args="<query>", public=True)
 @alemiBot.on_message(is_allowed & filterCommand("wiki", list(alemiBot.prefixes)))
 async def wiki(client, message):
-    if len(message.command) < 2:
+    if "arg" not in message.command:
         return await edit_or_reply(message, "`[!] → ` No query given")
     try:
         await client.send_chat_action(message.chat.id, "upload_document")
-        arg = " ".join(message.command[1:])
+        arg = message.command["arg"]
         logger.info(f"Searching \"{arg}\" on wikipedia")
         page = wikipedia.page(arg)
         out = f"` → {page.title}`\n"
@@ -157,10 +157,10 @@ HELP.add_help("lmgtfy", "let me google that for you",
                 args="<query>", public=True)
 @alemiBot.on_message(is_allowed & filterCommand("lmgtfy", list(alemiBot.prefixes)))
 async def lmgtfy(client, message):
-    if len(message.command) < 2:
+    if "arg" not in message.command:
         return await edit_or_reply(message, "`[!] → ` No query given")
     try:
-        arg = "+".join(message.command[1:])
+        arg = message.command["arg"]
         logger.info(f"lmgtfy {arg}")
         await edit_or_reply(message, f"` → ` http://letmegooglethat.com/?q={arg}")
     except Exception as e:
@@ -218,7 +218,7 @@ HELP.add_help(["weather", "wttr"], "get weather of location",
                 args="<location>", public=True)
 @alemiBot.on_message(is_allowed & filterCommand(["weather", "wttr"], list(alemiBot.prefixes)))
 async def weather_cmd(client, message):
-    if len(message.command) < 2:
+    if "arg" not in message.command:
         return await edit_or_reply(message, "`[!] → ` Not enough arguments")
     # APIKEY = alemiBot.config.get("weather", "apikey", fallback="")
     # if APIKEY == "":
@@ -226,7 +226,7 @@ async def weather_cmd(client, message):
     try:
         logger.info("curl wttr.in")
         await client.send_chat_action(message.chat.id, "find_location")
-        q = " ".join(message.command[1:])
+        q = message.command["arg"]
         r = requests.get(f"https://wttr.in/{q}?mnTC0&lang=en")
         await edit_or_reply(message, "<code> → " + r.text + "</code>", parse_mode="html")
         # # Why bother with OpenWeatherMap?

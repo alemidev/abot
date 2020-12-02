@@ -37,12 +37,12 @@ HELP.add_help(["convert", "conv"], "convert various units",
                 args="<val> <from> <to>", public=True)
 @alemiBot.on_message(is_allowed & filterCommand(["convert", "conv"], list(alemiBot.prefixes)))
 async def convert_cmd(client, message):
-    if len(message.command) < 4:
+    if "cmd" not in message.command or len(message.command["cmd"] < 3):
         return await edit_or_reply(message, "`[!] → ` Not enough arguments")
     try:
         logger.info("Converting units")
-        res = converts(message.command[1] + " " + message.command[2], message.command[3])
-        await edit_or_reply(message, f"` → ` {res} {message.command[3]}")
+        res = converts(message.command["cmd"][0] + " " + message.command["cmd"][1], message.command["cmd"][2])
+        await edit_or_reply(message, f"` → ` {res} {message.command['cmd'][2]}")
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
@@ -54,12 +54,12 @@ HELP.add_help(["currency", "cconvert", "curr"], "convert across currencies",
                 args="<val> <from> <to>", public=True)
 @alemiBot.on_message(is_allowed & filterCommand(["currency", "cconvert", "curr"], list(alemiBot.prefixes)))
 async def currency_convert_cmd(client, message):
-    if len(message.command) < 4:
+    if "cmd" not in message.command or len(message.command["cmd"] < 3):
         return await edit_or_reply(message, "`[!] → ` Not enough arguments")
     try:
         logger.info("Converting currency")
         await client.send_chat_action(message.chat.id, "choose_contact")
-        res = json.loads(convert(message.command[2], message.command[3], float(message.command[1])))
+        res = json.loads(convert(message.command["cmd"][1], message.command["cmd"][2], float(message.command["cmd"][0])))
         await edit_or_reply(message, f"` → ` {res['amount']} {res['to']}")
     except Exception as e:
         traceback.print_exc()
@@ -92,9 +92,9 @@ async def countdown(client, message):
     else:
         tgt_msg = await message.reply("` → `")
     end = time.time() + 5
-    if len(message.command) > 1:
+    if "cmd" in message.command:
         try:
-            end = time.time() + float(message.command[1])
+            end = time.time() + float(message.command["cmd"][0])
         except ValueError:
             return await tgt_msg.edit("`[!] → ` argument must be a float")
     msg = tgt_msg.text + "\n` → Countdown ` **{:.1f}**"

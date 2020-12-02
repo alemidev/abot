@@ -81,7 +81,7 @@ HELP.add_help("steal", "steal a meme",
                 "A name for the meme must be given.", args="<name>")
 @alemiBot.on_message(filters.me & filterCommand("steal", list(alemiBot.prefixes)))
 async def steal(client, message):
-    if len(message.command) < 2:
+    if "cmd" not in message.command:
         return await message.edit(message.text.markdown + "\n`[!] → ` No meme name provided")
     msg = message
     if message.reply_to_message is not None:
@@ -89,7 +89,7 @@ async def steal(client, message):
     if msg.media:
         try:                                                # TODO I need to get what file type it is!
             logger.info("Stealing meme")
-            fpath = await client.download_media(msg, file_name="data/memes/") # + message.command[1])
+            fpath = await client.download_media(msg, file_name="data/memes/") # + message.command["cmd"][0])
             # await message.edit(get_text(message) + '\n` → ` saved meme as {}'.format(fpath))
             path, fname = os.path.splitext(fpath) # this part below is trash, im waiting for my PR on pyrogram
             extension = fname.split(".")
@@ -97,7 +97,7 @@ async def steal(client, message):
                 extension = extension[1]
             else:
                 extension = ".jpg" # cmon most memes will be jpg
-            newname = message.command[1] + '.' + extension
+            newname = message.command["cmd"][0] + '.' + extension
             os.rename(fpath, "data/memes/" + newname)
             await message.edit(get_text(message) + f'\n` → ` saved meme as {newname}')
         except Exception as e:
@@ -223,8 +223,8 @@ async def ascii_cmd(client, message):
     if message.reply_to_message is not None:
         msg = message.reply_to_message
     width = 120
-    if len(message.command) > 1:
-        width = int(message.command[1])
+    if "cmd" in message.command:
+        width = int(message.command["cmd"][0])
     if msg.media:
         logger.info(f"Making ascii of img")
         try:

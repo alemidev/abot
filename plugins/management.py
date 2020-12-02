@@ -107,21 +107,21 @@ async def manage_allowed_cmd(client, message):
             if peer is None:
                 return
             users_to_manage.append(peer)
-        elif len(message.command) > 1 and message.command[1] == "@here" \
-        or message.command[1] == "@everyone":
-            async for u in client.iter_chat_members(message.chat.id):
-                if u.user.is_bot:
-                    continue
-                users_to_manage.append(u.user)
-        elif len(message.command) > 1:
-            user = None
-            try:
-                user = await client.get_users(message.command[1])
-            except ValueError:
-                return await message.edit(message.text.markdown + "\n`[!] → ` No user matched")
-            if user is None:
-                return await message.edit(message.text.markdown + "\n`[!] → ` No user matched")
-            users_to_manage.append(user)
+        elif "cmd" in message.command:
+            if message.command["cmd"][0] in ["@here", "@everyone"]:
+                async for u in client.iter_chat_members(message.chat.id):
+                    if u.user.is_bot:
+                        continue
+                    users_to_manage.append(u.user)
+            else:
+                user = None
+                try:
+                    user = await client.get_users(message.command["cmd"][0])
+                except ValueError:
+                    return await message.edit(message.text.markdown + "\n`[!] → ` No user matched")
+                if user is None:
+                    return await message.edit(message.text.markdown + "\n`[!] → ` No user matched")
+                users_to_manage.append(user)
         else:
             return await message.edit(message.text.markdown + "\n`[!] → ` Provide an ID or reply to a msg")
         logger.info("Changing permissions")
@@ -147,7 +147,7 @@ HELP.add_help(["trusted", "plist", "permlist"], "list allowed users",
                 "note that users without a username may give issues. Use `-s` to get " +
                 "the users individually if a batch request fails with 'InvalidPeerId'.", args="[-s]")
 # broken af lmaooo TODO
-@alemiBot.on_message(filters.me & filterCommand(["trusted", "plist", "permlist"], list(alemiBot.prefixes)))
+@alemiBot.on_message(filters.me & filterCommand(["trusted", "plist", "permlist"], list(alemiBot.prefixes), flags=["-s"]))
 async def trusted_list(client, message):
     try:
         user_ids = list_allowed()
@@ -155,7 +155,7 @@ async def trusted_list(client, message):
         issues = ""
         users = []
         logger.info("Listing allowed users")
-        if len(message.command) > 1 and message.command[1] == "-s":
+        if "-s" in message.command["flags"]:
             for uid in list_allowed():
                 try:
                     users.append(await client.get_users(uid))
