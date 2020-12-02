@@ -26,7 +26,7 @@ async def cmd_start(client, message):
         for kk in CATEGORIES[k].HELP_ENTRIES:
             e = CATEGORIES[k].HELP_ENTRIES[kk]
             out += f"{e.title} - {e.args} | {e.shorttext}\n"
-    await message.reply(out)
+    await message.reply(out, parse_mode='markdown')
 
 @alemiBot.on_inline_query(filters.regex(pattern="^[\\"+ "\\".join(alemiBot.prefixes) +"]"), group=0)
 async def inline_run(client, inline_query):
