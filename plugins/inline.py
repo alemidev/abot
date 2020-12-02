@@ -21,8 +21,8 @@ async def cmd_start(client, message):
                         "It will also run (for everyone) the public commands, so you can try those!")
 
 @alemiBot.on_message(filterCommand("make_botfather_list", list(alemiBot.prefixes)))
-async def cmd_start(client, message):
-    out = ""
+async def cmd_make_botfather_list(client, message):
+    out = "help - [cmd] | get help for specific command or command list\n"
     for k in CATEGORIES:
         for kk in CATEGORIES[k].HELP_ENTRIES:
             e = CATEGORIES[k].HELP_ENTRIES[kk]
