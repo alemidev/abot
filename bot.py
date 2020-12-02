@@ -33,6 +33,7 @@ class alemiBot(Client):
 
     async def start(self):
         await super().start()
+        self.me = await self.get_me() # this is used to quickly parse /<cmd>@<who> format for commands
         logging.warning("Bot started\n")
         try:
             with open("data/lastmsg.json", "r") as f:
@@ -45,8 +46,7 @@ class alemiBot(Client):
                 json.dump({}, f)
         except:
             pass # ignore
-        self.me = await self.get_me() # this is used to quickly parse /<cmd>@<who> format for commands
-
+        
     async def stop(self):
         await super().stop()
         logging.warning("Bot stopped\n")
