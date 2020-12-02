@@ -19,6 +19,15 @@ async def cmd_start(client, message):
     await message.reply("` → ` This bot provides inline help for my userbot commands.\n"
                         "It will also run (for everyone) the public commands, so you can try those!")
 
+@alemiBot.on_message(filters.command("make_botfather_list", list(alemiBot.prefixes)))
+async def cmd_start(client, message):
+    out = ""
+    for k in CATEGORIES:
+        for kk in CATEGORIES[k].HELP_ENTRIES:
+            e = CATEGORIES[k].HELP_ENTRIES[kk]
+            out += f"{e.title} - {e.args} | {e.shorttext}\n"
+    await message.reply(out)
+
 @alemiBot.on_inline_query(filters.regex(pattern="^[\\"+ "\\".join(alemiBot.prefixes) +"]"), group=0)
 async def inline_run(client, inline_query):
     lgr.warning(f"Received RUN query from {get_username(inline_query.from_user)}")
