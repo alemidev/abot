@@ -55,7 +55,7 @@ def filterCommand(commands: str or List[str], prefixes: str or List[str] = "/",
                 # Remove the escape character from the arguments
                 match_list = [
                     re.sub(r"\\([\"'])", r"\1", m.group(2) or m.group(3) or "")
-                    for m in command_re.finditer(without_prefix[len(cmd):])
+                    for m in command_re.finditer(without_prefix[len(cmd):].replace("@" + client.me.username, ""))
                 ]
 
                 message.command = { "raw" : [cmd] + list(match_list), # make a copy
