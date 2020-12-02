@@ -20,7 +20,7 @@ from pyrogram.errors.exceptions.flood_420 import FloodWait
 from bot import alemiBot
 
 from util import batchify
-from util.parse import newFilterCommand, cleartermcolor
+from util.command import filterCommand
 from util.text import split_for_window
 from util.permission import is_allowed
 from util.message import tokenize_json, edit_or_reply, get_text, get_text_dict, is_me, parse_sys_dict
@@ -98,7 +98,7 @@ def order_suffix(num, measure='B'):
 
 HELP.add_help(["stats", "stat"], "get stats",
                 "Get uptime, disk usage for media and for db, number of tracked events.", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["stats", "stat"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filterCommand(["stats", "stat"], list(alemiBot.prefixes)))
 async def stats_cmd(client, message):
     lgr.info("Getting stats")
     global LOGGED_COUNT
@@ -132,7 +132,7 @@ async def stats_cmd(client, message):
 HELP.add_help(["query", "q", "log"], "interact with db",
                 "make queries to the underlying database (MongoDB) to request documents. " +
                 "Filters, limits and fields can be configured with arguments.", args="[-l <n>] [-f <{filter}>] <{query}>")
-@alemiBot.on_message(filters.me & newFilterCommand(["query", "q", "log"], list(alemiBot.prefixes), options={
+@alemiBot.on_message(filters.me & filterCommand(["query", "q", "log"], list(alemiBot.prefixes), options={
     "limit" : ["-l", "-limit"],
     "filter" : ["-f", "-filter"]
 }))
@@ -172,7 +172,7 @@ async def query_cmd(client, message):
 HELP.add_help(["hist", "history"], "get edit history of a message",
                 "request edit history of a message. You can specify an id or reply to a message.",
                 public=True, args="[-t] [-g <g>] [<id>]")
-@alemiBot.on_message(is_allowed & newFilterCommand(["history", "hist"], list(alemiBot.prefixes), options={
+@alemiBot.on_message(is_allowed & filterCommand(["history", "hist"], list(alemiBot.prefixes), options={
     "group" : ["-g"]
 }, flags=["-t"]))
 async def hist_cmd(client, message):
@@ -277,7 +277,7 @@ HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
                 "will take some time to complete. For specific searches, use the query (`.q`) command. An offset can be specified with `-o` : if given, " +
                 "the most `<offset>` recent messages will be skipped and older messages will be peeked.",
                 public=True, args="[-t] [-g [id] | -all] [-sys] [-o <n>] [<num>]")
-@alemiBot.on_message(is_allowed & newFilterCommand(["peek", "deld", "deleted", "removed"], list(alemiBot.prefixes), options={
+@alemiBot.on_message(is_allowed & filterCommand(["peek", "deld", "deleted", "removed"], list(alemiBot.prefixes), options={
     "group" : ["-g", "-group"],
     "offset" : ["-o", "-offset"]
 }, flags=["-t", "-all", "-sys"]))

@@ -8,6 +8,7 @@ from pyrogram import filters
 
 from util.permission import is_allowed
 from util.message import edit_or_reply, is_me
+from util.command import filterCommand
 
 import logging
 logger = logging.getLogger(__name__)
@@ -51,7 +52,7 @@ def get_all_short_text():
     return out
 
 # The help command
-@alemiBot.on_message(is_allowed & filters.command(["help", "h"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filterCommand(["help", "h"], list(alemiBot.prefixes)))
 async def help_cmd(client, message):
     logger.info("Help!")
     if len(message.command) > 1:

@@ -14,7 +14,7 @@ from bot import alemiBot
 from util import batchify
 from util.permission import is_allowed
 from util.message import edit_or_reply, get_text, is_me
-from util.parse import newFilterCommand
+from util.command import filterCommand
 
 from plugins.help import HelpCategory
 
@@ -41,7 +41,7 @@ async def send_media_appropriately(client, message, fname, reply_to, extra_text=
 HELP.add_help("meme", "get a meme",
                 "get a specific meme is a name is given, otherwise a random one. " +
                 "Use argument `-list` to gett all meme names.", public=True, args="[-list] [<name>]")
-@alemiBot.on_message(is_allowed & newFilterCommand("meme", list(alemiBot.prefixes), flags=["-list"]))
+@alemiBot.on_message(is_allowed & filterCommand("meme", list(alemiBot.prefixes), flags=["-list"]))
 async def getmeme(client, message):
     args = message.command
     try:
@@ -79,7 +79,7 @@ async def getmeme(client, message):
 HELP.add_help("steal", "steal a meme",
                 "save a meme to collection. Either attach an image or reply to one. " +
                 "A name for the meme must be given.", args="<name>")
-@alemiBot.on_message(filters.me & filters.command("steal", list(alemiBot.prefixes)))
+@alemiBot.on_message(filters.me & filterCommand("steal", list(alemiBot.prefixes)))
 async def steal(client, message):
     if len(message.command) < 2:
         return await message.edit(message.text.markdown + "\n`[!] → ` No meme name provided")
@@ -144,7 +144,7 @@ async def fry_image(img: Image) -> Image:
 HELP.add_help("fry", "fry a meme",
                 "fry a meme. Sadly, no stars on eyes (yet!). Code comes from `https://github.com/Ovyerus/deeppyer`. " +
                 "The number of frying rounds can be specified, will default to 1.", args="[-c <n>]", public=True)
-@alemiBot.on_message(is_allowed & newFilterCommand("fry", list(alemiBot.prefixes), options={
+@alemiBot.on_message(is_allowed & filterCommand("fry", list(alemiBot.prefixes), options={
     "count" : ["-c"]
 }))
 async def deepfry(client, message):
@@ -217,7 +217,7 @@ HELP.add_help("ascii", "make ascii art of picture",
                 "roughly convert a picture into ascii art. Code comes from `https://github.com/anuragrana/Python-Scripts/blob/master/image_to_ascii.py`. " +
                 "You can specify a width for the resulting image in characters (default is 120). If the requested width is lower than 50 characters, " +
                 "the result will be printed directly into telegram. Else, a txt will be attached.", args="[<width>]", public=True)
-@alemiBot.on_message(is_allowed & filters.command("ascii", list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filterCommand("ascii", list(alemiBot.prefixes)))
 async def ascii_cmd(client, message):
     msg = message
     if message.reply_to_message is not None:

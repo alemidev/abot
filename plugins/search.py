@@ -16,7 +16,7 @@ import requests
 from util import batchify
 from util.permission import is_allowed
 from util.message import edit_or_reply
-from util.parse import newFilterCommand
+from util.command import filterCommand
 
 from plugins.help import HelpCategory
 
@@ -48,7 +48,7 @@ def ud_define(word):
 HELP.add_help(["diz", "dizionario"], "search in ita dict",
                 "get definition from italian dictionary of given word.",
                 args="<word>", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["diz", "dizionario"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filterCommand(["diz", "dizionario"], list(alemiBot.prefixes)))
 async def diz(client, message):
     if len(message.command) < 2:
         return await edit_or_reply(message, "`[!] → ` No query given")
@@ -72,7 +72,7 @@ async def diz(client, message):
 HELP.add_help(["dic", "dictionary"], "search in eng dict",
                 "get definition from english dictionary of given word.",
                 args="<word>", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["dic", "dictionary"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filterCommand(["dic", "dictionary"], list(alemiBot.prefixes)))
 async def dic(client, message):
     if len(message.command) < 2:
         return await edit_or_reply(message, "`[!] → ` No query given")
@@ -99,7 +99,7 @@ async def dic(client, message):
 HELP.add_help(["ud", "urban"], "search in urban dict",
                 "get definition from urban dictionary of given word.",
                 args="<word>", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["ud", "urban"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filterCommand(["ud", "urban"], list(alemiBot.prefixes)))
 async def urbandict(client, message):
     if len(message.command) < 2:
         return await edit_or_reply(message, "`[!] → ` No query given")
@@ -125,7 +125,7 @@ async def urbandict(client, message):
 HELP.add_help("wiki", "search on wikipedia",
                 "search on wikipedia, attaching initial text and a link.",
                 args="<query>", public=True)
-@alemiBot.on_message(is_allowed & filters.command("wiki", list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filterCommand("wiki", list(alemiBot.prefixes)))
 async def wiki(client, message):
     if len(message.command) < 2:
         return await edit_or_reply(message, "`[!] → ` No query given")
@@ -155,7 +155,7 @@ async def wiki(client, message):
 HELP.add_help("lmgtfy", "let me google that for you",
                 "generates a `Let Me Google That For You` link.",
                 args="<query>", public=True)
-@alemiBot.on_message(is_allowed & filters.command("lmgtfy", list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filterCommand("lmgtfy", list(alemiBot.prefixes)))
 async def lmgtfy(client, message):
     if len(message.command) < 2:
         return await edit_or_reply(message, "`[!] → ` No query given")
@@ -172,7 +172,7 @@ HELP.add_help(["loc", "location"], "send a location",
                 "send a location for specific latitude and longitude. Both has " +
                 "to be given and are in range [-90, 90]. If a title is given with the `-t` " +
                 "option, the location will be sent as venue.", args="[-t <title>] (<lat> <long> | <loc>)", public=True)
-@alemiBot.on_message(is_allowed & newFilterCommand(["loc", "location"], list(alemiBot.prefixes), options={
+@alemiBot.on_message(is_allowed & filterCommand(["loc", "location"], list(alemiBot.prefixes), options={
     "title" : ["-t"]
 }))
 async def location_cmd(client, message):
@@ -216,7 +216,7 @@ HELP.add_help(["weather", "wttr"], "get weather of location",
                 # "searches OpenWeatherMap for specified location. To make queries to OpenWeatherMap " +
                 # "an API key is necessary, thus registering to OpenWeatherMap. This is super early and shows very little.",
                 args="<location>", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["weather", "wttr"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filterCommand(["weather", "wttr"], list(alemiBot.prefixes)))
 async def weather_cmd(client, message):
     if len(message.command) < 2:
         return await edit_or_reply(message, "`[!] → ` Not enough arguments")

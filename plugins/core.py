@@ -12,6 +12,7 @@ from bot import alemiBot
 from pyrogram import filters
 
 from util.permission import is_allowed
+from util.command import filterCommand
 from util.message import edit_or_reply, is_me
 from plugins.help import HelpCategory
 
@@ -21,7 +22,7 @@ HELP = HelpCategory("CORE")
 
 HELP.add_help(["asd", "ping"], "a sunny day!",
                 "The ping command.")
-@alemiBot.on_message(filters.me & filters.command(["asd", "ping"], list(alemiBot.prefixes)))
+@alemiBot.on_message(filters.me & filterCommand(["asd", "ping"], list(alemiBot.prefixes)))
 async def ping(client, message):
     logger.info("Pong")
     msg = message.text.markdown
@@ -34,7 +35,7 @@ async def ping(client, message):
 HELP.add_help("update", "update and restart",
                 "will pull changes from git (`git pull`) and then restart " +
                 "itself with an `execv` call.")
-@alemiBot.on_message(filters.me & filters.command("update", list(alemiBot.prefixes)))
+@alemiBot.on_message(filters.me & filterCommand("update", list(alemiBot.prefixes)))
 async def update(client, message):
     msg = message.text.markdown
     try:
@@ -64,7 +65,7 @@ HELP.add_help("where", "get info about chat",
                 "Get complete information about a chat and send it as json. If no chat name " +
                 "or id is specified, current chat will be used. Add `-no` at the end if you just want the " +
                 "id : no file will be attached.", args="[<target>] [-no]", public=True)
-@alemiBot.on_message(is_allowed & filters.command("where", list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filterCommand("where", list(alemiBot.prefixes)))
 async def where_cmd(client, message):
     try:
         tgt = message.chat
@@ -90,7 +91,7 @@ HELP.add_help("who", "get info about user",
                 "Get complete information about user and attach as json. If replying to a message, author will be used. " +
                 "An id or @ can be specified. If neither is applicable, self will be used. Append `-no` if you just want the id.",
                 public=True, args="[<target>] [-no]")
-@alemiBot.on_message(is_allowed & filters.command("who", list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filterCommand("who", list(alemiBot.prefixes)))
 async def who_cmd(client, message):
     try:
         peer = None
@@ -122,7 +123,7 @@ HELP.add_help("what", "get info about message",
                 "id and chat can be passed as arguments. If no chat is specified, " +
                 "message will be searched in current chat. Append `-no` if you just want the id.",
                 args="[<target> [<chat>]] [-no]", public=True)
-@alemiBot.on_message(is_allowed & filters.command("what", list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filterCommand("what", list(alemiBot.prefixes)))
 async def what_cmd(client, message):
     msg = message
     try:

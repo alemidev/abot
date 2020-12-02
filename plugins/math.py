@@ -9,7 +9,7 @@ from util import batchify
 from util.globals import PREFIX
 from util.permission import is_allowed
 from util.message import edit_or_reply
-from util.parse import newFilterCommand
+from util.command import filterCommand
 
 import sympy
 from sympy.solvers import solve
@@ -26,7 +26,7 @@ HELP = HelpCategory("MATH")
 HELP.add_help(["expr", "math"], "convert to LaTeX formula",
                 "this command accepts sympy syntax and will spit out a LaTeX formula as image. " +
                 "You can add the `-latex` argument and pass LaTeX directly.", args="[-latex] <expr>", public=True)
-@alemiBot.on_message(is_allowed & newFilterCommand(["expr", "math"], list(alemiBot.prefixes), flags=["-latex"]))
+@alemiBot.on_message(is_allowed & filterCommand(["expr", "math"], list(alemiBot.prefixes), flags=["-latex"]))
 async def expr(client, message):
     args = message.command
     try:
@@ -51,7 +51,7 @@ async def expr(client, message):
 HELP.add_help(["plot", "graph"], "plot provided function",
                 "this command will run sympy `plot` and return result as image. Foruma passing is wonky. " +
                 "You can add the `-3d` argument to plot in 3d.", args="[-3d] <expr>", public=True)
-@alemiBot.on_message(is_allowed & newFilterCommand(["plot", "graph"], list(alemiBot.prefixes), flags=["-3d"]))
+@alemiBot.on_message(is_allowed & filterCommand(["plot", "graph"], list(alemiBot.prefixes), flags=["-3d"]))
 async def graph(client, message):
     args = message.command
     try:
@@ -80,7 +80,7 @@ async def graph(client, message):
 HELP.add_help("solve", "attempt to solve equation",
                 "this command will run sympy `solve` and attempt to find roots of the " +
                 "equation. You can pass systems too!", args="<expr>", public=True)
-@alemiBot.on_message(is_allowed & filters.command("solve", list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filterCommand("solve", list(alemiBot.prefixes)))
 async def solve_cmd(client, message):
     try:
         expr = " ".join(message.command[1:])

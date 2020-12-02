@@ -12,7 +12,7 @@ from util.permission import is_allowed, allow, disallow, serialize, list_allowed
 from util.user import get_username
 from util.message import edit_or_reply, get_text
 from util.text import split_for_window
-from util.parse import newFilterCommand
+from util.command import filterCommand
 from plugins.help import HelpCategory
 
 import logging
@@ -44,7 +44,7 @@ HELP.add_help(["purge", "wipe", "clear"], "batch delete messages",
                 "If no target is given, only self messages will be deleted. Target can be `@all` and `@everyone`. " +
                 "A keyword can be specified (`-k`) so that only messages containing that keyword will be deleted.",
                 args="[-t <target>] [-k <keyword>] [<number>]", public=False)
-@alemiBot.on_message(filters.me & newFilterCommand(["purge", "wipe", "clear"], list(alemiBot.prefixes), options={
+@alemiBot.on_message(filters.me & filterCommand(["purge", "wipe", "clear"], list(alemiBot.prefixes), options={
     "target" : ["-t"],
     "keyword" : ["-k"]
 }))
@@ -98,7 +98,7 @@ HELP.add_help(["allow", "disallow", "revoke"], "allow/disallow to use bot",
                 "this command will work differently if invoked with `allow` or with `disallow`. Target user " +
                 "will be given/revoked access to public bot commands. ~~Use `@here` or `@everyone` to allow " +
                 "all users in this chat.", args="<target>")
-@alemiBot.on_message(filters.me & filters.command(["allow", "disallow", "revoke"], list(alemiBot.prefixes)))
+@alemiBot.on_message(filters.me & filterCommand(["allow", "disallow", "revoke"], list(alemiBot.prefixes)))
 async def manage_allowed_cmd(client, message):
     try:
         users_to_manage = []
@@ -147,7 +147,7 @@ HELP.add_help(["trusted", "plist", "permlist"], "list allowed users",
                 "note that users without a username may give issues. Use `-s` to get " +
                 "the users individually if a batch request fails with 'InvalidPeerId'.", args="[-s]")
 # broken af lmaooo TODO
-@alemiBot.on_message(filters.me & filters.command(["trusted", "plist", "permlist"], list(alemiBot.prefixes)))
+@alemiBot.on_message(filters.me & filterCommand(["trusted", "plist", "permlist"], list(alemiBot.prefixes)))
 async def trusted_list(client, message):
     try:
         user_ids = list_allowed()

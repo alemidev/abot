@@ -8,9 +8,10 @@ import traceback
 from pyrogram import filters
 
 from util import batchify
-from util.parse import newFilterCommand, cleartermcolor
+from util.parse import cleartermcolor
 from util.permission import is_allowed
 from util.message import edit_or_reply, is_me
+from util.command import filterCommand
 
 from bot import alemiBot
 
@@ -31,7 +32,7 @@ HELP.add_help(["slow", "sl"], "make text appear slowly",
                 "edit message adding batch of characters every time. If no batch size is " +
                 "given, it will default to 1. If no time is given, it will default to 0.5s.",
                 args="[-t <time>] [-b <batch>] <text>")
-@alemiBot.on_message(filters.me & newFilterCommand(["slow", "sl"], list(alemiBot.prefixes), options={
+@alemiBot.on_message(filters.me & filterCommand(["slow", "sl"], list(alemiBot.prefixes), options={
         "time" : ["-t"],
         "batch" : ["-b"]
 }), group=2)
@@ -64,7 +65,7 @@ async def slowtype(client, message):
 HELP.add_help(["rc", "randomcase"], "make text randomly capitalized",
                 "will edit message applying random capitalization to every letter, like the spongebob meme.",
                 args="<text>", public=True)
-@alemiBot.on_message(is_allowed & newFilterCommand(["rc", "randomcase"], list(alemiBot.prefixes)), group=2)
+@alemiBot.on_message(is_allowed & filterCommand(["rc", "randomcase"], list(alemiBot.prefixes)), group=2)
 async def randomcase(client, message):
     logger.info(f"Making message randomly capitalized")
     text = message.command["arg"]
@@ -115,7 +116,7 @@ HELP.add_help("figlet", "make a figlet art",
                 "run figlet and make a text art. You can specify a font (`-f`), or request a random one (`-r`). " +
                 "Get list of available fonts with `-list`. You can specify max figlet width (`-w`), default is 30.",
                 args="[-list] [-r | -f <font>] [-w <n>] <text>", public=True)
-@alemiBot.on_message(is_allowed & newFilterCommand("figlet", list(alemiBot.prefixes), options={
+@alemiBot.on_message(is_allowed & filterCommand("figlet", list(alemiBot.prefixes), options={
     "font" : ["-f", "-font"],
     "width" : ["-w", "-width"]
 }, flags=["-list", "-r"]))
@@ -152,7 +153,7 @@ async def figlettext(client, message):
 
 HELP.add_help("fortune", "do you feel fortunate!?",
                 "run `fortune` to get a random sentence. Like fortune bisquits!", public=True)
-@alemiBot.on_message(is_allowed & newFilterCommand(["fortune"], list(alemiBot.prefixes), flags=["-cow"]))
+@alemiBot.on_message(is_allowed & filterCommand(["fortune"], list(alemiBot.prefixes), flags=["-cow"]))
 async def fortune(client, message):
     try:
         logger.info(f"Running command \"fortune\"")

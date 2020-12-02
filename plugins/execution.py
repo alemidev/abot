@@ -21,6 +21,7 @@ from bot import alemiBot
 
 from pyrogram import filters
 
+from util.command import filterCommand
 from util.parse import cleartermcolor
 from util.message import tokenize_json, tokenize_lines
 from util.serialization import convert_to_dict
@@ -54,11 +55,9 @@ HELP = HelpCategory("EXECUTION")
 HELP.add_help(["run", "r"], "run command on server",
                 "runs a command on server. Shell will be from user running bot. " +
                 "Every command starts in bot root folder.", args="<cmd>")
-@alemiBot.on_message(filters.me & filters.command(["run", "r"], list(alemiBot.prefixes)) & filters.regex(
-    pattern=r"^.(?:run|r) (?P<cmd>.*)", flags=re.DOTALL
-))
+@alemiBot.on_message(filters.me & filterCommand(["run", "r"], list(alemiBot.prefixes)))
 async def runit(client, message):
-    args = message.matches[0]["cmd"].replace("-delme", "")
+    args = message.text.raw.replace(message.command["base"], "").replace("-delme", "")
     try:
         logger.info(f"Running command \"{args}\"")
         result = subprocess.run(args, shell=True, stdout=subprocess.PIPE,
@@ -83,12 +82,10 @@ HELP.add_help(["eval", "e"], "eval a python expression",
                 "with .exec). `stdout` will be captured and shown before the returned value. Use the " +
                 "GLOBALS object for persistence. No assignation can be done in `eval`, but getting " +
                 "fields is possible.", args="<expr>")
-@alemiBot.on_message(filters.me & filters.command(["eval", "e"], list(alemiBot.prefixes)) & filters.regex(
-    pattern=r"^.(?:eval|e) (?P<expr>.*)", flags=re.DOTALL
-))
+@alemiBot.on_message(filters.me & filterCommand(["eval", "e"], list(alemiBot.prefixes)))
 async def evalit(client, message):
     global GLOBALS
-    args = message.matches[0]["expr"].replace("-delme", "")
+    args = message.text.raw.replace(message.command["base"], "").replace("-delme", "")
     try:
         logger.info(f"Evaluating \"{args}\"")
         with stdoutWrapper() as fake_stdout:
@@ -124,11 +121,9 @@ HELP.add_help(["exec", "ex"], "execute python code",
                 "will be shown. You can set anything in the GLOBALS object for " +
                 "persistence. The `exec` call is wrapped to make it work with async " +
                 "code.", args="<code>")
-@alemiBot.on_message(filters.me & filters.command(["exec", "ex"], list(alemiBot.prefixes)) & filters.regex(
-    pattern=r"^.(?:exec|ex) (?P<code>.*)", flags=re.DOTALL
-))
+@alemiBot.on_message(filters.me & filterCommand(["exec", "ex"], list(alemiBot.prefixes)))
 async def execit(client, message):
-    args = message.matches[0]["code"].replace("-delme", "")
+    args = message.text.raw.replace(message.command["base"], "").replace("-delme", "")
     fancy_args = args.replace("\n", "\n... ")
     try:
         logger.info(f"Executing \"{args}\"")

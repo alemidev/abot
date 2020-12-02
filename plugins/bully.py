@@ -12,7 +12,7 @@ from bot import alemiBot
 from util.permission import is_allowed
 from util.message import is_me
 from util.user import get_username
-from util.parse import newFilterCommand
+from util.command import filterCommand
 
 from plugins.help import HelpCategory
 
@@ -44,7 +44,7 @@ HELP.add_help(["censor", "c"], "immediately delete messages from users",
             "Add flag -free to stop istead stop censoring target. Use flag `-list` to get censored " +
             "users in current chat. Messages from self will never be censored. More than one target can be specified",
             args="[-list] [-i] [-mass] <targets>")
-@alemiBot.on_message(filters.me & newFilterCommand(["censor", "c"], list(alemiBot.prefixes), flags=["-list", "-i", "-mass"]))
+@alemiBot.on_message(filters.me & filterCommand(["censor", "c"], list(alemiBot.prefixes), flags=["-list", "-i", "-mass"]))
 async def censor_cmd(client, message):
     global censoring
     args = message.command
@@ -102,7 +102,7 @@ HELP.add_help(["free", "f"], "stop censoring someone",
             "You can add `-i` to make target immune to mass censoring. More than one target can be specified (separate with spaces). " +
             "Add `-list` flag to list immune users (censor immunity is global but doesn't bypass specific censorship)",
             args="[-mass] [-list] [-i] <targets>")
-@alemiBot.on_message(filters.me & newFilterCommand(["free", "f"], list(alemiBot.prefixes), flags=["-list", "-i", "-mass"]))
+@alemiBot.on_message(filters.me & filterCommand(["free", "f"], list(alemiBot.prefixes), flags=["-list", "-i", "-mass"]))
 async def free_cmd(client, message):
     global censoring
     args = message.command
@@ -179,7 +179,7 @@ HELP.add_help(["spam", "flood"], "pretty self explainatory",
             "all spammed msgs will reply to that one too. If you add `-delme`, messages will be " +
             "immediately deleted. To stop an ongoing spam, you can do `.spam -cancel`.",
             args="[-cancel] [-n <n>] [-t <t>] <text>")
-@alemiBot.on_message(filters.me & newFilterCommand("spam", list(alemiBot.prefixes), options={
+@alemiBot.on_message(filters.me & filterCommand("spam", list(alemiBot.prefixes), options={
     "number" : ["-n"],
     "time" : ["-t"],
 }, flags=["-cancel"]))
