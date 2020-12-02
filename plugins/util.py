@@ -12,7 +12,7 @@ from pyrogram import filters
 
 from util.permission import is_allowed
 from util.message import edit_or_reply, is_me
-from util.parse import newFilterCommand
+from util.command import filterCommand
 
 from googletrans import Translator
 from google_currency import convert
@@ -35,7 +35,7 @@ HELP.add_help(["convert", "conv"], "convert various units",
                 "convert various measure units. Accepts many units, like " +
                 "`.convert 52 °C °F` or `.convert 2.78 daN*mm^2 mN*µm^2`.",
                 args="<val> <from> <to>", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["convert", "conv"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filterCommand(["convert", "conv"], list(alemiBot.prefixes)))
 async def convert_cmd(client, message):
     if len(message.command) < 4:
         return await edit_or_reply(message, "`[!] → ` Not enough arguments")
@@ -52,7 +52,7 @@ HELP.add_help(["currency", "cconvert", "curr"], "convert across currencies",
                 "convert various measure units. Accepts many currencies, like " +
                 "`.convert 1 btc us`.",
                 args="<val> <from> <to>", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["currency", "cconvert", "curr"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filterCommand(["currency", "cconvert", "curr"], list(alemiBot.prefixes)))
 async def currency_convert_cmd(client, message):
     if len(message.command) < 4:
         return await edit_or_reply(message, "`[!] → ` Not enough arguments")
@@ -85,7 +85,7 @@ def interval(delta):
 HELP.add_help(["cd", "countdown"], "count down",
                 "will edit message to show a countdown. If no time is given, it will be 5s.",
                 args="[<time>]", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["countdown", "cd"], list(alemiBot.prefixes)), group=2)
+@alemiBot.on_message(is_allowed & filterCommand(["countdown", "cd"], list(alemiBot.prefixes)), group=2)
 async def countdown(client, message):
     if is_me(message):
         tgt_msg = message
@@ -113,39 +113,45 @@ HELP.add_help(["rand", "random", "roll"], "get random choices",
                 "this can be used as a dice roller (`.roll 3d6`). If a list of choices is given, a random one " +
                 "will be chosen from that. If a number is given, it will choose a value from 1 to <n>, both included. " +
                 "You can specify how many extractions to make", args="[-n <n>] [choices] | [n]d<max>", public=True)
-@alemiBot.on_message(is_allowed & filters.command(["rand", "random", "roll"], list(alemiBot.prefixes)) & filters.regex(pattern=
-    r"^.(?:random|rand|roll)(?: |)(?:(?:(?P<num>[0-9]+|)d(?P<max>[0-9]+))|(?:(?P<batch>-n [0-9]+|)(?: |)(?P<values>.*)))"
-)) # this is better with a regex because allows the "dice roller" format, aka 3d6
+@alemiBot.on_message(is_allowed & filterCommand(["rand", "random", "roll"], list(alemiBot.prefixes), options={
+    "batchsize" : ["-n"]
+}))
 async def rand_cmd(client, message):
-    args = message.matches[0]
+    args = message.command
     try:
         res = []
         times = 1
         out = ""
-        if args["num"] not in [ "", None ]:
-            times = int(args["num"])
-        elif args["batch"] not in [ "", None ]:
-            times = int(args["batch"].replace("-n ", ""))
-        if args["max"] not in [ "", None ]: # this checking is kinda lame
-            maxval = int(args["max"])
+        maxval = None
+        if "arg" in args:
+            pattern = r"(?P<batch>[0-9]*)d(?P<max>[0-9]+)"
+            res = re.search(pattern, args["arg"])
+            if res is not None:
+                maxval = int(res["max"])
+                if res["batch"] != "":
+                    times = int(res["batch"])
+            elif len(args["cmd"]) == 1 and args["cmd"][0].isnumeric():
+                maxval = int(args["cmd"][0])
+        if "batchsize" in args:
+            times = int(args["batchsize"]) # overrule dice roller formatting
+            
+        if maxval is not None:
             logger.info(f"Rolling d{maxval}")
             for i in range(times):
                 res.append(secrets.randbelow(maxval) + 1)
             if times > 1:
                 out += f"`→ Rolled {times}d{maxval}` : **{sum(res)}**\n"
-        elif args["values"] != None and args["values"] != "":
-            choices = args["values"].split(" ")
-            logger.info(f"Rolling {choices}")
+        elif "cmd" in args:
+            logger.info(f"Rolling {args['cmd']}")
             for i in range(times):
-                res.append(secrets.choice(choices))
+                res.append(secrets.choice(args['cmd']))
             res_count = Counter(res)
             if times > 1:
-                out += "`→ Random choice ` **" + res_count.most_common(1)[0][0] + "**\n"
+                out += "`→ Random choice ` **" + res_count.most_common(1)[0] + "**\n"
         else:
-            choices = [ 1, 0 ]
-            logger.info(f"Rolling {choices}")
+            logger.info(f"Rolling binary")
             for i in range(times):
-                res.append(secrets.choice(choices))
+                res.append(secrets.randbelow(2))
             if times > 1:
                 out += "` → Binary " + "".join(str(x) for x in res) + "`\n"
                 res = [] # so it won't do the thing below
@@ -164,7 +170,7 @@ HELP.add_help(["translate", "tran", "tr"], "translate to/from",
                 "translate text from a language (autodetected if not specified, `-s`) to another " +
                 "specified lang (defaults to eng, `-d`). It will show the confidence for detected lang. This " +
                 "uses google translate. The lang codes must be 2 letter long (en, ja...)", args="[-s <src>] [-d <des>]", public=True)
-@alemiBot.on_message(is_allowed & newFilterCommand(["translate", "tran", "tr"], list(alemiBot.prefixes), options={
+@alemiBot.on_message(is_allowed & filterCommand(["translate", "tran", "tr"], list(alemiBot.prefixes), options={
     "src" : ["-s", "-src"],
     "dest" : ["-d", "-dest"]
 }))
@@ -196,7 +202,7 @@ HELP.add_help(["qrcode", "qr"], "make qr code",
                 "image border (`-border`), qrcode size (`-size`). QR colors can be specified too: " +
                 "background with `-b` and front color with `-f`",
                 args="[-border <n>] [-size <n>] [-box <n>] [-b <color>] [-f <color>] <text>", public=True)
-@alemiBot.on_message(is_allowed & newFilterCommand(["qrcode", "qr"], list(alemiBot.prefixes), options={
+@alemiBot.on_message(is_allowed & filterCommand(["qrcode", "qr"], list(alemiBot.prefixes), options={
     "border" : ["-border"],
     "size" : ["-size"],
     "boxsize" : ["-box"],
@@ -240,7 +246,7 @@ HELP.add_help(["color"], "send solid color image",
                 "create a solid color image and send it. Color can be given as hex (`-hex`) or " +
                 "by specifying each channel individally. Each channel can range from 0 to 256. ",
                 args="[-hex <hex>] <r> <g> <b>", public=True)
-@alemiBot.on_message(is_allowed & newFilterCommand(["color"], list(alemiBot.prefixes), options={
+@alemiBot.on_message(is_allowed & filterCommand(["color"], list(alemiBot.prefixes), options={
     "hex" : ["-hex"],
 }))
 async def color_cmd(client, message):
