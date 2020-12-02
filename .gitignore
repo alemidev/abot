@@ -8,3 +8,7 @@ perms.json
 __pycache__/
 modules/__pycache__/
 util/__pycache__/
+data/scraped_media
+data/memes
+!data/memes/250gb.jpg
+!data/scraped_media/empty
