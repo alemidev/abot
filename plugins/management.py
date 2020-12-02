@@ -126,7 +126,7 @@ async def manage_allowed_cmd(client, message):
             return await message.edit(message.text.markdown + "\n`[!] → ` Provide an ID or reply to a msg")
         logger.info("Changing permissions")
         out = ""
-        action_allow = message.command[0] == "allow"
+        action_allow = message.command["base"] == "allow"
         for u in users_to_manage:
             u_name = get_username(u)
             if action_allow:
