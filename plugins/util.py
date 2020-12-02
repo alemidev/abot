@@ -147,7 +147,7 @@ async def rand_cmd(client, message):
                 res.append(secrets.choice(args['cmd']))
             res_count = Counter(res)
             if times > 1:
-                out += "`→ Random choice ` **" + res_count.most_common(1)[0] + "**\n"
+                out += "`→ Random choice ` **" + str(res_count.most_common(1)[0]) + "**\n"
         else:
             logger.info(f"Rolling binary")
             for i in range(times):
