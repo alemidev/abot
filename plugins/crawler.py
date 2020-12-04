@@ -14,12 +14,28 @@ logger = logging.getLogger(__name__)
 
 JOINED = set()
 
+async def attempt_joining(mention):
+    global JOINED
+    if mention in JOINED:
+        return
+    try:    
+        await client.join_chat(mention)
+        JOINED.add(mention)
+        logger.warning("Joined " + mention)
+    except BadRequest as e:
+        JOINED.add(mention) # This isn't a channel/group anyway
+        logger.warn("Failed to join " + mention + ", (already a member or not a channel/group)")
+    except FloodWait as e:
+        logger.warn("Failed to join " + mention + ": " + str(e))
+        await client.send_message("me", mention + " - couldn't wait because in FloodWait")
+
 @alemiBot.on_message(group=100)
 async def join_all_groups(client, message):
-    global JOINED
-    if message.entities is not None:
-        for e in message.entities:
-            try:
+    try:
+        if forward_from_chat in message:
+            await attempt_joining(message.forward_from_chat.id)
+        if message.entities is not None:
+            for e in message.entities:
                 if e.type == "mention":
                     mention = message.text[e.offset:e.offset+e.length]
                 elif e.type == "text_link":
@@ -32,19 +48,7 @@ async def join_all_groups(client, message):
                         continue
                 else:
                     continue
-
-                if mention in JOINED:
-                    continue
-                try:    
-                    logger.warning("Joining " + mention)
-                    await client.join_chat(mention)
-                    JOINED.add(mention)
-                except BadRequest as e:
-                    logger.warn(str(e))
-                    JOINED.add(mention) # This isn't a channel/group anyway
-                except FloodWait as e:
-                    logger.warn(str(e))
-                    client.send_message("me", mention + " - couldn't wait because in FloodWait")
-            except Exception as e:
-                logger.warn(str(e))
+                await attempt_joining(mention)
+    except Exception as e: # Basically ignore
+        logger.warn(str(e))
                 
