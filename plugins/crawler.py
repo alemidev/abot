@@ -16,7 +16,7 @@ async def join_all_groups(client, message):
     if message.entities is not None:
         for e in message.entities:
             try:
-                if e.type == "mention":
+                if e.type == "mention" or e.type == "url":
                     mention = message.text[e.offset:e.offset+e.length]
                     chat = await client.get_chat(mention)
                     logger.warning("Joining " + get_channel(chat))
