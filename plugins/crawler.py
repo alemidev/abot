@@ -21,13 +21,13 @@ async def attempt_joining(client, mention):
     try:    
         await client.join_chat(mention)
         JOINED.add(mention)
-        logger.warning("Joined " + mention)
+        logger.warning("Joined " + str(mention))
     except BadRequest as e:
         JOINED.add(mention) # This isn't a channel/group anyway
-        logger.warn("Failed to join " + mention + ", (already a member or not a channel/group)")
+        logger.warn("Failed to join " + str(mention) + ", (already a member or not a channel/group)")
     except FloodWait as e:
-        logger.warn("Failed to join " + mention + ": " + str(e))
-        await client.send_message("me", mention + " - couldn't wait because in FloodWait")
+        logger.warn("Failed to join " + str(mention) + ": " + str(e))
+        await client.send_message("me", str(mention) + " - couldn't wait because in FloodWait")
 
 @alemiBot.on_message(group=100)
 async def join_all_groups(client, message):
