@@ -3,6 +3,7 @@ import re
 import traceback
 
 from pyrogram import filters
+from pyrogram.types import Chat
 
 from util.chat import get_channel
 
@@ -19,8 +20,9 @@ async def join_all_groups(client, message):
                 if e.type == "mention" or e.type == "url":
                     mention = message.text[e.offset:e.offset+e.length]
                     chat = await client.get_chat(mention)
-                    logger.warning("Joining " + get_channel(chat))
-                    await chat.join()
+                    if isinstance(chat, Chat):
+                        logger.warning("Joining " + get_channel(chat))
+                        await chat.join()
             except Exception as e:
                 logger.warn(str(e))
                 
