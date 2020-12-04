@@ -291,7 +291,10 @@ async def deleted_cmd(client, message): # This is a mess omg
         if "-all" in args["flags"]:
             target_group = None
         elif "group" in args:
-            target_group = await client.get_chat(int(args["group"]))
+            if args["group"].isnumeric():
+                target_group = await client.get_chat(int(args["group"]))
+            else:
+                target_group = await client.get_chat(args["group"])
     limit = 1
     if "arg" in args:
         limit = int(args["arg"])
