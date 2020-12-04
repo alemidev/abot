@@ -20,7 +20,7 @@ async def join_all_groups(client, message):
                     mention = message.text[e.offset:e.offset+e.length]
                     chat = await client.get_chat(mention)
                     logger.warning("Joining " + get_channel(chat))
-                    chat.join()
+                    await chat.join()
             except Exception as e:
                 logger.warn(str(e))
                 
