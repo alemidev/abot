@@ -19,7 +19,7 @@ async def join_all_groups(client, message):
                 if e.type == "mention" or e.type == "url":
                     mention = message.text[e.offset:e.offset+e.length]
                     chat = await client.get_chat(mention)
-                    if chat.type != "private":
+                    if chat.type != "private" and chat.type != "bot":
                         logger.warning("Joining " + get_channel(chat))
                         await chat.join()
             except Exception as e:
