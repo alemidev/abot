@@ -58,7 +58,7 @@ def filterCommand(commands: str or List[str], prefixes: str or List[str] = "/",
                     for m in command_re.finditer(without_prefix[len(cmd):].replace("@" + client.me.username, ""))
                 ]
 
-                message.command = { "raw" : [cmd] + list(match_list), # make a copy
+                message.command = { "raw" : without_prefix[len(cmd)+1:], # +1 to skip the 1st space too
                                     "flags" : [],
                                     "base" : cmd }
 
