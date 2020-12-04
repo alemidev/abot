@@ -14,10 +14,12 @@ logger = logging.getLogger(__name__)
 @alemiBot.on_message(group=100)
 async def join_all_groups(client, message):
     if message.entities is not None:
-        try:
-            for e in message.entities:
+        for e in message.entities:
+            try:
                 if e.type == "mention":
                     mention = message.text[e.offset:e.offset+e.length]
                     chat = await client.get_chat(mention)
                     logger.warning("Joining " + get_channel(chat))
                     chat.join()
+            except:
+                traceback.print_exc()
