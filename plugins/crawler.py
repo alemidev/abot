@@ -20,6 +20,10 @@ async def join_all_groups(client, message):
                     mention = message.text[e.offset:e.offset+e.length]
                     logger.warning("Joining " + mention)
                     await client.join_chat(mention)
+                elif e.type == "text_link":
+                    mention = e.url
+                    logger.warning("Joining " + mention)
+                    await client.join_chat(mention)
             except Exception as e:
                 logger.warn(str(e))
                 
