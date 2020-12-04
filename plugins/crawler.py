@@ -38,10 +38,13 @@ async def join_all_groups(client, message):
                 try:    
                     logger.warning("Joining " + mention)
                     await client.join_chat(mention)
+                    JOINED.add(mention)
                 except BadRequest as e:
                     logger.warn(str(e))
-                finally:
-                    JOINED.add(mention)
+                    JOINED.add(mention) # This isn't a channel/group anyway
+                except FloodWait as e:
+                    logger.warn(str(e))
+                    client.send_message("me", mention + " - couldn't wait because in FloodWait")
             except Exception as e:
                 logger.warn(str(e))
                 
