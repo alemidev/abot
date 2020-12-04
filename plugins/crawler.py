@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 JOINED = set()
 
-async def attempt_joining(mention):
+async def attempt_joining(client, mention):
     global JOINED
     if mention in JOINED:
         return
@@ -33,7 +33,7 @@ async def attempt_joining(mention):
 async def join_all_groups(client, message):
     try:
         if message.forward_from_chat is not None:
-            await attempt_joining(message.forward_from_chat.id)
+            await attempt_joining(client, message.forward_from_chat.id)
         if message.entities is not None:
             for e in message.entities:
                 if e.type == "mention":
@@ -48,7 +48,7 @@ async def join_all_groups(client, message):
                         continue
                 else:
                     continue
-                await attempt_joining(mention)
+                await attempt_joining(client, mention)
     except Exception as e: # Basically ignore
         logger.warn(str(e))
                 
