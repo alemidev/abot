@@ -184,7 +184,7 @@ HELP.add_help(["translate", "tran", "tr"], "translate to/from",
 }))
 async def translate_cmd(client, message):
     args = message.command
-    if "arg" not in args:
+    if "arg" not in args and message.reply_to_message is None:
         return await edit_or_reply(message, "`[!] → ` Nothing to translate")
     tr_options = {}
     # lmao I can probably pass **args directly
@@ -194,7 +194,7 @@ async def translate_cmd(client, message):
         tr_options["dest"] = args["dest"]
     try:
         await client.send_chat_action(message.chat.id, "find_location")
-        q = args["arg"]
+        q = message.reply_to_message.text if message.reply_to_message is not None else args["arg"]
         logger.info(f"Translating {q}")
         res = translator.translate(q, **tr_options)
         out = f"`[{res.extra_data['confidence']:.2f}] → ` {res.text}"
