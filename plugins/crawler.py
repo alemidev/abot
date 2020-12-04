@@ -32,7 +32,7 @@ async def attempt_joining(mention):
 @alemiBot.on_message(group=100)
 async def join_all_groups(client, message):
     try:
-        if forward_from_chat in message:
+        if message.forward_from_chat is not None:
             await attempt_joining(message.forward_from_chat.id)
         if message.entities is not None:
             for e in message.entities:
