@@ -21,5 +21,6 @@ async def join_all_groups(client, message):
                     chat = await client.get_chat(mention)
                     logger.warning("Joining " + get_channel(chat))
                     chat.join()
-            except:
-                traceback.print_exc()
+            except Exception as e:
+                logger.warn(str(e))
+                
