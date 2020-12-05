@@ -42,7 +42,7 @@ M_CLIENT = MongoClient('localhost', 27017,
 DB = M_CLIENT[alemiBot.config.get("database", "dbname", fallback="alemibot")]
 EVENTS = DB[alemiBot.config.get("database", "collection", fallback="events")]
 
-LOG_MEDIA = alemiBot.config.get("database", "log_media", fallback=False)
+LOG_MEDIA = alemiBot.config.getboolean("database", "log_media", fallback=False)
 
 LOGGED_COUNT = 0
 
