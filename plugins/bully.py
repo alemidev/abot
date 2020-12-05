@@ -97,12 +97,12 @@ async def censor_cmd(client, message):
         with open("data/censoring.json", "w") as f:
             json.dump(censoring, f)
 
-HELP.add_help(["free", "f"], "stop censoring someone",
+HELP.add_help(["free", "f", "stop"], "stop censoring someone",
             "Stop censoring someone in current chat. Use flag `-mass` to stop mass censorship current chat. " +
             "You can add `-i` to make target immune to mass censoring. More than one target can be specified (separate with spaces). " +
             "Add `-list` flag to list immune users (censor immunity is global but doesn't bypass specific censorship)",
             args="[-mass] [-list] [-i] <targets>")
-@alemiBot.on_message(filters.me & filterCommand(["free", "f"], list(alemiBot.prefixes), flags=["-list", "-i", "-mass"]))
+@alemiBot.on_message(filters.me & filterCommand(["free", "f", "stop"], list(alemiBot.prefixes), flags=["-list", "-i", "-mass"]))
 async def free_cmd(client, message):
     global censoring
     args = message.command
