@@ -144,7 +144,6 @@ async def query_cmd(client, message):
     try:
         if "arg" in args:
             buf = []
-            q = json.loads(args["cmd"][0])
             cursor = None
             lim = 10
             if "limit" in args:
@@ -158,10 +157,11 @@ async def query_cmd(client, message):
             if "-cmd" in args["flags"]:
                 cursor = [ DB.command(args["cmd"][0]) ] # ewww but small patch
             elif "filter" in args:
+                q = json.loads(args["cmd"][0])
                 filt = json.loads(args["filter"])
                 cursor = COLLECTION.find(q, filt).sort("date", -1).limit(lim)
             else:
-                cursor = COLLECTION.find(q).sort("date", -1).limit(lim)
+                cursor = COLLECTION.find(json.loads(args["cmd"][0])).sort("date", -1).limit(lim)
 
             for doc in cursor:
                 buf.append(doc)
