@@ -108,7 +108,7 @@ async def stats_cmd(client, message):
     after = time.time()
     latency = (after - before) * 1000
     count = EVENTS.count({})
-    size = DB.command("dbstats")['totalSize']
+    size = DB.command("collstats", alemiBot.config.get("database", "collection", fallback="events"))['totalSize']
     memesize = float(subprocess.run( # this is bad and ugly
         ["du", "-b", "data/memes"],
                         capture_output=True).stdout.decode('utf-8').split("\t")[0])
