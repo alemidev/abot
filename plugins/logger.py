@@ -156,7 +156,7 @@ async def query_cmd(client, message):
                 COLLECTION = DB[args["collection"]]
 
             if "-cmd" in args["flags"]:
-                cursor = [ DB.command(args["cmd"][0] ] # ewww but small patch
+                cursor = [ DB.command(args["cmd"][0]) ] # ewww but small patch
             elif "filter" in args:
                 filt = json.loads(args["filter"])
                 cursor = COLLECTION.find(q, filt).sort("date", -1).limit(lim)
