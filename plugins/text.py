@@ -173,25 +173,28 @@ async def fortune(client, message):
 HELP.add_help(["freq", "frequent"], "find frequent words in messages",
                 "find most used words in last messages. If no number is given, will search only " +
                 "last 20 messages. By default, 5 most frequent words are shown, but number of results " +
-                "can be changed with `-r`.", args="[-r <n>] [n]", public=True)
+                "can be changed with `-r`. By default, only words of `len > 3` will be considered. " +
+                "A minimum word len can be specified with `-min`.", args="[-r <n>] [-min <n>] [n]", public=True)
 @alemiBot.on_message(is_allowed & filterCommand(["freq", "frequent"], list(alemiBot.prefixes), options={
-    "results" : ["-r", "-res"]
+    "results" : ["-r", "-res"],
+    "minlen" : ["-min"]
 }))
 async def cmd_frequency(client, message):
     results = int(message.command["results"]) if "results" in message.command else 5
     number = int(message.command["cmd"][0]) if "cmd" in message.command else 20
+    min_len = int(message.command["minlen"]) if "minlen" in message.command else 3
     try:
         logger.info(f"Counting {results} most frequent words in last {number} messages")
-        response = await edit_or_reply(message, f"` → ` Counting word occurrences")
+        response = await edit_or_reply(message, f"` → ` Counting word occurrences...")
         await client.send_chat_action(message.chat.id, "playing")
-        buf = ""
+        words = []
         count = 0
         async for msg in client.iter_history(message.chat.id, limit=number):
-            buf += get_text(msg)
+            buf += [ w for w in msg.text.split() if len(w) > min_len ]
             count += 1
             if count % 100 == 0:
-                await response.edit(f"`→ ` Counting word occurrences :  --[{count}/{number}]--")
-        count = Counter(buf.replace("\n", "").split()).most_common()
+                await response.edit(f"` → [{count}/{number}] ` Counting word occurrences...")
+        count = Counter(words).most_common()
         output = f"`→ ` **{results}** most frequent words in last **{number}** messages:\n"
         for i in range(results):
             output += f"`{i+1:02d}]{'-'*(results-i-1)}>` `{count[i][0]}` `({count[i][1]})`\n"
