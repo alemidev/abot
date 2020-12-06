@@ -114,11 +114,14 @@ async def inline_always(client, inline_query):
     await inline_query.answer(
         results=[
                     InlineQueryResultArticle(id=uuid4(),title=f"/help",
-                        description="Show help for userbot commands"),
+                        description="Show help for userbot commands",
+                        input_message_content=None)
                     InlineQueryResultArticle(id=uuid4(),title=f"/spoiler",
-                        description="Create a spoiler text"),
+                        description="Create a spoiler text",
+                        input_message_content=None)
                     InlineQueryResultArticle(id=uuid4(),title=f"/run",
-                        description="Send prefix and command"),
+                        description="Send prefix and command",
+                        input_message_content=None)
         ],
         cache_time=60
     )
