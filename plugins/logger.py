@@ -138,7 +138,7 @@ HELP.add_help(["query", "q", "log"], "interact with db",
 @alemiBot.on_message(filters.me & filterCommand(["query", "q", "log"], list(alemiBot.prefixes), options={
     "limit" : ["-l", "-limit"],
     "filter" : ["-f", "-filter"],
-    "collection" : ["-coll", "-collection"]
+    "collection" : ["-coll", "-collection"],
     "database" : ["-db", "-database"]
 }, flags=["-cmd"]))
 async def query_cmd(client, message):
