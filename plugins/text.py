@@ -188,9 +188,9 @@ async def cmd_frequency(client, message):
         async for msg in client.iter_history(message.chat.id, limit=number):
             buf += get_text(msg)
         count = Counter(buf.replace("\n", "").split()).most_common()
-        output = f"` → ` {results} most frequent words in last {number} messages:\n"
+        output = f"`→ ` **{results}** most frequent words in last **{number}** messages:\n"
         for i in range(results):
-            output += f"`{i+1}]{'-'*(results-i-1)}>` `{count[i][0]}` `({count[i][1]})`\n"
+            output += f"`{i+1:02d}]{'-'*(results-i-1)}>` `{count[i][0]}` `({count[i][1]})`\n"
         await response.edit(output)
     except Exception as e:
         traceback.print_exc()
