@@ -186,7 +186,7 @@ async def cmd_frequency(client, message):
         buf = ""
         async for msg in client.iter_history(message.chat.id, limit=number):
             buf += msg.text
-        count = Counter(buf.replace("\n", "").split(" ")).most_common()
+        count = Counter(buf.replace("\n", "").split()).most_common()
         output = ""
         for i in range(results):
             output += f"`{i+1}]{'-'*(results-i-1)}>` `{count[i][0]}` `({count[i][1]})`\n"
