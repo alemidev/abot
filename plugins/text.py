@@ -190,7 +190,7 @@ async def cmd_frequency(client, message):
         words = []
         count = 0
         async for msg in client.iter_history(message.chat.id, limit=number):
-            buf += [ w for w in msg.text.split() if len(w) > min_len ]
+            words += [ w for w in msg.text.split() if len(w) > min_len ]
             count += 1
             if count % 100 == 0:
                 await response.edit(f"` → [{count}/{number}] ` Counting word occurrences...")
