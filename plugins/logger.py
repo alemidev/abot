@@ -36,6 +36,14 @@ HELP = HelpCategory("LOG")
 
 LAST_GROUP = "N/A"
 
+db.createUser(
+  {
+    user: "datasets",
+    pwd:  passwordPrompt(),
+    roles: [ { role: "readWrite", db: "spotify" } }
+  }
+)
+
 M_CLIENT = MongoClient('localhost', 27017,
     username=alemiBot.config.get("database", "username", fallback=""),
     password=alemiBot.config.get("database", "password", fallback=""))
@@ -138,13 +146,13 @@ HELP.add_help(["query", "q", "log"], "interact with db",
     "limit" : ["-l", "-limit"],
     "filter" : ["-f", "-filter"],
     "collection" : ["-coll", "-collection"]
-}))
+}, flags=["-cmd"]))
 async def query_cmd(client, message):
     args = message.command
     try:
         if "arg" in args:
             buf = []
-            q = json.loads(args["arg"])
+            q = json.loads(args["cmd"][0])
             cursor = None
             lim = 10
             if "limit" in args:
@@ -155,8 +163,10 @@ async def query_cmd(client, message):
             if "collection" in args:
                 COLLECTION = DB[args["collection"]]
 
-            if "filter" in args:
-                filt = json.loads(args["filter"].replace("-f ", ""))
+            if "-cmd" in args["flags"]:
+                cursor = [ DB.command(args["cmd"][0] ] # ewww but small patch
+            elif "filter" in args:
+                filt = json.loads(args["filter"])
                 cursor = COLLECTION.find(q, filt).sort("date", -1).limit(lim)
             else:
                 cursor = COLLECTION.find(q).sort("date", -1).limit(lim)
