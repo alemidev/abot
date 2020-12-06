@@ -63,7 +63,7 @@ async def inline_spoiler(client, inline_query):
     text = inline_query.query[1:].replace("spoiler", "")
     m_id = uuid4()
     SPOILERS[str(hash(text))] = text
-    BUTTONS[str(hash(text))] = m_id
+    BUTTONS[str(hash(text))] = str(m_id)
     PRESSES[str(hash(text))] = 0
 
     await inline_query.answer(
