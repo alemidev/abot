@@ -33,19 +33,18 @@ async def cmd_make_botfather_list(client, message):
 @alemiBot.on_callback_query()
 async def callback_spoiler(client, callback_query):
     global SPOILERS
-    print(callback_query)
     await client.answer_callback_query(
         callback_query.id,
         text=SPOILERS[callback_query.data],
         show_alert=True
     )
 
-@alemiBot.on_inline_query(filters.regex(pattern="^[\.\/]spoiler"))
+@alemiBot.on_inline_query(filters.regex(pattern="^[\\"+ "\\".join(alemiBot.prefixes) +"]spoiler"))
 async def inline_spoiler(client, inline_query):
     global SPOILERS
     lgr.warning(f"Received SPOILER query from {get_username(inline_query.from_user)}")
     text = inline_query.query[1:].replace("spoiler", "")
-    SPOILERS[hash(text)] = text
+    SPOILERS[str(hash(text))] = text
 
     await inline_query.answer(
         results=[
@@ -57,14 +56,14 @@ async def inline_spoiler(client, inline_query):
                         description=f"→ {text}",
                         reply_markup=InlineKeyboardMarkup([[
                             InlineKeyboardButton("View spoiler",
-                                callback_data=hash(text)
+                                callback_data=str(hash(text))
                             )
-                        ]])
+                        ]]))
         ],
         cache_time=1
     )
 
-@alemiBot.on_inline_query(filters.regex(pattern="^[\\"+ "\\".join(alemiBot.prefixes) +"]"), group=3)
+@alemiBot.on_inline_query(filters.regex(pattern="^[\\"+ "\\".join(alemiBot.prefixes) +"]run"))
 async def inline_run(client, inline_query):
     lgr.warning(f"Received RUN query from {get_username(inline_query.from_user)}")
     results = []
@@ -87,7 +86,7 @@ async def inline_run(client, inline_query):
         cache_time=1
     )
 
-@alemiBot.on_inline_query(group=2)
+@alemiBot.on_inline_query(filters.regex(pattern="^[\\"+ "\\".join(alemiBot.prefixes) +"]help"))
 async def inline_help(client, inline_query):
     lgr.warning(f"Received HELP query from {get_username(inline_query.from_user)}")
     results = []
@@ -108,4 +107,18 @@ async def inline_help(client, inline_query):
     await inline_query.answer(
         results=results,
         cache_time=1
+    )
+
+@alemiBot.on_inline_query()
+async def inline_always(client, inline_query):
+    await inline_query.answer(
+        results=[
+                    InlineQueryResultArticle(id=uuid4(),title=f"/help",
+                        description="Show help for userbot commands"),
+                    InlineQueryResultArticle(id=uuid4(),title=f"/spoiler",
+                        description="Create a spoiler text"),
+                    InlineQueryResultArticle(id=uuid4(),title=f"/run",
+                        description="Send prefix and command"),
+        ],
+        cache_time=60
     )
