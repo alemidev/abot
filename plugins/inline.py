@@ -14,6 +14,7 @@ from plugins.help import CATEGORIES
 import logging
 lgr = logging.getLogger(__name__)
 
+SPOILERS = {}
 
 @alemiBot.on_message(filterCommand("start", list(alemiBot.prefixes)))
 async def cmd_start(client, message):
@@ -29,7 +30,41 @@ async def cmd_make_botfather_list(client, message):
             out += f"{e.title} - {e.args} | {e.shorttext}\n"
     await message.reply(out, parse_mode='markdown')
 
-@alemiBot.on_inline_query(filters.regex(pattern="^[\\"+ "\\".join(alemiBot.prefixes) +"]"), group=0)
+@alemiBot.on_callback_query()
+async def callback_spoiler(client, callback_query):
+    global SPOILERS
+    print(callback_query)
+    await client.answer_callback_query(
+        callback_query.id,
+        text=SPOILERS[callback_query.data],
+        show_alert=True
+    )
+
+@alemiBot.on_inline_query(filters.regex(pattern="^[\.\/]spoiler"))
+async def inline_spoiler(client, inline_query):
+    global SPOILERS
+    lgr.warning(f"Received SPOILER query from {get_username(inline_query.from_user)}")
+    text = inline_query.query[1:].replace("spoiler", "")
+    SPOILERS[hash(text)] = text
+
+    await inline_query.answer(
+        results=[
+                    InlineQueryResultArticle(
+                        id=uuid4(),
+                        title=f"send spoiler",
+                        input_message_content=InputTextMessageContent(
+                            f"{get_username(inline_query.from_user)} sent a --spoiler--"),
+                        description=f"→ {text}",
+                        reply_markup=InlineKeyboardMarkup([[
+                            InlineKeyboardButton("View spoiler",
+                                callback_data=hash(text)
+                            )
+                        ]])
+        ],
+        cache_time=1
+    )
+
+@alemiBot.on_inline_query(filters.regex(pattern="^[\\"+ "\\".join(alemiBot.prefixes) +"]"), group=3)
 async def inline_run(client, inline_query):
     lgr.warning(f"Received RUN query from {get_username(inline_query.from_user)}")
     results = []
