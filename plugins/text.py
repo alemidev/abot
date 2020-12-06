@@ -11,7 +11,7 @@ from pyrogram import filters
 from util import batchify
 from util.parse import cleartermcolor
 from util.permission import is_allowed
-from util.message import edit_or_reply, is_me
+from util.message import edit_or_reply, is_me, get_text
 from util.command import filterCommand
 
 from bot import alemiBot
@@ -185,7 +185,7 @@ async def cmd_frequency(client, message):
         await client.send_chat_action(message.chat.id, "playing")
         buf = ""
         async for msg in client.iter_history(message.chat.id, limit=number):
-            buf += msg.text
+            buf += get_text(msg)
         count = Counter(buf.replace("\n", "").split()).most_common()
         output = ""
         for i in range(results):
