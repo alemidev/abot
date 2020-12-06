@@ -47,17 +47,17 @@ async def callback_spoiler(client, callback_query):
     )
     await client.edit_inline_reply_markup(callback_query.inline_message_id, 
                         reply_markup=InlineKeyboardMarkup([[
-                            InlineKeyboardButton(f"View spoiler [{PRESSES[callback_query.data]}]",
+                            InlineKeyboardButton(f"{PRESSES[callback_query.data]} | Show",
                                 callback_data=str(hash(text))
                             )
                         ]]))
 
-@alemiBot.on_inline_query(filters.regex(pattern="^[\\"+ "\\".join(alemiBot.prefixes) +"]spoiler"))
+@alemiBot.on_inline_query(filters.regex(pattern="^[\\"+ "\\".join(alemiBot.prefixes) +"]hide"))
 async def inline_spoiler(client, inline_query):
     global SPOILERS
     global PRESSES
     lgr.warning(f"Received SPOILER query from {get_username(inline_query.from_user)}")
-    text = inline_query.query[1:].replace("spoiler", "")
+    text = inline_query.query[1:].replace("hide", "")
     SPOILERS[str(hash(text))] = text
     PRESSES[str(hash(text))] = 0
 
@@ -65,12 +65,12 @@ async def inline_spoiler(client, inline_query):
         results=[
                     InlineQueryResultArticle(
                         id=uuid4(),
-                        title=f"send spoiler",
+                        title=f"send hidden text",
                         input_message_content=InputTextMessageContent(
-                            f"{get_username(inline_query.from_user)} sent a --spoiler--"),
+                            f"{get_username(inline_query.from_user)} sent a --secret--"),
                         description=f"→ {text}",
                         reply_markup=InlineKeyboardMarkup([[
-                            InlineKeyboardButton("View spoiler [0]",
+                            InlineKeyboardButton("Show",
                                 callback_data=str(hash(text))
                             )
                         ]]))
@@ -133,9 +133,9 @@ async def inline_always(client, inline_query):
                     InlineQueryResultArticle(id=uuid4(),title=f"/help",
                         description="Show help for userbot commands",
                         input_message_content=InputTextMessageContent(f"`[inline] → ` @{client.me.username} /help")),
-                    InlineQueryResultArticle(id=uuid4(),title=f"/spoiler",
-                        description="Create a spoiler text",
-                        input_message_content=InputTextMessageContent(f"`[inline] → ` @{client.me.username} /spoiler")),
+                    InlineQueryResultArticle(id=uuid4(),title=f"/hide",
+                        description="Create a hidden message",
+                        input_message_content=InputTextMessageContent(f"`[inline] → ` @{client.me.username} /hide")),
                     InlineQueryResultArticle(id=uuid4(),title=f"/run",
                         description="Send prefix and command",
                         input_message_content=InputTextMessageContent(f"`[inline] → ` @{client.me.username} /run")),
