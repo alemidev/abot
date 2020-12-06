@@ -19,9 +19,11 @@ async def attempt_joining(client, mention):
     if mention in JOINED:
         return
     try:    
-        await client.join_chat(mention)
+        chat = await client.get_chat(mention)
+        if chat.type in ["group", "supergroup"]:
+            await client.join_chat(mention)
+            logger.warning("Joined " + str(mention))
         JOINED.add(mention)
-        logger.warning("Joined " + str(mention))
     except BadRequest as e:
         JOINED.add(mention) # This isn't a channel/group anyway
         logger.warn("Failed to join " + str(mention) + ", (already a member or not a channel/group)")
@@ -51,4 +53,4 @@ async def join_all_groups(client, message):
                 await attempt_joining(client, mention)
     except Exception as e: # Basically ignore
         logger.warn(str(e))
-                
+
