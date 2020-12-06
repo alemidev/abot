@@ -36,14 +36,6 @@ HELP = HelpCategory("LOG")
 
 LAST_GROUP = "N/A"
 
-db.createUser(
-  {
-    user: "datasets",
-    pwd:  passwordPrompt(),
-    roles: [ { role: "readWrite", db: "spotify" } }
-  }
-)
-
 M_CLIENT = MongoClient('localhost', 27017,
     username=alemiBot.config.get("database", "username", fallback=""),
     password=alemiBot.config.get("database", "password", fallback=""))
