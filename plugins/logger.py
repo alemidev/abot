@@ -132,12 +132,14 @@ async def stats_cmd(client, message):
 HELP.add_help(["query", "q", "log"], "interact with db",
                 "make queries to the underlying database (MongoDB) to request documents. " +
                 "Filters, limits and fields can be configured with arguments. If multiple userbots are logging in the same " +
-                "database (but in different collections), you can specify in which collection to query with `-coll`.",
-                args="[-l <n>] [-f <{filter}>] <{query}>")
+                "database (but in different collections), you can specify in which collection to query with `-coll`. You can also " +
+                "specify which database to use with `-db` option, but the user which the bot is using to login will need permissions to read.",
+                args="[-coll <name>] [-db <name>] [-l <n>] [-f <{filter}>] <{query}>")
 @alemiBot.on_message(filters.me & filterCommand(["query", "q", "log"], list(alemiBot.prefixes), options={
     "limit" : ["-l", "-limit"],
     "filter" : ["-f", "-filter"],
     "collection" : ["-coll", "-collection"]
+    "database" : ["-db", "-database"]
 }, flags=["-cmd"]))
 async def query_cmd(client, message):
     args = message.command
@@ -150,18 +152,21 @@ async def query_cmd(client, message):
                 lim = int(args["limit"])
             lgr.info("Querying db : {args['arg']}")
             
-            COLLECTION = EVENTS
+            database = DB
+            if "database" in args:
+                database = M_CLIENT[args["database"]]
+            collection = EVENTS
             if "collection" in args:
-                COLLECTION = DB[args["collection"]]
+                collection = database[args["collection"]]
 
             if "-cmd" in args["flags"]:
-                cursor = [ DB.command(*args["cmd"]) ] # ewww but small patch
+                cursor = [ database.command(*args["cmd"]) ] # ewww but small patch
             elif "filter" in args:
                 q = json.loads(args["cmd"][0])
                 filt = json.loads(args["filter"])
-                cursor = COLLECTION.find(q, filt).sort("date", -1).limit(lim)
+                cursor = collection.find(q, filt).sort("date", -1).limit(lim)
             else:
-                cursor = COLLECTION.find(json.loads(args["cmd"][0])).sort("date", -1).limit(lim)
+                cursor = collection.find(json.loads(args["cmd"][0])).sort("date", -1).limit(lim)
 
             for doc in cursor:
                 buf.append(doc)
