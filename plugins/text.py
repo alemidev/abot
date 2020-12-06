@@ -104,6 +104,13 @@ async def shrug(client, message):
     logger.info(f" ¯\_(ツ)_/¯ ")
     await message.edit(re.sub(r"[\.\/\!]shrug","¯\_(ツ)_/¯", message.text.markdown))
 
+HELP.add_help("eyy", "( ͡° ͜ʖ ͡°)", "will replace `.eyy` anywhere "+
+                "in yor message with the composite emoji. (this will ignore your custom prefixes)")
+@alemiBot.on_message(filters.me & filters.regex(pattern="[\\" + "\\".join(list(alemiBot.prefixes)) + "]eyy"), group=2)
+async def eyy_replace(client, message):
+    logger.info(f" ( ͡° ͜ʖ ͡°) ")
+    await message.edit(re.sub(r"[\.\/\!]eyy","( ͡° ͜ʖ ͡°)", message.text.markdown))
+
 @alemiBot.on_message(filters.me & filters.regex(pattern=r"<-|->|=>|<="), group=3)
 async def replace_arrows(client, message):
     logger.info("arrow!")
