@@ -210,9 +210,9 @@ async def spam(client, message):
             extra["reply_to_message_id"] = message.reply_to_message.message_id
         for i in range(number):
             msg = await client.send_message(message.chat.id, text, **extra)
+            await asyncio.sleep(wait)
             if delme:
                 await msg.delete()
-            await asyncio.sleep(wait)
             if INTERRUPT:
                 INTERRUPT = False
                 await message.edit(message.text.markdown + f"\n` → ` Canceled after {i + 1} events")
