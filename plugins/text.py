@@ -172,7 +172,7 @@ async def fortune(client, message):
 
 HELP.add_help(["freq", "frequent"], "find frequent words in messages",
                 "find most used words in last messages. If no number is given, will search only " +
-                "last 20 messages. By default, 5 most frequent words are shown, but number of results " +
+                "last 1000 messages. By default, 10 most frequent words are shown, but number of results " +
                 "can be changed with `-r`. By default, only words of `len > 3` will be considered. " +
                 "A minimum word len can be specified with `-min`.", args="[-r <n>] [-min <n>] [n]", public=True)
 @alemiBot.on_message(is_allowed & filterCommand(["freq", "frequent"], list(alemiBot.prefixes), options={
@@ -180,8 +180,8 @@ HELP.add_help(["freq", "frequent"], "find frequent words in messages",
     "minlen" : ["-min"]
 }))
 async def cmd_frequency(client, message):
-    results = int(message.command["results"]) if "results" in message.command else 5
-    number = int(message.command["cmd"][0]) if "cmd" in message.command else 20
+    results = int(message.command["results"]) if "results" in message.command else 10
+    number = int(message.command["cmd"][0]) if "cmd" in message.command else 100
     min_len = int(message.command["minlen"]) if "minlen" in message.command else 3
     try:
         logger.info(f"Counting {results} most frequent words in last {number} messages")
@@ -192,7 +192,7 @@ async def cmd_frequency(client, message):
         async for msg in client.iter_history(message.chat.id, limit=number):
             words += [ w for w in get_text(msg).split() if len(w) > min_len ]
             count += 1
-            if count % 100 == 0:
+            if count % 250 == 0:
                 await response.edit(f"` → [{count}/{number}] ` Counting word occurrences...")
         count = Counter(words).most_common()
         output = f"`→ ` **{results}** most frequent words __(len > {min_len})__ in last **{number}** messages:\n"
