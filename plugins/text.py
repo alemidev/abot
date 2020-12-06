@@ -182,11 +182,15 @@ async def cmd_frequency(client, message):
     number = int(message.command["cmd"][0]) if "cmd" in message.command else 20
     try:
         logger.info(f"Counting {results} most frequent words in last {number} messages")
-        response = await edit_or_reply(message, "` → ` Counting words...")
+        response = await edit_or_reply(message, f"` → ` Counting words in messages")
         await client.send_chat_action(message.chat.id, "playing")
         buf = ""
+        count = 0
         async for msg in client.iter_history(message.chat.id, limit=number):
             buf += get_text(msg)
+            count += 1
+            if count % 20 == 0:
+                await response.edit(response.text + f" [{count}/{number}]")
         count = Counter(buf.replace("\n", "").split()).most_common()
         output = f"`→ ` **{results}** most frequent words in last **{number}** messages:\n"
         for i in range(results):
