@@ -115,13 +115,13 @@ async def inline_always(client, inline_query):
         results=[
                     InlineQueryResultArticle(id=uuid4(),title=f"/help",
                         description="Show help for userbot commands",
-                        input_message_content=InputTextMessageContent("")),
+                        input_message_content=InputTextMessageContent(f"`[inline] → ` @{client.me.username} /help")),
                     InlineQueryResultArticle(id=uuid4(),title=f"/spoiler",
                         description="Create a spoiler text",
-                        input_message_content=InputTextMessageContent("")),
+                        input_message_content=InputTextMessageContent(f"`[inline] → ` @{client.me.username} /spoiler")),
                     InlineQueryResultArticle(id=uuid4(),title=f"/run",
                         description="Send prefix and command",
-                        input_message_content=InputTextMessageContent("")),
+                        input_message_content=InputTextMessageContent(f"`[inline] → ` @{client.me.username} /run")),
         ],
         cache_time=60
     )
