@@ -190,7 +190,7 @@ async def cmd_frequency(client, message):
             buf += get_text(msg)
             count += 1
             if count % 100 == 0:
-                await response.edit(f"` → ` Counting word occurrences :  --[{count}/{number}]--")
+                await response.edit(f"`→ ` Counting word occurrences :  --[{count}/{number}]--")
         count = Counter(buf.replace("\n", "").split()).most_common()
         output = f"`→ ` **{results}** most frequent words in last **{number}** messages:\n"
         for i in range(results):
