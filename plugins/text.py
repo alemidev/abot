@@ -4,6 +4,7 @@ import subprocess
 import time
 import re
 import traceback
+from collections import Counter
 
 from pyrogram import filters
 
@@ -152,7 +153,7 @@ async def figlettext(client, message):
     await client.set_offline()
 
 HELP.add_help("fortune", "do you feel fortunate!?",
-                "run `fortune` to get a random sentence. Like fortune bisquits!", public=True)
+                "run `fortune` to get a random sentence. Like fortune bisquits!", args="[-cow]", public=True)
 @alemiBot.on_message(is_allowed & filterCommand(["fortune"], list(alemiBot.prefixes), flags=["-cow"]))
 async def fortune(client, message):
     try:
@@ -167,4 +168,31 @@ async def fortune(client, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.set_offline()
+
+HELP.add_help(["freq", "frequent"], "find frequent words in messages",
+                "find most used words in last messages. If no number is given, will search only " +
+                "last 20 messages. By default, 5 most frequent words are shown, but number of results " +
+                "can be changed with `-r`.", args="[-r <n>] [n]", public=True)
+@alemiBot.on_message(is_allowed & filterCommand(["freq", "frequent"], list(alemiBot.prefixes), options={
+    "results" : ["-r", "-res"]
+}))
+async def cmd_frequency(client, message):
+    results = int(message.command["results"]) if "results" in message.command else 5
+    number = int(message.command["cmd"][0]) if "cmd" in message.command else 20
+    try:
+        logger.info(f"Counting {results} most frequent words in last {number} messages")
+        await client.send_chat_action(message.chat.id, "playing")
+        buf = ""
+        async for msg in client.iter_history(message.chat.id, limit=number):
+            buf += msg.text
+        count = Counter(buf).most_common()
+        output = ""
+        for i in range(results):
+            output += f"`{i+1}]{'-'*(results-i)}>` `{count[i][0]}` `({count[i][1]})`\n"
+        await edit_or_reply(message, output)
+    except Exception as e:
+        traceback.print_exc()
+        await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()
