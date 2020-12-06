@@ -189,7 +189,7 @@ async def cmd_frequency(client, message):
         async for msg in client.iter_history(message.chat.id, limit=number):
             buf += get_text(msg)
             count += 1
-            if count % 20 == 0:
+            if count % 100 == 0:
                 await response.edit(response.text + f" [{count}/{number}]")
         count = Counter(buf.replace("\n", "").split()).most_common()
         output = f"`→ ` **{results}** most frequent words in last **{number}** messages:\n"
