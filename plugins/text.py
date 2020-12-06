@@ -189,7 +189,7 @@ async def cmd_frequency(client, message):
         count = Counter(buf.replace("\n", "").split(" ")).most_common()
         output = ""
         for i in range(results):
-            output += f"`{i+1}]{'-'*(results-i)}>` `{count[i][0]}` `({count[i][1]})`\n"
+            output += f"`{i+1}]{'-'*(results-i-1)}>` `{count[i][0]}` `({count[i][1]})`\n"
         await edit_or_reply(message, output)
     except Exception as e:
         traceback.print_exc()
