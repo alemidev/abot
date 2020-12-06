@@ -67,11 +67,12 @@ async def inline_spoiler(client, inline_query):
 async def inline_run(client, inline_query):
     lgr.warning(f"Received RUN query from {get_username(inline_query.from_user)}")
     results = []
+    q = inline_query.query[1:].replace("run", "").strip()
 
     for k in CATEGORIES:
         for kk in CATEGORIES[k].HELP_ENTRIES:
             e = CATEGORIES[k].HELP_ENTRIES[kk]
-            if inline_query.query[1:] == "" or e.title.startswith(inline_query.query[1:]):
+            if q == "" or e.title.startswith(q):
                 results.append(
                     InlineQueryResultArticle(
                         id=uuid4(),
@@ -89,12 +90,13 @@ async def inline_run(client, inline_query):
 @alemiBot.on_inline_query(filters.regex(pattern="^[\\"+ "\\".join(alemiBot.prefixes) +"]help"))
 async def inline_help(client, inline_query):
     lgr.warning(f"Received HELP query from {get_username(inline_query.from_user)}")
+    q = inline_query.query[1:].replace("help", "").strip()
     results = []
 
     for k in CATEGORIES:
         for kk in CATEGORIES[k].HELP_ENTRIES:
             e = CATEGORIES[k].HELP_ENTRIES[kk]
-            if inline_query.query == "" or e.title.startswith(inline_query.query):
+            if q == "" or e.title.startswith(q):
                 results.append(
                     InlineQueryResultArticle(
                         id=uuid4(),
