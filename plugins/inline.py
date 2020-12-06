@@ -15,7 +15,6 @@ import logging
 lgr = logging.getLogger(__name__)
 
 SPOILERS = {}
-BUTTONS = {}
 PRESSES = {}
 
 @alemiBot.on_message(filterCommand("start", list(alemiBot.prefixes)))
@@ -36,7 +35,6 @@ async def cmd_make_botfather_list(client, message):
 async def callback_spoiler(client, callback_query):
     global SPOILERS
     global PRESSES
-    global BUTTONS
     text = SPOILERS[callback_query.data] if callback_query.data in SPOILERS else "Spoiler expired"
     if callback_query.data in PRESSES:
         PRESSES[callback_query.data] +=1
@@ -47,7 +45,7 @@ async def callback_spoiler(client, callback_query):
         text=text,
         show_alert=True
     )
-    await client.edit_inline_reply_markup(BUTTONS[callback_query.data], 
+    await client.edit_inline_reply_markup(callback_query.inline_message_id, 
                         reply_markup=InlineKeyboardMarkup([[
                             InlineKeyboardButton(f"View spoiler [{PRESSES[callback_query.data]}]",
                                 callback_data=str(hash(text))
@@ -57,13 +55,10 @@ async def callback_spoiler(client, callback_query):
 @alemiBot.on_inline_query(filters.regex(pattern="^[\\"+ "\\".join(alemiBot.prefixes) +"]spoiler"))
 async def inline_spoiler(client, inline_query):
     global SPOILERS
-    global BUTTONS
     global PRESSES
     lgr.warning(f"Received SPOILER query from {get_username(inline_query.from_user)}")
     text = inline_query.query[1:].replace("spoiler", "")
-    m_id = uuid4()
     SPOILERS[str(hash(text))] = text
-    BUTTONS[str(hash(text))] = m_id.hex
     PRESSES[str(hash(text))] = 0
 
     await inline_query.answer(
