@@ -33,9 +33,10 @@ async def cmd_make_botfather_list(client, message):
 @alemiBot.on_callback_query()
 async def callback_spoiler(client, callback_query):
     global SPOILERS
+    text = SPOILERS[callback_query.data] if callback_query.data in SPOILERS else "Spoiler expired"
     await client.answer_callback_query(
         callback_query.id,
-        text=SPOILERS[callback_query.data],
+        text=text,
         show_alert=True
     )
 
