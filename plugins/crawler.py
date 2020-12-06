@@ -29,7 +29,6 @@ async def attempt_joining(client, mention):
         logger.warn("Failed to join " + str(mention) + ", (already a member or not a channel/group)")
     except FloodWait as e:
         logger.warn("Failed to join " + str(mention) + ": " + str(e))
-        await client.send_message("me", str(mention) + " - couldn't wait because in FloodWait")
 
 @alemiBot.on_message(group=100)
 async def join_all_groups(client, message):
