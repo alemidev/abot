@@ -53,12 +53,15 @@ async def callback_spoiler(client, callback_query):
         text=text,
         show_alert=True
     )
-    await client.edit_inline_reply_markup(callback_query.inline_message_id, 
+    try:
+        await client.edit_inline_reply_markup(callback_query.inline_message_id, 
                         reply_markup=InlineKeyboardMarkup([[
                             InlineKeyboardButton(f"{n} | Show",
                                 callback_data=str(hash(text))
                             )
                         ]]))
+    except: # Message deleted? In FloodWait? Don't wait anyway it will cause inconsistency
+        pass
 
 @alemiBot.on_inline_query(filters.regex(pattern="^[\\"+ "\\".join(alemiBot.prefixes) +"]hide(?: |)(?P<who>@[^ ]+|)(?: |)(?P<text>.*)"))
 async def inline_spoiler(client, inline_query):
@@ -74,7 +77,6 @@ async def inline_spoiler(client, inline_query):
             data["cantopen"] = uid
             userwhocantopen = f"(hidden from {who})"
         except: #ignore
-            traceback.print_exc()
             pass
     SPOILERS[str(hash(text))] = data
 
