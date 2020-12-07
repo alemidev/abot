@@ -39,7 +39,7 @@ except:
 
 INTERRUPT = False
 
-HELP.add_help(["censor", "c"], "immediately delete messages from users",
+HELP.add_help(["censor", "c"], "immediately delete messages",
             "Start censoring someone in current chat. Use flag `-mass` to toggle mass censorship in current chat. " +
             "Add flag -free to stop istead stop censoring target. Use flag `-list` to get censored " +
             "users in current chat. Messages from self will never be censored. More than one target can be specified",

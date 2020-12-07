@@ -66,7 +66,7 @@ async def help_cmd(client, message):
                 e = cat.HELP_ENTRIES[ALIASES[arg]]
                 return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode="markdown")
     await edit_or_reply(message, f"`ᚨᛚᛖᛗᛁᛒᛟᛏ v{client.app_version}`\n" +
-                        "`→ .help [cmd] ` get help, give cmd for specific help\n" +
+                        "`→ .help [cmd] ` get cmd help or cmd list\n" +
                         get_all_short_text() +
                         f"__Commands with * are available to trusted users__\n" +
                         "\nhttps://github.com/alemigliardi/alemibot", parse_mode="markdown")
