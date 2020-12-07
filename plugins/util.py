@@ -304,7 +304,7 @@ async def voice_cmd(client, message):
     try:
         if message.reply_to_message is not None:
             opts["reply_to_message_id"] = message.reply_to_message.message_id
-        else:
+        elif not is_me(message):
             opts["reply_to_message_id"] = message.message_id
         await client.send_chat_action(message.chat.id, "record_audio")
         voice_obj = gTTS(text=text, lang=lang, slow=slow) 
