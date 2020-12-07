@@ -310,8 +310,11 @@ async def voice_cmd(client, message):
             opts["reply_to_message_id"] = message.message_id
         await client.send_chat_action(message.chat.id, "record_audio")
         voice_obj = gTTS(text=text, lang=lang, slow=slow) 
+        voice_io = io.BytesIO()
+        voice_obj.save_to_fp(voice_io)
         # voice_obj.save("tts.ogg") 
-        await client.send_voice(message.chat.id, voice_obj, **opts)
+        voice_io.seek(0)
+        await client.send_voice(message.chat.id, voice_io, **opts)
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
