@@ -8,6 +8,7 @@ import traceback
 
 from collections import Counter
 from gtts import gTTS 
+from pydub import AudioSegment
 
 from pyrogram import filters
 
@@ -285,11 +286,12 @@ async def color_cmd(client, message):
 HELP.add_help(["voice"], "convert text to voice",
                 "create a voice message using Google Text to Speech. By default, english will be " +
                 "used as lang, but another one can be specified with `-l`. You can add `-slow` flag " +
-                "to make the generated speech slower. If command comes from self, will delete original message.",
-                args="[-l <lang>] [-slow] <text>", public=True)
+                "to make the generated speech slower. If command comes from self, will delete original " +
+                "message. TTS result will be converted to `.ogg`. You can skip this step and send as mp3 by " +
+                "adding the `-mp3` flag.", args="[-l <lang>] [-slow] [-mp3] <text>", public=True)
 @alemiBot.on_message(is_allowed & filterCommand(["voice"], list(alemiBot.prefixes), options={
     "lang" : ["-l", "-lang"]
-}, flags=["-slow"]))
+}, flags=["-slow", "-mp3"]))
 async def voice_cmd(client, message):
     text = ""
     opts = {}
@@ -307,13 +309,12 @@ async def voice_cmd(client, message):
         elif not is_me(message):
             opts["reply_to_message_id"] = message.message_id
         await client.send_chat_action(message.chat.id, "record_audio")
-        voice_obj = gTTS(text=text, lang=lang, slow=slow) 
-        voice_io = io.BytesIO()
-        voice_io.name = "tts.ogg"
-        voice_obj.write_to_fp(voice_io)
-        # voice_obj.save("tts.ogg") 
-        voice_io.seek(0)
-        await client.send_voice(message.chat.id, voice_io, **opts)
+        gTTS(text=text, lang=lang, slow=slow).save("data/tts.mp3")
+        if "-mp3" in message.command["flags"]:
+            await client.send_audio(message.chat.id, "data/tts.mp3", **opts)
+        else:
+            AudioSegment.from_mp3("data/tts.mp3").export("data/tts.ogg", format="ogg")
+            await client.send_voice(message.chat.id, "data/tts.ogg", **opts)
         if is_me(message):
             await message.delete()
     except Exception as e:
