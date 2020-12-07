@@ -313,7 +313,7 @@ async def voice_cmd(client, message):
         if "-mp3" in message.command["flags"]:
             await client.send_audio(message.chat.id, "data/tts.mp3", **opts)
         else:
-            AudioSegment.from_mp3("data/tts.mp3").export("data/tts.ogg", format="ogg")
+            AudioSegment.from_mp3("data/tts.mp3").export("data/tts.ogg", format="ogg", codec="libopus")
             await client.send_voice(message.chat.id, "data/tts.ogg", **opts)
         if is_me(message):
             await message.delete()
