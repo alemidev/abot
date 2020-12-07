@@ -336,9 +336,9 @@ HELP.add_help(["ocr"], "read text in photos",
 async def ocr_cmd(client, message):
     try:
         payload = {
-            'isOverlayRequired': overlay,
+            'isOverlayRequired': "-overlay" in message.command["flags"],
             'apikey': alemiBot.config.get("ocr", "apikey", fallback=""),
-            'language': language
+            'language': message.command["lang"] if "lang" in message.command else "eng"
         }
         if payload["apikey"] == "":
             return await edit_or_reply(message, "`[!] → ` No API Key set up")
@@ -350,7 +350,7 @@ async def ocr_cmd(client, message):
             fpath = await client.download_media(msg, file_name="data/")
             with open(fpath, 'rb') as f:
                 r = requests.post('https://api.ocr.space/parse/image', files={filename: f}, data=payload)
-            await edit_or_reply(message, f"` → ` {r.content.decode()}"
+            await edit_or_reply(message, f"` → ` {r.content.decode()}")
         else:
             return await edit_or_reply(message, "`[!] → ` No media given")
     except Exception as e:
