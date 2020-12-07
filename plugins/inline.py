@@ -38,7 +38,7 @@ async def callback_spoiler(client, callback_query):
     and SPOILERS[callback_query.data]["cantopen"] == callback_query.from_user.id:
         return await client.answer_callback_query(
             callback_query.id,
-            text="Sorry, but you can't view this spoiler!",
+            text="Sorry, but you can't view this secret!",
             show_alert=True
         )
         
@@ -72,7 +72,7 @@ async def inline_spoiler(client, inline_query):
         try:
             uid = (await client.get_users(who)).id
             data["cantopen"] = uid
-            userwhocantopen = f" hidden from {who}"
+            userwhocantopen = f"(hidden from {who})"
         except: #ignore
             traceback.print_exc()
             pass
@@ -82,7 +82,7 @@ async def inline_spoiler(client, inline_query):
         results=[
                     InlineQueryResultArticle(
                         id=uuid4(),
-                        title=f"send hidden text",
+                        title=f"send secret text {userwhocantopen}",
                         input_message_content=InputTextMessageContent(
                             f"{get_username(inline_query.from_user)} sent a --secret-- {userwhocantopen}"),
                         description=f"→ {text}",
