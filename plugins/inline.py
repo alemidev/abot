@@ -15,7 +15,6 @@ import logging
 lgr = logging.getLogger(__name__)
 
 SPOILERS = {}
-PRESSES = {}
 
 @alemiBot.on_message(filterCommand("start", list(alemiBot.prefixes)))
 async def cmd_start(client, message):
@@ -34,12 +33,20 @@ async def cmd_make_botfather_list(client, message):
 @alemiBot.on_callback_query()
 async def callback_spoiler(client, callback_query):
     global SPOILERS
-    global PRESSES
-    text = SPOILERS[callback_query.data] if callback_query.data in SPOILERS else "Spoiler expired"
+    if callback_query.data in SPOILERS and "cantopen" in SPOILERS[callback_query.data] \
+    and SPOILERS[callback_query.data]["cantopen"] == callback_query.from_user.id:
+        return await client.answer_callback_query(
+            callback_query.id,
+            text="Sorry, but you can't view this spoiler!",
+            show_alert=True
+        )
+        
+    text = SPOILERS[callback_query.data]["text"] if callback_query.data in SPOILERS else "Spoiler expired"
     if callback_query.data in PRESSES:
-        PRESSES[callback_query.data] +=1
+        SPOILERS[callback_query.data]["number"] +=1
     else:
-        PRESSES[callback_query.data] = 1
+        SPOILERS[callback_query.data]["number"] = 1
+    n = SPOILERS[callback_query.data]["number"]
     await client.answer_callback_query(
         callback_query.id,
         text=text,
@@ -47,19 +54,27 @@ async def callback_spoiler(client, callback_query):
     )
     await client.edit_inline_reply_markup(callback_query.inline_message_id, 
                         reply_markup=InlineKeyboardMarkup([[
-                            InlineKeyboardButton(f"{PRESSES[callback_query.data]} | Show",
+                            InlineKeyboardButton(f"{n} | Show",
                                 callback_data=str(hash(text))
                             )
                         ]]))
 
-@alemiBot.on_inline_query(filters.regex(pattern="^[\\"+ "\\".join(alemiBot.prefixes) +"]hide"))
+@alemiBot.on_inline_query(filters.regex(pattern="^[\\"+ "\\".join(alemiBot.prefixes) +"]hide(?: |)(?P<who>@[^ ]+|)(?: |)(?P<text>.*)"))
 async def inline_spoiler(client, inline_query):
     global SPOILERS
-    global PRESSES
     lgr.warning(f"Received SPOILER query from {get_username(inline_query.from_user)}")
-    text = inline_query.query[1:].replace("hide", "")
-    SPOILERS[str(hash(text))] = text
-    PRESSES[str(hash(text))] = 0
+    text = inline_query.matches[0]["text"]
+    data = {"text" : text, "number": 0}
+    who = inline_query.matches[0]["who"]
+    userwhocantopen = ""
+    if who != "":
+        try:
+            uid = (await client.get_user(who)).id
+            data["cantopen"] = uid
+            userwhocantopen = " hidden from {who}"
+        except: #ignore
+            pass
+    SPOILERS[str(hash(text))] = data
 
     await inline_query.answer(
         results=[
@@ -67,7 +82,7 @@ async def inline_spoiler(client, inline_query):
                         id=uuid4(),
                         title=f"send hidden text",
                         input_message_content=InputTextMessageContent(
-                            f"{get_username(inline_query.from_user)} sent a --secret--"),
+                            f"{get_username(inline_query.from_user)} sent a --secret-- {userwhocantopen}"),
                         description=f"→ {text}",
                         reply_markup=InlineKeyboardMarkup([[
                             InlineKeyboardButton("Show",
