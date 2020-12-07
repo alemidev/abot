@@ -150,7 +150,7 @@ async def query_cmd(client, message):
             lim = 10
             if "limit" in args:
                 lim = int(args["limit"])
-            lgr.info("Querying db : {args['arg']}")
+            lgr.info(f"Querying db : {args['arg']}")
             
             database = DB
             if "database" in args:
@@ -244,7 +244,7 @@ async def lookup_deleted_messages(client, message, COLLECTION, target_group, lim
             candidates = COLLECTION.find({"_": "Message", "message_id": deletion["message_id"]}).sort("date", -1)
             lgr.debug("Querying db for possible deleted msg")
             for doc in candidates: # dank 'for': i only need one
-                if chat_id is not None and doc["chat"]["id"] != chat_id:
+                if chat_id is not None and ("chat" not in doc or doc["chat"]["id"] != chat_id):
                     continue
                 if not include_system and "service" in doc and doc["service"]:
                     break # we don't care about service messages!
