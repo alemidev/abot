@@ -42,7 +42,7 @@ async def callback_spoiler(client, callback_query):
         )
         
     text = SPOILERS[callback_query.data]["text"] if callback_query.data in SPOILERS else "Spoiler expired"
-    if callback_query.data in PRESSES:
+    if callback_query.data in SPOILERS:
         SPOILERS[callback_query.data]["number"] +=1
     else:
         SPOILERS[callback_query.data]["number"] = 1
@@ -73,6 +73,7 @@ async def inline_spoiler(client, inline_query):
             data["cantopen"] = uid
             userwhocantopen = " hidden from {who}"
         except: #ignore
+            traceback.print_exc()
             pass
     SPOILERS[str(hash(text))] = data
 
