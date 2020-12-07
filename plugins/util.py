@@ -13,7 +13,7 @@ from pydub import AudioSegment
 from pyrogram import filters
 
 from util.permission import is_allowed
-from util.message import edit_or_reply, is_me
+from util.message import edit_or_reply, is_me, tokenize_json
 from util.command import filterCommand
 
 from googletrans import Translator
@@ -328,11 +328,11 @@ HELP.add_help(["ocr"], "read text in photos",
                 "make a request to https://api.ocr.space/parse/image. The number of allowed queries " +
                 "is limited, the result is not guaranteed and it requires an API key set up to work. " +
                 "A language for the OCR can be specified with `-l`. You can request OCR.space overlay in response " +
-                "with the `-overlay` flag. A media can be attached or replied to.",
+                "with the `-overlay` flag. A media can be attached or replied to. Add the `-json` flag to get raw result.",
                 args="[-l <lang>] [-overlay]", public=True)
 @alemiBot.on_message(is_allowed & filterCommand(["ocr"], list(alemiBot.prefixes), options={
     "lang" : ["-l", "-lang"]
-}, flags=["-overlay"]))
+}, flags=["-overlay", "-json"]))
 async def ocr_cmd(client, message):
     try:
         payload = {
@@ -349,8 +349,16 @@ async def ocr_cmd(client, message):
             await client.send_chat_action(message.chat.id, "upload_photo")
             fpath = await client.download_media(msg, file_name="data/")
             with open(fpath, 'rb') as f:
-                r = requests.post('https://api.ocr.space/parse/image', files={filename: f}, data=payload)
-            await edit_or_reply(message, f"` → ` {r.content.decode()}")
+                r = requests.post('https://api.ocr.space/parse/image', files={fpath: f}, data=payload)
+            if "-json" in message.command["flags"]:
+                raw = tokenize_json(json.dumps(json.loads(r.content.decode()), indent=2))
+                await edit_or_reply(message, f"` → `\n{raw}")
+            else:
+                raw = json.loads(r.content.decode())
+                out = ""
+                for el in raw["ParsedResults"]:
+                    out += el["ParsedText"]
+                await edit_or_reply(message, f"` → ` {out}")
         else:
             return await edit_or_reply(message, "`[!] → ` No media given")
     except Exception as e:
