@@ -323,3 +323,38 @@ async def voice_cmd(client, message):
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()
 
+
+HELP.add_help(["ocr"], "read text in photos",
+                "make a request to https://api.ocr.space/parse/image. The number of allowed queries " +
+                "is limited, the result is not guaranteed and it requires an API key set up to work. " +
+                "A language for the OCR can be specified with `-l`. You can request OCR.space overlay in response " +
+                "with the `-overlay` flag. A media can be attached or replied to.",
+                args="[-l <lang>] [-overlay]", public=True)
+@alemiBot.on_message(is_allowed & filterCommand(["ocr"], list(alemiBot.prefixes), options={
+    "lang" : ["-l", "-lang"]
+}, flags=["-overlay"]))
+async def ocr_cmd(client, message):
+    try:
+        payload = {
+            'isOverlayRequired': overlay,
+            'apikey': alemiBot.config.get("ocr", "apikey", fallback=""),
+            'language': language
+        }
+        if payload["apikey"] == "":
+            return await edit_or_reply(message, "`[!] → ` No API Key set up")
+        msg = message
+        if message.reply_to_message is not None:
+            msg = message.reply_to_message
+        if msg.media:
+            await client.send_chat_action(message.chat.id, "upload_photo")
+            fpath = await client.download_media(msg, file_name="data/")
+            with open(fpath, 'rb') as f:
+                r = requests.post('https://api.ocr.space/parse/image', files={filename: f}, data=payload)
+            await edit_or_reply(message, f"` → ` {r.content.decode()}"
+        else:
+            return await edit_or_reply(message, "`[!] → ` No media given")
+    except Exception as e:
+        traceback.print_exc()
+        await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.send_chat_action(message.chat.id, "cancel")
+    await client.set_offline()
