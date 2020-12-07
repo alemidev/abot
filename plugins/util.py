@@ -309,6 +309,7 @@ async def voice_cmd(client, message):
         await client.send_chat_action(message.chat.id, "record_audio")
         voice_obj = gTTS(text=text, lang=lang, slow=slow) 
         voice_io = io.BytesIO()
+        voice_io.name = "tts.ogg"
         voice_obj.write_to_fp(voice_io)
         # voice_obj.save("tts.ogg") 
         voice_io.seek(0)
