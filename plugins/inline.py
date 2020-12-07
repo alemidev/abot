@@ -1,3 +1,4 @@
+import traceback
 from uuid import uuid4
 
 from pyrogram import filters
@@ -69,9 +70,9 @@ async def inline_spoiler(client, inline_query):
     userwhocantopen = ""
     if who != "":
         try:
-            uid = (await client.get_user(who)).id
+            uid = (await client.get_users(who)).id
             data["cantopen"] = uid
-            userwhocantopen = " hidden from {who}"
+            userwhocantopen = f" hidden from {who}"
         except: #ignore
             traceback.print_exc()
             pass
