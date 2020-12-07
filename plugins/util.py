@@ -7,6 +7,7 @@ import time
 import traceback
 
 from collections import Counter
+from gtts import gTTS 
 
 from pyrogram import filters
 
@@ -280,3 +281,40 @@ async def color_cmd(client, message):
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()
+
+HELP.add_help(["voice"], "convert text to voice",
+                "create a voice message using Google Text to Speech. By default, english will be " +
+                "used as lang, but another one can be specified with `-l`. You can add `-slow` flag " +
+                "to make the generated speech slower. If command comes from self, will delete original message.",
+                args="[-l <lang>] [-slow] <text>", public=True)
+@alemiBot.on_message(is_allowed & filterCommand(["voice"], list(alemiBot.prefixes), options={
+    "lang" : ["-l", "-lang"]
+}, flags=["-slow"]))
+async def voice_cmd(client, message):
+    text = ""
+    opts = {}
+    if message.reply_to_message is not None:
+        text = message.reply_to_message.text
+    elif "arg" in message.command:
+        text = message.command["arg"]
+    else:
+        return await edit_or_reply(message, "`[!] → ` No text given")
+    lang = message.command["lang"] if "lang" in message.command else "en"
+    slow = "-slow" in message.command["flags"]
+    try:
+        if is_me(message):
+            await message.delete()
+        elif message.reply_to_message is not None:
+            opts["reply_to_message_id"] = message.reply_to_message.message_id
+        else:
+            opts["reply_to_message_id"] = message.message_id
+        await client.send_chat_action(message.chat.id, "record_audio")
+        voice_obj = gTTS(text=text, lang=lang, slow=slow) 
+        # voice_obj.save("tts.ogg") 
+        await client.send_voice(message.chat.id, voice_obj, **opts)
+    except Exception as e:
+        traceback.print_exc()
+        await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.send_chat_action(message.chat.id, "cancel")
+    await client.set_offline()
+
