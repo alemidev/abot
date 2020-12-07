@@ -302,19 +302,19 @@ async def voice_cmd(client, message):
     lang = message.command["lang"] if "lang" in message.command else "en"
     slow = "-slow" in message.command["flags"]
     try:
-        if is_me(message):
-            await message.delete()
-        elif message.reply_to_message is not None:
+        if message.reply_to_message is not None:
             opts["reply_to_message_id"] = message.reply_to_message.message_id
         else:
             opts["reply_to_message_id"] = message.message_id
         await client.send_chat_action(message.chat.id, "record_audio")
         voice_obj = gTTS(text=text, lang=lang, slow=slow) 
         voice_io = io.BytesIO()
-        voice_obj.save_to_fp(voice_io)
+        voice_obj.write_to_fp(voice_io)
         # voice_obj.save("tts.ogg") 
         voice_io.seek(0)
         await client.send_voice(message.chat.id, voice_io, **opts)
+        if is_me(message):
+            await message.delete()
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
