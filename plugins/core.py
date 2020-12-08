@@ -29,7 +29,7 @@ async def ping(client, message):
     msg = await edit_or_reply(message, "` → ` a sunny day")
     after = time.time()
     latency = (after - before) * 1000
-    await msg.edit(msg.text.markdown + f"\n` → ` a sunny day `({latency:.0f}ms)`")
+    await msg.edit(f"` → ` a sunny day `({latency:.0f}ms)`")
 
 HELP.add_help(["joined", "jd"], "count active chats",
                 "get number of all dialogs : groups, supergroups, channels, dms, bots")
