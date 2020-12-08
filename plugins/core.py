@@ -63,11 +63,17 @@ async def update(client, message):
         out += "\n` → ` Fetching code"
         await msg.edit(out) 
         result = subprocess.run(["git", "pull"], capture_output=True, timeout=60)
+        if b"Aborting" in result:
+            return await msg.edit(out + " [FAIL]")
         out += " [OK]\n` → ` Checking libraries"
         await msg.edit(out) 
         result = subprocess.run(["pip", "install", "-r", "requirements.txt"],
                                                     capture_output=True, timeout=60)
-        out += " [OK]\n` → ` Restarting process"
+        if b"ERROR" in result:
+            out += " [WARN]"
+        else:
+            out += " [OK]"
+        out += "\n` → ` Restarting process"
         await msg.edit(out) 
         with open("data/lastmsg.json", "w") as f:
             json.dump({"message_id": message.message_id,
