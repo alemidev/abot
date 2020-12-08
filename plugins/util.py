@@ -254,20 +254,19 @@ async def qrcode_cmd(client, message):
     await client.set_offline()
 
 HELP.add_help(["color"], "send solid color image",
-                "create a solid color image and send it. Color can be given as hex (`-hex`) or " +
+                "create a solid color image and send it. Color can be given as hex or " +
                 "by specifying each channel individally. Each channel can range from 0 to 256. ",
-                args="[-hex <hex>] <r> <g> <b>", public=True)
-@alemiBot.on_message(is_allowed & filterCommand(["color"], list(alemiBot.prefixes), options={
-    "hex" : ["-hex"],
-}))
+                args="( <hex> | <r> <g> <b> )", public=True)
+@alemiBot.on_message(is_allowed & filterCommand(["color"], list(alemiBot.prefixes)))
 async def color_cmd(client, message):
     clr = None
-    if "hex" in message.command:
-        clr = message.command["hex"]
-        if not clr.startswith("#"):
-            clr = "#" + clr
-    elif "cmd" in message.command and len(message.command["cmd"]) > 2:
-        clr = tuple([int(k) for k in message.command["cmd"]][:3])
+    if "cmd" in message.command:
+        if len(message.command["cmd"]) > 2:
+            clr = tuple([int(k) for k in message.command["cmd"]][:3])
+        else:
+            clr = message.command["cmd"][0]
+            if not clr.startswith("#"):
+                clr = "#" + clr
     else:
         return await edit_or_reply(message, "`[!] → ` Not enough args given")
     try:
