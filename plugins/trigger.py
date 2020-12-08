@@ -76,3 +76,4 @@ async def search_triggers(client, message):
             await message.reply(triggers[trg])
             await client.set_offline()
             logger.info("T R I G G E R E D")
+            return # Only get triggered once!
