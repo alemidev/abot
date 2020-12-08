@@ -1,6 +1,9 @@
 import re
 from . import batchify
 
+from pyrogram.raw.functions.messages import DeleteScheduledMessages, GetScheduledHistory, SendScheduledMessages
+from pyrogram.raw.types import InputPeerChannel, InputPeerUser
+
 def is_me(message):
     return message.from_user is not None \
     and message.from_user.is_self \
@@ -52,8 +55,18 @@ def parse_sys_dict(msg):
     return "SYS[ " + " | ".join(events) + " ]"
 
 async def edit_or_reply(message, text, *args, **kwargs):
-    if is_me(message) and len(message.text.markdown + text) < 4090: 
-        return await message.edit(message.text.markdown + "\n" + text, *args, **kwargs)
+    if is_me(message) and len(message.text.markdown + text) < 4090:
+        if message.scheduled: # This is so bloaty wtf, maybe integrate directly into pyrogram with a PR
+            opts = {}
+            if message.reply_to_message:
+                opts["reply_to_message_id"] = message.reply_to_message.message_id
+            peer = (InputPeerUser(message.chat.id, message._client.access_hash) if message.chat.type == "private"
+                    else InputPeerChannel(message.chat.id, message._client.access_hash))
+            await message._client.send(DeleteScheduledMessages(peer, message.message_id))
+            return await message._client.send_message(message.chat.id, message.text.markdown, **opts, schedule_date=message.date)
+        else:
+            await message.edit(message.text.markdown + "\n" + text, *args, **kwargs)
+            return message
     else:
         ret = None
         for m in batchify(text, 4090):
