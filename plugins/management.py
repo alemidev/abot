@@ -85,7 +85,7 @@ async def purge(client, message):
             if msg.message_id == message.message_id: # ignore message that triggered this
                 continue
             if ((target is None or msg.from_user.id == target)
-            and (keyword is None or keyword in msg.text)): # wait WTF why no raw here
+            and (keyword is None or keyword in get_text(msg))): # wait WTF why no raw here
                 print(colored("[DELETING] → ", "red", attrs=["bold"]) + split_for_window(get_text(msg), offset=13))
                 await msg.delete()
                 n += 1
