@@ -1,5 +1,3 @@
-import asyncio
-
 from bot import alemiBot
 
 from pyrogram import filters

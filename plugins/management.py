@@ -1,5 +1,4 @@
 import asyncio
-import subprocess
 import traceback
 
 from pyrogram import filters

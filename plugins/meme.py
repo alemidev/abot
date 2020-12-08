@@ -1,6 +1,5 @@
 import secrets
 import random
-import asyncio
 import os
 import traceback
 import io
@@ -11,7 +10,6 @@ from pyrogram import filters
 
 from bot import alemiBot
 
-from util import batchify
 from util.permission import is_allowed, is_superuser
 from util.message import edit_or_reply, get_text, is_me
 from util.command import filterCommand

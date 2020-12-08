@@ -1,7 +1,3 @@
-import traceback
-import json
-import functools
-
 from bot import alemiBot
 
 from pyrogram import filters

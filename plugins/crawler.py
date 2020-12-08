@@ -1,7 +1,3 @@
-import asyncio
-import re
-import traceback
-
 from pyrogram import filters
 from pyrogram.errors import FloodWait, BadRequest
 
