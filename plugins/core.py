@@ -43,7 +43,7 @@ async def joined_cmd(client, message):
         res[dialog.chat.type] += 1
       else:
         res[dialog.chat.type] = 1
-    out = "`→ ` --Active chats-- : \n"
+    out = "`→ ` --Active chats-- \n"
     for k in res:
         out += f"` → {k} ` {res[k]}\n"
     await message.edit(out)
