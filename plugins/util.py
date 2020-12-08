@@ -298,7 +298,7 @@ async def voice_cmd(client, message):
     if message.reply_to_message is not None:
         text = message.reply_to_message.text
     elif "arg" in message.command:
-        text = message.command["arg"]
+        text = re.sub(r"-delme(?: |)(?:[0-9]+|)", "", message.command["arg"])
     else:
         return await edit_or_reply(message, "`[!] → ` No text given")
     lang = message.command["lang"] if "lang" in message.command else "en"
@@ -315,8 +315,6 @@ async def voice_cmd(client, message):
         else:
             AudioSegment.from_mp3("data/tts.mp3").export("data/tts.ogg", format="ogg", codec="libopus")
             await client.send_voice(message.chat.id, "data/tts.ogg", **opts)
-        if is_me(message):
-            await message.delete()
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
