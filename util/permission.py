@@ -13,6 +13,10 @@ try:
 except FileNotFoundError:
     with open("data/perms.json", "w") as f:
         json.dump({}, f)
+except KeyError:
+    ALLOWED["SUPERUSER"] = []
+    with open("data/perms.json", "w") as f:
+        json.dump(ALLOWED, f)
 
 def check_allowed(_, __, message):
     if message.from_user is None:
