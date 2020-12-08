@@ -26,6 +26,7 @@ from util.command import filterCommand
 from util.parse import cleartermcolor
 from util.message import tokenize_json, tokenize_lines, is_me, edit_or_reply
 from util.serialization import convert_to_dict
+from util.permission import is_superuser
 from plugins.help import HelpCategory
 
 logger = logging.getLogger(__name__)
@@ -56,7 +57,7 @@ HELP = HelpCategory("EXECUTION")
 HELP.add_help(["run", "r"], "run command on server",
                 "runs a command on server. Shell will be from user running bot. " +
                 "Every command starts in bot root folder.", args="<cmd>")
-@alemiBot.on_message(filters.me & filterCommand(["run", "r"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_superuser & filterCommand(["run", "r"], list(alemiBot.prefixes)))
 async def runit(client, message):
     args = re.sub(r"-delme(?: |)(?:[0-9]+|)", "", message.command["raw"])
     msg = await edit_or_reply(message, "` → ` Running")
@@ -88,7 +89,7 @@ HELP.add_help(["eval", "e"], "eval a python expression",
                 "with .exec). `stdout` will be captured and shown before the returned value. Use the " +
                 "GLOBALS object for persistence. No assignation can be done in `eval`, but getting " +
                 "fields is possible.", args="<expr>")
-@alemiBot.on_message(filters.me & filterCommand(["eval", "e"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_superuser & filterCommand(["eval", "e"], list(alemiBot.prefixes)))
 async def evalit(client, message):
     global GLOBALS
     args = re.sub(r"-delme(?: |)(?:[0-9]+|)", "", message.command["raw"])
@@ -128,7 +129,7 @@ HELP.add_help(["exec", "ex"], "execute python code",
                 "will be shown. You can set anything in the GLOBALS object for " +
                 "persistence. The `exec` call is wrapped to make it work with async " +
                 "code.", args="<code>")
-@alemiBot.on_message(filters.me & filterCommand(["exec", "ex"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_superuser & filterCommand(["exec", "ex"], list(alemiBot.prefixes)))
 async def execit(client, message):
     args = re.sub(r"-delme(?: |)(?:[0-9]+|)", "", message.command["raw"])
     fancy_args = args.replace("\n", "\n... ")

@@ -12,7 +12,7 @@ from pyrogram import filters
 from bot import alemiBot
 
 from util import batchify
-from util.permission import is_allowed
+from util.permission import is_allowed, is_superuser
 from util.message import edit_or_reply, get_text, is_me
 from util.command import filterCommand
 
@@ -79,7 +79,7 @@ async def getmeme(client, message):
 HELP.add_help("steal", "steal a meme",
                 "save a meme to collection. Either attach an image or reply to one. " +
                 "A name for the meme must be given.", args="<name>")
-@alemiBot.on_message(filters.me & filterCommand("steal", list(alemiBot.prefixes)))
+@alemiBot.on_message(is_superuser & filterCommand("steal", list(alemiBot.prefixes)))
 async def steal(client, message):
     if "cmd" not in message.command:
         return await edit_or_reply(message, "`[!] → ` No meme name provided")

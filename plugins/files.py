@@ -4,6 +4,7 @@ from bot import alemiBot
 
 from pyrogram import filters
 
+from util.permission import is_superuser
 from util.command import filterCommand
 from util.message import edit_or_reply
 from plugins.help import HelpCategory
@@ -16,7 +17,7 @@ HELP = HelpCategory("FILES")
 HELP.add_help("put", "save file to server",
                 "reply to a media message or attach a media to this command to " +
                 "store a file on the bot root folder.")
-@alemiBot.on_message(filters.me & filterCommand("put", list(alemiBot.prefixes)))
+@alemiBot.on_message(is_superuser & filterCommand("put", list(alemiBot.prefixes)))
 async def upload(client, message):
     msg = message
     if message.reply_to_message is not None:
@@ -35,7 +36,7 @@ HELP.add_help("get", "request a file from server",
                 "will upload a file from server to this chat. The path can be " +
                 "global. Use flag `-log` to automatically include `/data/scraped_media`.",
                 args="[-log] <path>")
-@alemiBot.on_message(filters.me & filterCommand("get", list(alemiBot.prefixes), flags=["-log"]))
+@alemiBot.on_message(is_superuser & filterCommand("get", list(alemiBot.prefixes), flags=["-log"]))
 async def download(client, message):
     if "cmd" not in message.command:
         return await edit_or_reply(message, "`[!] → ` No filename provided")

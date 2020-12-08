@@ -22,7 +22,7 @@ from bot import alemiBot
 from util import batchify
 from util.command import filterCommand
 from util.text import split_for_window
-from util.permission import is_allowed
+from util.permission import is_allowed, is_superuser
 from util.message import tokenize_json, edit_or_reply, get_text, get_text_dict, is_me, parse_sys_dict
 from util.user import get_username, get_username_dict # lmaoo bad
 from util.chat import get_channel, get_channel_dict
@@ -135,7 +135,7 @@ HELP.add_help(["query", "q", "log"], "interact with db",
                 "database (but in different collections), you can specify in which collection to query with `-coll`. You can also " +
                 "specify which database to use with `-db` option, but the user which the bot is using to login will need permissions to read.",
                 args="[-coll <name>] [-db <name>] [-l <n>] [-f <{filter}>] <{query}>")
-@alemiBot.on_message(filters.me & filterCommand(["query", "q", "log"], list(alemiBot.prefixes), options={
+@alemiBot.on_message(is_superuser & filterCommand(["query", "q", "log"], list(alemiBot.prefixes), options={
     "limit" : ["-l", "-limit"],
     "filter" : ["-f", "-filter"],
     "collection" : ["-coll", "-collection"],

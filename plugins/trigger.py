@@ -5,7 +5,7 @@ from pyrogram import filters
 
 from bot import alemiBot
 
-from util.permission import is_allowed
+from util.permission import is_allowed, is_superuser
 from util.message import is_me, get_text, edit_or_reply
 from util.command import filterCommand
 from plugins.help import HelpCategory
@@ -28,7 +28,7 @@ HELP.add_help(["trigger", "trig"], "register a new trigger",
             "Use this command to list triggers (`-list`), add new (`-n`) and delete (`-d`). " +
             "Triggers will always work in private chats, but only work when mentioned in groups." ,
             args="( -list | -d <trigger> | -n <trigger> <message> )")
-@alemiBot.on_message(filters.me & filterCommand(["trigger", "trig"], list(alemiBot.prefixes), options={
+@alemiBot.on_message(is_superuser & filterCommand(["trigger", "trig"], list(alemiBot.prefixes), options={
     "new" : ["-n", "-new"],
     "del" : ["-d", "-del"]
 }, flags=["-list"]))

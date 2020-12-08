@@ -10,7 +10,7 @@ from pyrogram import filters
 
 from util import batchify
 from util.parse import cleartermcolor
-from util.permission import is_allowed
+from util.permission import is_allowed, is_superuser
 from util.message import edit_or_reply, is_me, get_text
 from util.command import filterCommand
 
@@ -32,8 +32,8 @@ FIGLET_FONTS.sort()
 HELP.add_help(["slow", "sl"], "make text appear slowly",
                 "edit message adding batch of characters every time. If no batch size is " +
                 "given, it will default to 1. If no time is given, it will default to 0.5s.",
-                args="[-t <time>] [-b <batch>] <text>")
-@alemiBot.on_message(filters.me & filterCommand(["slow", "sl"], list(alemiBot.prefixes), options={
+                args="[-t <time>] [-b <batch>] <text>", public=True)
+@alemiBot.on_message(is_allowed & filterCommand(["slow", "sl"], list(alemiBot.prefixes), options={
         "time" : ["-t"],
         "batch" : ["-b"]
 }), group=2)

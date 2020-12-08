@@ -11,7 +11,7 @@ from bot import alemiBot
 
 from pyrogram import filters
 
-from util.permission import is_allowed
+from util.permission import is_allowed, is_superuser
 from util.command import filterCommand
 from util.message import edit_or_reply, is_me
 from plugins.help import HelpCategory
@@ -21,8 +21,8 @@ logger = logging.getLogger(__name__)
 HELP = HelpCategory("CORE")
 
 HELP.add_help(["asd", "ping"], "a sunny day!",
-                "The ping command.")
-@alemiBot.on_message(filters.me & filterCommand(["asd", "ping"], list(alemiBot.prefixes)))
+                "The ping command.", public=True)
+@alemiBot.on_message(is_allowed & filterCommand(["asd", "ping"], list(alemiBot.prefixes)))
 async def ping(client, message):
     logger.info("Pong")
     before = time.time()
@@ -33,7 +33,7 @@ async def ping(client, message):
 
 HELP.add_help(["joined", "jd"], "count active chats",
                 "get number of all dialogs : groups, supergroups, channels, dms, bots")
-@alemiBot.on_message(filters.me & filterCommand(["joined", "jd"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_superuser & filterCommand(["joined", "jd"], list(alemiBot.prefixes)))
 async def joined_cmd(client, message):
     logger.info("Listing active dialogs")
     msg = await edit_or_reply(message, message.text + "\n` → ` Counting...")
@@ -51,7 +51,7 @@ async def joined_cmd(client, message):
 HELP.add_help("update", "update and restart",
                 "will pull changes from git (`git pull`) and then restart " +
                 "itself with an `execv` call.")
-@alemiBot.on_message(filters.me & filterCommand("update", list(alemiBot.prefixes)))
+@alemiBot.on_message(is_superuser & filterCommand("update", list(alemiBot.prefixes)))
 async def update(client, message):
     out = message.text.markdown
     if not is_me(message):

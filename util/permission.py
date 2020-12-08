@@ -1,12 +1,15 @@
 from pyrogram import filters
+from pyrogram.filters import create
 
 import json
 
 ALLOWED = {}
+SUPERUSER = []
 
 try:
     with open("data/perms.json") as f:
         ALLOWED = json.load(f)
+        SUPERUSER = list(ALLOWED["SUPERUSER"])
 except FileNotFoundError:
     with open("data/perms.json", "w") as f:
         json.dump({}, f)
@@ -20,11 +23,16 @@ def check_allowed(_, __, message):
 
 is_allowed = filters.create(check_allowed)
 
+async def superuser_filter(_, __, m): # basically filters.me plus lookup in a list
+    return bool(m.from_user and m.from_user.is_self or m.outgoing or str(m.from_user.id) in SUPERUSER)
+
+is_superuser = create(superuser_filter)
+
 def list_allowed():
     return list(int(k) for k in ALLOWED.keys())
 
 def allow(uid, val=True):
-    if uid in ALLOWED and ALLOWED[uid] == val:
+    if str(uid) in ALLOWED and ALLOWED[str(uid)] == val:
         return False
     ALLOWED[str(uid)] = val # this is handy when editing manually the file
     serialize()
