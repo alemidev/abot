@@ -115,9 +115,7 @@ async def eyy_replace(client, message):
 async def replace_arrows(client, message):
     logger.info("arrow!")
     await message.edit(message.text.markdown.replace("<-", "←")
-                                            .replace("->", "→")
-                                            .replace("=>", "⇨")
-                                            .replace("<=", "⇦"))
+                                            .replace("->", "→"))
 
 
 HELP.add_help("figlet", "make a figlet art",
