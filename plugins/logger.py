@@ -1,12 +1,10 @@
 import asyncio
-import subprocess
 import time
 import json
 import logging
 import io
 import os
 import traceback
-import queue
 
 from pymongo import MongoClient
 from datetime import datetime
@@ -109,15 +107,21 @@ async def stats_cmd(client, message):
     latency = (after - before) * 1000
     count = EVENTS.count({})
     size = DB.command("collstats", alemiBot.config.get("database", "collection", fallback="events"))['totalSize']
-    memesize = float(subprocess.run( # this is bad and ugly
-        ["du", "-b", "data/memes"],
-                        capture_output=True).stdout.decode('utf-8').split("\t")[0])
     memenumber = len(os.listdir("data/memes"))
-    mediasize = float(subprocess.run( # this is ugly too
-        ["du", "-b", "data/scraped_media"],
-                        capture_output=True).stdout.decode('utf-8').split("\t")[0])
-
+    proc_meme = await asyncio.create_subprocess_exec(
+        ["du", "-b", "data/memes"],
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.STDOUT)
     medianumber = len(os.listdir("data/scraped_media"))
+    proc_media = await asyncio.create_subprocess_exec(
+        ["du", "-b", "data/scraped_media"],
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.STDOUT)
+    stdout, stderr = await proc_meme.communicate()
+    memesize = float(stdout.decode('utf-8').split("\t")[0])
+    stdout, stderr = await proc_media.communicate()
+    mediasize = float(stdout.decode('utf-8').split("\t")[0])
+
     uptime = str(datetime.now() - client.start_time)
     await msg.edit(original_text + f"\n`→ online for {uptime} `" +
                     f"\n` → ` latency **{latency:.0f}**ms" +

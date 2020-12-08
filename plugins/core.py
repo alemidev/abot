@@ -1,6 +1,5 @@
 import asyncio
 from datetime import datetime
-import subprocess
 import time
 import logging
 import io
@@ -61,15 +60,22 @@ async def update(client, message):
         out += f"\n`→ ` --runtime-- `{uptime}`"
         await msg.edit(out) 
         out += "\n` → ` Fetching code"
-        await msg.edit(out) 
-        result = subprocess.run(["git", "pull"], capture_output=True, timeout=60)
-        if b"Aborting" in result:
+        await msg.edit(out)
+        proc = await asyncio.create_subprocess_exec(
+            ["git", "pull"],
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT)
+        stdout, stderr = await proc.communicate()
+        if b"Aborting" in stdout:
             return await msg.edit(out + " [FAIL]")
         out += " [OK]\n` → ` Checking libraries"
         await msg.edit(out) 
-        result = subprocess.run(["pip", "install", "-r", "requirements.txt"],
-                                                    capture_output=True, timeout=60)
-        if b"ERROR" in result:
+        proc = await asyncio.create_subprocess_exec(
+            ["pip", "install", "-r", "requirements.txt"],
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT)
+        stdout, stderr = await proc.communicate()
+        if b"ERROR" in stdout:
             out += " [WARN]"
         else:
             out += " [OK]"

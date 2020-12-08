@@ -1,7 +1,5 @@
 import asyncio
 import secrets
-import subprocess
-import time
 import re
 import traceback
 from collections import Counter
@@ -161,12 +159,20 @@ HELP.add_help("fortune", "do you feel fortunate!?",
 async def fortune(client, message):
     try:
         logger.info(f"Running command \"fortune\"")
-        result = b""
+        stdout = b""
         if "-cow" in message.command["flags"]:
-            result = subprocess.run(["fortune", "|", "cowsay", "-W", "30"], capture_output=True)
+            proc = await asyncio.create_subprocess_exec(
+                    ["fortune", "|", "cowsay", "-W", "30"],
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.STDOUT)
+            stdout, stderr = await proc.communicate()
         else:
-            result = subprocess.run("fortune", capture_output=True)
-        output = cleartermcolor(result.stdout.decode())
+            proc = await asyncio.create_subprocess_exec(
+                    ["fortune"],
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.STDOUT)
+            stdout, stderr = await proc.communicate()
+        output = cleartermcolor(stdout.decode())
         await edit_or_reply(message, "``` → " + output + "```")
     except Exception as e:
         traceback.print_exc()
