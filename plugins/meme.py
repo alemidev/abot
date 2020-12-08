@@ -82,7 +82,7 @@ HELP.add_help("steal", "steal a meme",
 @alemiBot.on_message(filters.me & filterCommand("steal", list(alemiBot.prefixes)))
 async def steal(client, message):
     if "cmd" not in message.command:
-        return await message.edit(message.text.markdown + "\n`[!] → ` No meme name provided")
+        return await edit_or_reply(message, "`[!] → ` No meme name provided")
     msg = message
     if message.reply_to_message is not None:
         msg = message.reply_to_message
@@ -90,7 +90,7 @@ async def steal(client, message):
         try:                                                # TODO I need to get what file type it is!
             logger.info("Stealing meme")
             fpath = await client.download_media(msg, file_name="data/memes/") # + message.command["cmd"][0])
-            # await message.edit(get_text(message) + '\n` → ` saved meme as {}'.format(fpath))
+            # await edit_or_reply(message, '` → ` saved meme as {}'.format(fpath))
             path, fname = os.path.splitext(fpath) # this part below is trash, im waiting for my PR on pyrogram
             extension = fname.split(".")
             if len(extension) > 1:
@@ -99,12 +99,12 @@ async def steal(client, message):
                 extension = ".jpg" # cmon most memes will be jpg
             newname = message.command["cmd"][0] + '.' + extension
             os.rename(fpath, "data/memes/" + newname)
-            await message.edit(get_text(message) + f'\n` → ` saved meme as {newname}')
+            await edit_or_reply(message, f'` → ` saved meme as {newname}')
         except Exception as e:
             traceback.print_exc()
-            await message.edit(get_text(message) + "\n`[!] → ` " + str(e))
+            await edit_or_reply(message, "`[!] → ` " + str(e))
     else:
-        await message.edit(get_text(message) + "\n`[!] → ` you need to attach or reply to a file, dummy")
+        await edit_or_reply(message, "`[!] → ` you need to attach or reply to a file, dummy")
 
 #
 # This is from https://github.com/Ovyerus/deeppyer
@@ -149,27 +149,23 @@ HELP.add_help("fry", "fry a meme",
 }))
 async def deepfry(client, message):
     args = message.command
-    msg = message
-    if message.reply_to_message is not None:
-        msg = message.reply_to_message
-    if msg.media:
+    target = message.reply_to_message if message.reply_to_message is not None else message
+    if target.media:
         await client.send_chat_action(message.chat.id, "upload_photo")
         logger.info(f"Frying meme")
+        msg = edit_or_reply(message, "` → ` Downloading...")
         try:
             count = 1
             if "count" in args:
                 count = int(args["count"])
-            if message.from_user is not None and message.from_user.is_self: # lmao these checks, just message.outgoing doesn't work in self msgs
-                await message.edit(message.text.markdown + "\n` → ` Downloading...")
             fpath = await client.download_media(msg, file_name="tofry")
-            if message.from_user is not None and message.from_user.is_self:
-                await message.edit(message.text.markdown + "\n` → ` Downloading [OK]\n` → ` Frying...")
+            msg.edit(message.text.markdown + "\n` → ` Downloading [OK]\n` → ` Frying...")
             image = Image.open(fpath)
     
             for _ in range(count):
                 image = await fry_image(image)
             if message.from_user is not None and message.from_user.is_self:
-                await message.edit(message.text.markdown +
+                await msg.edit(message.text.markdown +
                     "\n` → ` Downloading [OK]\n` → ` Frying [OK]\n` → ` Uploading...")
     
             fried_io = io.BytesIO()
@@ -179,13 +175,13 @@ async def deepfry(client, message):
             await client.send_photo(message.chat.id, fried_io, reply_to_message_id=message.message_id,
                                         caption=f"` → Fried {count} time{'s' if count > 1 else ''}`")
             if message.from_user is not None and message.from_user.is_self:
-                await message.edit(message.text.markdown +
+                await msg.edit(message.text.markdown +
                     "\n` → ` Downloading [OK]\n` → ` Frying [OK]\n` → ` Uploading [OK]")
         except Exception as e:
-            await message.edit(get_text(message) + "\n`[!] → ` " + str(e))
+            await msg.edit(get_text(message) + "\n`[!] → ` " + str(e))
         await client.send_chat_action(message.chat.id, "cancel")
     else:
-        await message.edit(get_text(message) + "\n`[!] → ` you need to attach or reply to a file, dummy")
+        await edit_or_reply(message, "`[!] → ` you need to attach or reply to a file, dummy")
     await client.set_offline()
 
 #

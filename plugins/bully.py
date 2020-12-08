@@ -10,7 +10,7 @@ from pyrogram import filters
 from bot import alemiBot
 
 from util.permission import is_allowed
-from util.message import is_me
+from util.message import is_me, edit_or_reply
 from util.user import get_username
 from util.command import filterCommand
 
@@ -48,7 +48,7 @@ HELP.add_help(["censor", "c"], "immediately delete messages",
 async def censor_cmd(client, message):
     global censoring
     args = message.command
-    out = message.text.markdown + "\n"
+    out = ""
     changed = False
     try:
         if "-list" in args["flags"]:
@@ -86,13 +86,13 @@ async def censor_cmd(client, message):
                     censoring["SPEC"][message.chat.id].append(u.id)
                     out += f"` → ` Censoring {get_username(u)}\n"
                     changed = True
-        if out != message.text.markdown + "\n":
-            await message.edit(out)
+        if out != "":
+            await edit_or_reply(message, out)
         else:
-            await message.edit(out + "` → ` Nothing to display")
+            await edit_or_reply(message, "` → ` Nothing to display")
     except Exception as e:
         traceback.print_exc()
-        await message.edit(out + "\n`[!] → ` " + str(e))
+        await edit_or_reply(message, out + "\n`[!] → ` " + str(e))
     if changed:
         with open("data/censoring.json", "w") as f:
             json.dump(censoring, f)
@@ -106,7 +106,7 @@ HELP.add_help(["free", "f", "stop"], "stop censoring someone",
 async def free_cmd(client, message):
     global censoring
     args = message.command
-    out = message.text.markdown + "\n"
+    out = ""
     changed = False
     try:
         if "-list" in args["flags"]:
@@ -141,13 +141,13 @@ async def free_cmd(client, message):
                         censoring["SPEC"][message.chat.id].remove(u.id)
                         out += f"` → ` Freeing {get_username(u)}\n"
                         changed = True
-        if out != message.text.markdown + "\n":
-            await message.edit(out)
+        if out != "":
+            await edit_or_reply(message, out)
         else:
-            await message.edit(out + "` → ` Nothing to display")
+            await edit_or_reply(message, "` → ` Nothing to display")
     except Exception as e:
         traceback.print_exc()
-        await message.edit(out + "\n`[!] → ` " + str(e))
+        await edit_or_reply(message, out + "\n`[!] → ` " + str(e))
     if changed:
         with open("data/censoring.json", "w") as f:
             json.dump(censoring, f)
@@ -215,9 +215,9 @@ async def spam(client, message):
                 await msg.delete()
             if INTERRUPT:
                 INTERRUPT = False
-                await message.edit(message.text.markdown + f"\n` → ` Canceled after {i + 1} events")
+                await edit_or_reply(message, f"` → ` Canceled after {i + 1} events")
                 break
     except Exception as e:
         traceback.print_exc()
-        await message.edit(message.text.markdown + "\n`[!] → ` " + str(e))
+        await edit_or_reply(message, "`[!] → ` " + str(e))
 

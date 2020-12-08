@@ -5,7 +5,7 @@ from bot import alemiBot
 from pyrogram import filters
 
 from util.command import filterCommand
-from util.message import get_text
+from util.message import edit_or_reply
 from plugins.help import HelpCategory
 
 import logging
@@ -25,11 +25,11 @@ async def upload(client, message):
         try:
             logger.info("Downloading media")
             fpath = await client.download_media(msg)
-            await message.edit(get_text(message) + '\n` → ` saved file as {}'.format(fpath))
+            await edit_or_reply(message, '` → ` saved file as {}'.format(fpath))
         except Exception as e:
-            await message.edit(get_text(message) + "\n`[!] → ` " + str(e))
+            await edit_or_reply(message, "`[!] → ` " + str(e))
     else:
-        await message.edit(get_text(message) + "\n`[!] → ` you need to attach or reply to a file, dummy")
+        await edit_or_reply(message, "`[!] → ` you need to attach or reply to a file, dummy")
 
 HELP.add_help("get", "request a file from server",
                 "will upload a file from server to this chat. The path can be " +
@@ -38,7 +38,7 @@ HELP.add_help("get", "request a file from server",
 @alemiBot.on_message(filters.me & filterCommand("get", list(alemiBot.prefixes), flags=["-log"]))
 async def download(client, message):
     if "cmd" not in message.command:
-        return await message.edit(message.text.markdown + "\n`[!] → ` No filename provided")
+        return await edit_or_reply(message, "`[!] → ` No filename provided")
     try:
         logger.info("Uploading media")
         await client.send_chat_action(message.chat.id, "upload_document")
@@ -47,5 +47,5 @@ async def download(client, message):
             name = "data/scraped_media/" + name
         await client.send_document(message.chat.id, name, reply_to_message_id=message.message_id, caption=f'` → {name}`')
     except Exception as e:
-        await message.edit(message.text.markdown + "\n`[!] → ` " + str(e))
+        await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")

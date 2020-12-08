@@ -118,12 +118,12 @@ async def manage_allowed_cmd(client, message):
                 try:
                     user = await client.get_users(message.command["cmd"][0])
                 except ValueError:
-                    return await message.edit(message.text.markdown + "\n`[!] → ` No user matched")
+                    return await edit_or_reply(message, "`[!] → ` No user matched")
                 if user is None:
-                    return await message.edit(message.text.markdown + "\n`[!] → ` No user matched")
+                    return await edit_or_reply(message, "`[!] → ` No user matched")
                 users_to_manage.append(user)
         else:
-            return await message.edit(message.text.markdown + "\n`[!] → ` Provide an ID or reply to a msg")
+            return await edit_or_reply(message, "`[!] → ` Provide an ID or reply to a msg")
         logger.info("Changing permissions")
         out = ""
         action_allow = message.command["base"] == "allow"
@@ -136,12 +136,12 @@ async def manage_allowed_cmd(client, message):
                 if disallow(u.id, val=u_name):
                     out += f"` → ` Disallowed **{u_name}**\n"
         if out != "":
-            await message.edit(message.text.markdown + "\n" + out)
+            await edit_or_reply(message, out)
         else:
-            await message.edit(message.text.markdown + "\n` → ` No changes")
+            await edit_or_reply(message, "` → ` No changes")
     except Exception as e:
         traceback.print_exc()
-        await message.edit(message.text.markdown + f"\n`[!] → ` __{str(e)}__")
+        await edit_or_reply(message, f"`[!] → ` __{str(e)}__")
 
 HELP.add_help(["trusted", "plist", "permlist"], "list allowed users",
                 "note that users without a username may give issues. Use `-s` to get " +
@@ -166,7 +166,7 @@ async def trusted_list(client, message):
         for u in users:
             text += f"{get_username(u)}, "
         text += "`]`"
-        await message.edit(message.text.markdown + f"\n` → Allowed Users : `\n{text}\n{issues}") 
+        await edit_or_reply(message, f"` → Allowed Users : `\n{text}\n{issues}") 
     except Exception as e:
         traceback.print_exc()
-        await message.edit(message.text.markdown + f"\n`[!] → ` __{str(e)}__")
+        await edit_or_reply(message, f"`[!] → ` __{str(e)}__")

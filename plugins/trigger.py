@@ -6,7 +6,7 @@ from pyrogram import filters
 from bot import alemiBot
 
 from util.permission import is_allowed
-from util.message import is_me, get_text
+from util.message import is_me, get_text, edit_or_reply
 from util.command import filterCommand
 from plugins.help import HelpCategory
 
@@ -38,24 +38,24 @@ async def trigger_cmd(client, message):
     changed = False
     if "-list" in args["flags"]:
         logger.info("Listing triggers")
-        out = "\n"
+        out = ""
         for t in triggers:
             out += f"`'{t}' → ` {triggers[t]}\n"
-        if out == "\n":
+        if out == "":
             out += "` → Nothing to display`"
-        await message.edit(message.text.markdown + out)
+        await edit_or_reply(message, out)
     elif "new" in args and "arg" in args:
         logger.info("New trigger")
         triggers[args["new"]] = args["arg"]
-        await message.edit(message.text.markdown + f"\n` → ` Registered new trigger")
+        await edit_or_reply(message, f"` → ` Registered new trigger")
         changed = True
     elif "del" in args:
         logger.info("Removing trigger")
         if triggers.pop(args["del"], None) is not None:
-            await message.edit(message.text.markdown + "\n` → ` Removed trigger")
+            await edit_or_reply(message, "` → ` Removed trigger")
             changed = True
     else:
-        return await message.edit(message.text.markdown + "\n`[!] → ` Wrong use")
+        return await edit_or_reply(message, "`[!] → ` Wrong use")
     if changed:
         with open("data/triggers.json", "w") as f:
             json.dump(triggers, f)

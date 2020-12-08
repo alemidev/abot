@@ -25,19 +25,18 @@ HELP.add_help(["asd", "ping"], "a sunny day!",
 @alemiBot.on_message(filters.me & filterCommand(["asd", "ping"], list(alemiBot.prefixes)))
 async def ping(client, message):
     logger.info("Pong")
-    msg = message.text.markdown
     before = time.time()
-    await message.edit(msg + "\n` → ` a sunny day")
+    msg = await edit_or_reply(message, "` → ` a sunny day")
     after = time.time()
     latency = (after - before) * 1000
-    await message.edit(msg + f"\n` → ` a sunny day `({latency:.0f}ms)`")
+    await msg.edit(message.text.markdown + f"\n` → ` a sunny day `({latency:.0f}ms)`")
 
 HELP.add_help(["joined", "jd"], "count active chats",
                 "get number of all dialogs : groups, supergroups, channels, dms, bots")
 @alemiBot.on_message(filters.me & filterCommand(["joined", "jd"], list(alemiBot.prefixes)))
 async def joined_cmd(client, message):
     logger.info("Listing active dialogs")
-    await message.edit(message.text + "\n` → ` Counting...")
+    msg = await edit_or_reply(message, message.text + "\n` → ` Counting...")
     res = {}
     async for dialog in client.iter_dialogs():
       if dialog.chat.type in res:
@@ -47,36 +46,40 @@ async def joined_cmd(client, message):
     out = "`→ ` --Active chats-- \n"
     for k in res:
         out += f"` → {k} ` {res[k]}\n"
-    await message.edit(out)
+    await msg.edit(out)
 
 HELP.add_help("update", "update and restart",
                 "will pull changes from git (`git pull`) and then restart " +
                 "itself with an `execv` call.")
 @alemiBot.on_message(filters.me & filterCommand("update", list(alemiBot.prefixes)))
 async def update(client, message):
-    msg = message.text.markdown
+    out = message.text.markdown
+    if not is_me(message):
+        msg = message.reply(out)
+    else:
+        msg = message
     try:
         logger.info(f"Updating bot ...")
         uptime = str(datetime.now() - client.start_time)
-        msg += f"\n`→ ` --runtime-- `{uptime}`"
-        await message.edit(msg) 
-        msg += "\n` → ` Fetching code"
-        await message.edit(msg) 
+        out += f"\n`→ ` --runtime-- `{uptime}`"
+        await msg.edit(out) 
+        out += "\n` → ` Fetching code"
+        await msg.edit(out) 
         result = subprocess.run(["git", "pull"], capture_output=True, timeout=60)
-        msg += " [OK]\n` → ` Checking libraries"
-        await message.edit(msg) 
+        out += " [OK]\n` → ` Checking libraries"
+        await msg.edit(out) 
         result = subprocess.run(["pip", "install", "-r", "requirements.txt"],
                                                     capture_output=True, timeout=60)
-        msg += " [OK]\n` → ` Restarting process"
-        await message.edit(msg) 
+        out += " [OK]\n` → ` Restarting process"
+        await msg.edit(out) 
         with open("data/lastmsg.json", "w") as f:
             json.dump({"message_id": message.message_id,
                         "chat_id": message.chat.id}, f)
         asyncio.get_event_loop().create_task(client.restart())
     except Exception as e:
         traceback.print_exc()
-        msg += " [FAIL]\n`[!] → ` " + str(e)
-        await message.edit(msg) 
+        out += " [FAIL]\n`[!] → ` " + str(e)
+        await msg.edit(out) 
 
 HELP.add_help("where", "get info about chat",
                 "Get complete information about a chat and send it as json. If no chat name " +
@@ -94,7 +97,7 @@ async def where_cmd(client, message):
                 tgt = await client.get_chat(arg)
         logger.info(f"Getting info of chat")
         if is_me(message):
-            await message.edit(message.text.markdown + f"\n` → ` Getting data of chat `{tgt.id}`")
+            await edit_or_reply(message, message.text.markdown + f"` → ` Getting data of chat `{tgt.id}`")
         if not "-no" in message.command["flags"]:
             out = io.BytesIO((str(tgt)).encode('utf-8'))
             out.name = f"chat-{message.chat.id}.json"
@@ -125,7 +128,7 @@ async def who_cmd(client, message):
             peer = await client.get_me()
         logger.info("Getting info of user")
         if is_me(message):
-            await message.edit(message.text.markdown + f"\n` → ` Getting data of user `{peer.id}`")
+            await edit_or_reply(message, message.text.markdown + f"` → ` Getting data of user `{peer.id}`")
         if not "-no" in message.command["flags"]:
             out = io.BytesIO((str(peer)).encode('utf-8'))
             out.name = f"user-{peer.id}.json"
@@ -158,7 +161,7 @@ async def what_cmd(client, message):
             msg = await client.get_messages(chat_id, int(message.command["cmd"][0]))
         logger.info("Getting info of msg")
         if is_me(message):
-            await message.edit(message.text.markdown + f"\n` → ` Getting data of msg `{msg.message_id}`")
+            await edit_or_reply(message, message.text.markdown + f"` → ` Getting data of msg `{msg.message_id}`")
         if not "-no" in message.command["flags"]:
             out = io.BytesIO((str(msg)).encode('utf-8'))
             out.name = f"msg-{msg.message_id}.json"

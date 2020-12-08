@@ -178,10 +178,10 @@ async def query_cmd(client, message):
                 await client.send_document(message.chat.id, f, reply_to_message_id=message.message_id,
                                         caption=f"` → Query result `")
             else:
-                await message.edit(message.text.markdown + "\n` → `" + tokenize_json(raw))
+                await edit_or_reply(message, "` → `" + tokenize_json(raw))
     except Exception as e:
         traceback.print_exc()
-        await message.edit(message.text.markdown + "\n`[!] → ` " + str(e))
+        await edit_or_reply(message, "`[!] → ` " + str(e))
 
 HELP.add_help(["hist", "history"], "get edit history of a message",
                 "request edit history of a message. You can specify an id or reply to a message.",
@@ -221,7 +221,7 @@ async def hist_cmd(client, message):
         await edit_or_reply(message, out)
     except Exception as e:
         traceback.print_exc()
-        await message.edit(message.text.markdown + "\n`[!] → ` " + str(e))
+        await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()
 

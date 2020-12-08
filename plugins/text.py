@@ -48,14 +48,15 @@ async def slowtype(client, message):
         interval = float(args["time"])
     if "batch" in args:
         batchsize = int(args["batch"])
-    msg = ""
+    out = ""
+    msg = message if is_me(message) else await message.reply("` → ` Ok, starting")
     try:
         for seg in batchify(args["arg"], batchsize):
-            msg += seg
+            out += seg
             if seg.isspace() or seg == "":
                 continue # important because sending same message twice causes an exception
             t = asyncio.sleep(interval) # does this "start" the coroutine early?
-            await message.edit(msg)
+            await msg.edit(out)
             await client.send_chat_action(message.chat.id, "typing")
             await t # does this work? I should read asyncio docs
     except:
@@ -91,10 +92,7 @@ async def randomcase(client, message):
             else:
                 msg += c.upper()
                 upper = True
-    if is_me(message):
-        await message.edit(msg)
-    else:
-        await message.reply(msg)
+    await edit_or_reply(message, msg)
     await client.set_offline()
 
 HELP.add_help("shrug", "¯\_(ツ)_/¯", "will replace `.shrug` anywhere "+

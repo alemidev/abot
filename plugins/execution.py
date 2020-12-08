@@ -24,7 +24,7 @@ from pyrogram import filters
 
 from util.command import filterCommand
 from util.parse import cleartermcolor
-from util.message import tokenize_json, tokenize_lines
+from util.message import tokenize_json, tokenize_lines, is_me, edit_or_reply
 from util.serialization import convert_to_dict
 from plugins.help import HelpCategory
 
@@ -59,6 +59,7 @@ HELP.add_help(["run", "r"], "run command on server",
 @alemiBot.on_message(filters.me & filterCommand(["run", "r"], list(alemiBot.prefixes)))
 async def runit(client, message):
     args = re.sub(r"-delme(?: |)(?:[0-9]+|)", "", message.command["raw"])
+    msg = await edit_or_reply(message, "` → ` Running")
     try:
         logger.info(f"Running command \"{args}\"")
         proc = await asyncio.create_subprocess_shell(
@@ -69,15 +70,15 @@ async def runit(client, message):
         stdout, stderr = await proc.communicate()
         output = cleartermcolor(stdout.decode())
         if len(args) + len(output) > 4080:
-            await message.edit(f"```$ {args}\n → Output too long, sending as file```")
+            await msg.edit(f"```$ {args}\n → Output too long, sending as file```")
             out = io.BytesIO((f"$ {args}\n" + output).encode('utf-8'))
             out.name = "output.txt"
             await client.send_document(message.chat.id, out)
         else:
-            await message.edit(tokenize_lines(f"$ {args}\n\n" + output, mode='html'), parse_mode='html')
+            await msg.edit(tokenize_lines(f"$ {args}\n\n" + output, mode='html'), parse_mode='html')
     except Exception as e:
         traceback.print_exc()
-        await message.edit(f"`$ {args}`\n`[!] → ` " + str(e))
+        await msg.edit(f"`$ {args}`\n`[!] → ` " + str(e))
 
 HELP.add_help(["eval", "e"], "eval a python expression",
                 "eval a python expression. No imports can be made nor variables can be " +
@@ -91,6 +92,7 @@ HELP.add_help(["eval", "e"], "eval a python expression",
 async def evalit(client, message):
     global GLOBALS
     args = re.sub(r"-delme(?: |)(?:[0-9]+|)", "", message.command["raw"])
+    msg = await edit_or_reply(message, "` → ` Evaluating")
     try:
         logger.info(f"Evaluating \"{args}\"")
         with stdoutWrapper() as fake_stdout:
@@ -99,15 +101,15 @@ async def evalit(client, message):
                 result = await result
         result = fake_stdout.getvalue() + " → " + str(result)
         if len(args) + len(result) > 4080:
-            await message.edit(f"```>>> {args}\n → Output too long, sending as file```")
+            await msg.edit(f"```>>> {args}\n → Output too long, sending as file```")
             out = io.BytesIO((f">>> {args}\n" + result).encode('utf-8'))
             out.name = "output.txt"
             await client.send_document(message.chat.id, out, parse_mode="markdown")
         else:
-            await message.edit(tokenize_lines(f">>> {args}\n" + result), parse_mode="markdown")
+            await msg.edit(tokenize_lines(f">>> {args}\n" + result), parse_mode="markdown")
     except Exception as e:
         traceback.print_exc()
-        await message.edit(f"`>>> {args}`\n`[!] → ` " + str(e), parse_mode='markdown')
+        await msg.edit(f"`>>> {args}`\n`[!] → ` " + str(e), parse_mode='markdown')
 
 async def aexec(code, client, message): # client and message are passed so they are in scope
     global GLOBALS
@@ -130,18 +132,19 @@ HELP.add_help(["exec", "ex"], "execute python code",
 async def execit(client, message):
     args = re.sub(r"-delme(?: |)(?:[0-9]+|)", "", message.command["raw"])
     fancy_args = args.replace("\n", "\n... ")
+    msg = await edit_or_reply(message, "` → ` Executing")
     try:
         logger.info(f"Executing \"{args}\"")
         with stdoutWrapper() as fake_stdout:
             await aexec(args, client, message)
         result = fake_stdout.getvalue()
         if len(args) + len(result) > 4080:
-            await message.edit(f"```>>> {fancy_args}\n → Output too long, sending as file```")
+            await msg.edit(f"```>>> {fancy_args}\n → Output too long, sending as file```")
             out = io.BytesIO((f">>> {fancy_args}\n" + result).encode('utf-8'))
             out.name = "output.txt"
             await client.send_document(message.chat.id, out, parse_mode='markdown')
         else:
-            await message.edit(tokenize_lines(f">>> {fancy_args}\n\n" + result), parse_mode='markdown')
+            await msg.edit(tokenize_lines(f">>> {fancy_args}\n\n" + result), parse_mode='markdown')
     except Exception as e:
         traceback.print_exc()
-        await message.edit(f"`>>> {args}`\n`[!] → ` " + str(e), parse_mode='markdown')
+        await msg.edit(f"`>>> {args}`\n`[!] → ` " + str(e), parse_mode='markdown')
