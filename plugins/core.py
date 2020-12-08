@@ -32,6 +32,23 @@ async def ping(client, message):
     latency = (after - before) * 1000
     await message.edit(msg + f"\n` → ` a sunny day `({latency:.0f}ms)`")
 
+HELP.add_help(["joined", "jd"], "count active chats",
+                "get number of all dialogs : groups, supergroups, channels, dms, bots")
+@alemiBot.on_message(filters.me & filterCommand(["joined", "jd"], list(alemiBot.prefixes)))
+async def joined_cmd(client, message):
+    logger.info("Listing active dialogs")
+    await message.edit(message.text + "\n` → ` Counting...")
+    res = {}
+    async for dialog in client.iter_dialogs():
+      if dialog.chat.type in res:
+        res[dialog.chat.type] += 1
+      else:
+        res[dialog.chat.type] = 1
+    out = "`→ ` --Active chats-- \n"
+    for k in res:
+        out += f"` → {k} ` {res[k]}\n"
+    await message.edit(out)
+
 HELP.add_help("update", "update and restart",
                 "will pull changes from git (`git pull`) and then restart " +
                 "itself with an `execv` call.")

@@ -39,10 +39,10 @@ LAST_GROUP = "N/A"
 M_CLIENT = MongoClient('localhost', 27017,
     username=alemiBot.config.get("database", "username", fallback=""),
     password=alemiBot.config.get("database", "password", fallback=""))
-DB = M_CLIENT.alemibot
-EVENTS = DB.events
+DB = M_CLIENT[alemiBot.config.get("database", "dbname", fallback="alemibot")]
+EVENTS = DB[alemiBot.config.get("database", "collection", fallback="events")]
 
-LOG_MEDIA = alemiBot.config.get("database", "log_media", fallback=False)
+LOG_MEDIA = alemiBot.config.getboolean("database", "log_media", fallback=False)
 
 LOGGED_COUNT = 0
 
@@ -108,7 +108,7 @@ async def stats_cmd(client, message):
     after = time.time()
     latency = (after - before) * 1000
     count = EVENTS.count({})
-    size = DB.command("dbstats")['totalSize']
+    size = DB.command("collstats", alemiBot.config.get("database", "collection", fallback="events"))['totalSize']
     memesize = float(subprocess.run( # this is bad and ugly
         ["du", "-b", "data/memes"],
                         capture_output=True).stdout.decode('utf-8').split("\t")[0])
@@ -131,28 +131,42 @@ async def stats_cmd(client, message):
 
 HELP.add_help(["query", "q", "log"], "interact with db",
                 "make queries to the underlying database (MongoDB) to request documents. " +
-                "Filters, limits and fields can be configured with arguments.", args="[-l <n>] [-f <{filter}>] <{query}>")
+                "Filters, limits and fields can be configured with arguments. If multiple userbots are logging in the same " +
+                "database (but in different collections), you can specify in which collection to query with `-coll`. You can also " +
+                "specify which database to use with `-db` option, but the user which the bot is using to login will need permissions to read.",
+                args="[-coll <name>] [-db <name>] [-l <n>] [-f <{filter}>] <{query}>")
 @alemiBot.on_message(filters.me & filterCommand(["query", "q", "log"], list(alemiBot.prefixes), options={
     "limit" : ["-l", "-limit"],
-    "filter" : ["-f", "-filter"]
-}))
+    "filter" : ["-f", "-filter"],
+    "collection" : ["-coll", "-collection"],
+    "database" : ["-db", "-database"]
+}, flags=["-cmd"]))
 async def query_cmd(client, message):
     args = message.command
     try:
         if "arg" in args:
             buf = []
-            q = json.loads(args["arg"])
             cursor = None
             lim = 10
             if "limit" in args:
                 lim = int(args["limit"])
-            lgr.info("Querying db : {args['arg']}")
+            lgr.info(f"Querying db : {args['arg']}")
+            
+            database = DB
+            if "database" in args:
+                database = M_CLIENT[args["database"]]
+            collection = EVENTS
+            if "collection" in args:
+                collection = database[args["collection"]]
 
-            if "filter" in args:
-                filt = json.loads(args["filter"].replace("-f ", ""))
-                cursor = EVENTS.find(q, filt).sort("date", -1).limit(lim)
+            if "-cmd" in args["flags"]:
+                cursor = [ database.command(*args["cmd"]) ] # ewww but small patch
+            elif "filter" in args:
+                q = json.loads(args["cmd"][0])
+                filt = json.loads(args["filter"])
+                cursor = collection.find(q, filt).sort("date", -1).limit(lim)
             else:
-                cursor = EVENTS.find(q).sort("date", -1).limit(lim)
+                cursor = collection.find(json.loads(args["cmd"][0])).sort("date", -1).limit(lim)
 
             for doc in cursor:
                 buf.append(doc)
@@ -212,7 +226,7 @@ async def hist_cmd(client, message):
     await client.set_offline()
 
 
-async def lookup_deleted_messages(client, message, target_group, limit, show_time=False, include_system=False, offset=0):
+async def lookup_deleted_messages(client, message, COLLECTION, target_group, limit, show_time=False, include_system=False, offset=0):
     response = await edit_or_reply(message, f"` → Peeking {limit} message{'s' if limit > 1 else ''} " +
                                             ('in ' + get_channel(target_group) if target_group is not None else '') + "`")
     chat_id = target_group.id if target_group is not None else None
@@ -222,15 +236,15 @@ async def lookup_deleted_messages(client, message, target_group, limit, show_tim
     try:
         lgr.debug("Querying db for deletions")
         await client.send_chat_action(message.chat.id, "upload_document")
-        cursor = EVENTS.find({ "_": "Delete" }).sort("date", -1)
+        cursor = COLLECTION.find({ "_": "Delete" }).sort("date", -1)
         for deletion in cursor: # TODO make this part not a fucking mess!
             if chat_id is not None and "chat" in deletion \
             and deletion["chat"]["id"] != chat_id:
                 continue # don't make a 2nd query, should speed up a ton
-            candidates = EVENTS.find({"_": "Message", "message_id": deletion["message_id"]}).sort("date", -1)
+            candidates = COLLECTION.find({"_": "Message", "message_id": deletion["message_id"]}).sort("date", -1)
             lgr.debug("Querying db for possible deleted msg")
             for doc in candidates: # dank 'for': i only need one
-                if chat_id is not None and doc["chat"]["id"] != chat_id:
+                if chat_id is not None and ("chat" not in doc or doc["chat"]["id"] != chat_id):
                     continue
                 if not include_system and "service" in doc and doc["service"]:
                     break # we don't care about service messages!
@@ -275,11 +289,13 @@ HELP.add_help(["peek", "deld", "deleted", "removed"], "get deleted messages",
                 "Owner can peek globally (`-all`) or in a specific group (`-g <id>`). Keep in mind that Telegram doesn't send easy to use " +
                 "deletion data, so the bot needs to lookup ids and messages in the database, making cross searches. Big peeks, or peeks of very old deletions " +
                 "will take some time to complete. For specific searches, use the query (`.q`) command. An offset can be specified with `-o` : if given, " +
-                "the most `<offset>` recent messages will be skipped and older messages will be peeked.",
+                "the most `<offset>` recent messages will be skipped and older messages will be peeked. If multiple userbots are logging into the same database " +
+                "(but different collections), you can specify on which collection to peek with `-coll`.",
                 public=True, args="[-t] [-g [id] | -all] [-sys] [-o <n>] [<num>]")
 @alemiBot.on_message(is_allowed & filterCommand(["peek", "deld", "deleted", "removed"], list(alemiBot.prefixes), options={
     "group" : ["-g", "-group"],
-    "offset" : ["-o", "-offset"]
+    "offset" : ["-o", "-offset"],
+    "collection" : ["-coll", "-collection"]
 }, flags=["-t", "-all", "-sys"]))
 async def deleted_cmd(client, message): # This is a mess omg
     args = message.command
@@ -287,18 +303,24 @@ async def deleted_cmd(client, message): # This is a mess omg
     target_group = message.chat
     include_system = "-sys" in args["flags"]
     offset = int(args["offset"]) if "offset" in args else 0
+    coll = EVENTS
     if is_me(message):
         if "-all" in args["flags"]:
             target_group = None
         elif "group" in args:
-            target_group = await client.get_chat(int(args["group"]))
+            if args["group"].isnumeric():
+                target_group = await client.get_chat(int(args["group"]))
+            else:
+                target_group = await client.get_chat(args["group"])
+        if "collection" in args:
+            coll = DB[args["collection"]]
     limit = 1
     if "arg" in args:
         limit = int(args["arg"])
     lgr.info(f"Peeking {limit} messages")
     asyncio.get_event_loop().create_task( # launch the task async because it may take some time
         lookup_deleted_messages(
-            client, message,
+            client, message, coll,
             target_group, limit, show_time, include_system, offset
         )
     )

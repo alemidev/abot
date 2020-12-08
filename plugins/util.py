@@ -5,13 +5,16 @@ import io
 import json
 import time
 import traceback
+import requests
 
 from collections import Counter
+from gtts import gTTS 
+from pydub import AudioSegment
 
 from pyrogram import filters
 
 from util.permission import is_allowed
-from util.message import edit_or_reply, is_me
+from util.message import edit_or_reply, is_me, tokenize_json
 from util.command import filterCommand
 
 from googletrans import Translator
@@ -184,7 +187,7 @@ HELP.add_help(["translate", "tran", "tr"], "translate to/from",
 }))
 async def translate_cmd(client, message):
     args = message.command
-    if "arg" not in args:
+    if "arg" not in args and message.reply_to_message is None:
         return await edit_or_reply(message, "`[!] → ` Nothing to translate")
     tr_options = {}
     # lmao I can probably pass **args directly
@@ -194,7 +197,7 @@ async def translate_cmd(client, message):
         tr_options["dest"] = args["dest"]
     try:
         await client.send_chat_action(message.chat.id, "find_location")
-        q = args["arg"]
+        q = message.reply_to_message.text if message.reply_to_message is not None else args["arg"]
         logger.info(f"Translating {q}")
         res = translator.translate(q, **tr_options)
         out = f"`[{res.extra_data['confidence']:.2f}] → ` {res.text}"
@@ -251,20 +254,19 @@ async def qrcode_cmd(client, message):
     await client.set_offline()
 
 HELP.add_help(["color"], "send solid color image",
-                "create a solid color image and send it. Color can be given as hex (`-hex`) or " +
+                "create a solid color image and send it. Color can be given as hex or " +
                 "by specifying each channel individally. Each channel can range from 0 to 256. ",
-                args="[-hex <hex>] <r> <g> <b>", public=True)
-@alemiBot.on_message(is_allowed & filterCommand(["color"], list(alemiBot.prefixes), options={
-    "hex" : ["-hex"],
-}))
+                args="( <hex> | <r> <g> <b> )", public=True)
+@alemiBot.on_message(is_allowed & filterCommand(["color"], list(alemiBot.prefixes)))
 async def color_cmd(client, message):
     clr = None
-    if "hex" in message.command:
-        clr = message.command["hex"]
-        if not clr.startswith("#"):
-            clr = "#" + clr
-    elif "cmd" in message.command and len(message.command["cmd"]) > 2:
-        clr = tuple([int(k) for k in message.command["cmd"]][:3])
+    if "cmd" in message.command:
+        if len(message.command["cmd"]) > 2:
+            clr = tuple([int(k) for k in message.command["cmd"]][:3])
+        else:
+            clr = message.command["cmd"][0]
+            if not clr.startswith("#"):
+                clr = "#" + clr
     else:
         return await edit_or_reply(message, "`[!] → ` Not enough args given")
     try:
@@ -275,6 +277,90 @@ async def color_cmd(client, message):
         image.save(color_io, "JPEG")
         color_io.seek(0)
         await client.send_photo(message.chat.id, color_io, reply_to_message_id=message.message_id)
+    except Exception as e:
+        traceback.print_exc()
+        await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.send_chat_action(message.chat.id, "cancel")
+    await client.set_offline()
+
+HELP.add_help(["voice"], "convert text to voice",
+                "create a voice message using Google Text to Speech. By default, english will be " +
+                "used as lang, but another one can be specified with `-l`. You can add `-slow` flag " +
+                "to make the generated speech slower. If command comes from self, will delete original " +
+                "message. TTS result will be converted to `.ogg`. You can skip this step and send as mp3 by " +
+                "adding the `-mp3` flag.", args="[-l <lang>] [-slow] [-mp3] <text>", public=True)
+@alemiBot.on_message(is_allowed & filterCommand(["voice"], list(alemiBot.prefixes), options={
+    "lang" : ["-l", "-lang"]
+}, flags=["-slow", "-mp3"]))
+async def voice_cmd(client, message):
+    text = ""
+    opts = {}
+    if message.reply_to_message is not None:
+        text = message.reply_to_message.text
+    elif "arg" in message.command:
+        text = message.command["arg"]
+    else:
+        return await edit_or_reply(message, "`[!] → ` No text given")
+    lang = message.command["lang"] if "lang" in message.command else "en"
+    slow = "-slow" in message.command["flags"]
+    try:
+        if message.reply_to_message is not None:
+            opts["reply_to_message_id"] = message.reply_to_message.message_id
+        elif not is_me(message):
+            opts["reply_to_message_id"] = message.message_id
+        await client.send_chat_action(message.chat.id, "record_audio")
+        gTTS(text=text, lang=lang, slow=slow).save("data/tts.mp3")
+        if "-mp3" in message.command["flags"]:
+            await client.send_audio(message.chat.id, "data/tts.mp3", **opts)
+        else:
+            AudioSegment.from_mp3("data/tts.mp3").export("data/tts.ogg", format="ogg", codec="libopus")
+            await client.send_voice(message.chat.id, "data/tts.ogg", **opts)
+        if is_me(message):
+            await message.delete()
+    except Exception as e:
+        traceback.print_exc()
+        await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.send_chat_action(message.chat.id, "cancel")
+    await client.set_offline()
+
+
+HELP.add_help(["ocr"], "read text in photos",
+                "make a request to https://api.ocr.space/parse/image. The number of allowed queries " +
+                "is limited, the result is not guaranteed and it requires an API key set up to work. " +
+                "A language for the OCR can be specified with `-l`. You can request OCR.space overlay in response " +
+                "with the `-overlay` flag. A media can be attached or replied to. Add the `-json` flag to get raw result.",
+                args="[-l <lang>] [-overlay]", public=True)
+@alemiBot.on_message(is_allowed & filterCommand(["ocr"], list(alemiBot.prefixes), options={
+    "lang" : ["-l", "-lang"]
+}, flags=["-overlay", "-json"]))
+async def ocr_cmd(client, message):
+    try:
+        payload = {
+            'isOverlayRequired': "-overlay" in message.command["flags"],
+            'apikey': alemiBot.config.get("ocr", "apikey", fallback=""),
+            'language': message.command["lang"] if "lang" in message.command else "eng"
+        }
+        if payload["apikey"] == "":
+            return await edit_or_reply(message, "`[!] → ` No API Key set up")
+        msg = message
+        if message.reply_to_message is not None:
+            msg = message.reply_to_message
+        if msg.media:
+            await client.send_chat_action(message.chat.id, "upload_photo")
+            fpath = await client.download_media(msg, file_name="data/")
+            with open(fpath, 'rb') as f:
+                r = requests.post('https://api.ocr.space/parse/image', files={fpath: f}, data=payload)
+            if "-json" in message.command["flags"]:
+                raw = tokenize_json(json.dumps(json.loads(r.content.decode()), indent=2))
+                await edit_or_reply(message, f"` → `\n{raw}")
+            else:
+                raw = json.loads(r.content.decode())
+                out = ""
+                for el in raw["ParsedResults"]:
+                    out += el["ParsedText"]
+                await edit_or_reply(message, f"` → ` {out}")
+        else:
+            return await edit_or_reply(message, "`[!] → ` No media given")
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))

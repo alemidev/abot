@@ -4,13 +4,14 @@ import subprocess
 import time
 import re
 import traceback
+from collections import Counter
 
 from pyrogram import filters
 
 from util import batchify
 from util.parse import cleartermcolor
 from util.permission import is_allowed
-from util.message import edit_or_reply, is_me
+from util.message import edit_or_reply, is_me, get_text
 from util.command import filterCommand
 
 from bot import alemiBot
@@ -103,13 +104,18 @@ async def shrug(client, message):
     logger.info(f" ¯\_(ツ)_/¯ ")
     await message.edit(re.sub(r"[\.\/\!]shrug","¯\_(ツ)_/¯", message.text.markdown))
 
+HELP.add_help("eyy", "( ͡° ͜ʖ ͡°)", "will replace `.eyy` anywhere "+
+                "in yor message with the composite emoji. (this will ignore your custom prefixes)")
+@alemiBot.on_message(filters.me & filters.regex(pattern="[\\" + "\\".join(list(alemiBot.prefixes)) + "]eyy"), group=2)
+async def eyy_replace(client, message):
+    logger.info(f" ( ͡° ͜ʖ ͡°) ")
+    await message.edit(re.sub(r"[\.\/\!]eyy","( ͡° ͜ʖ ͡°)", message.text.markdown))
+
 @alemiBot.on_message(filters.me & filters.regex(pattern=r"<-|->|=>|<="), group=3)
 async def replace_arrows(client, message):
     logger.info("arrow!")
     await message.edit(message.text.markdown.replace("<-", "←")
-                                            .replace("->", "→")
-                                            .replace("=>", "⇨")
-                                            .replace("<=", "⇦"))
+                                            .replace("->", "→"))
 
 
 HELP.add_help("figlet", "make a figlet art",
@@ -152,7 +158,7 @@ async def figlettext(client, message):
     await client.set_offline()
 
 HELP.add_help("fortune", "do you feel fortunate!?",
-                "run `fortune` to get a random sentence. Like fortune bisquits!", public=True)
+                "run `fortune` to get a random sentence. Like fortune bisquits!", args="[-cow]", public=True)
 @alemiBot.on_message(is_allowed & filterCommand(["fortune"], list(alemiBot.prefixes), flags=["-cow"]))
 async def fortune(client, message):
     try:
@@ -167,4 +173,39 @@ async def fortune(client, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.set_offline()
+
+HELP.add_help(["freq", "frequent"], "find frequent words in messages",
+                "find most used words in last messages. If no number is given, will search only " +
+                "last 100 messages. By default, 10 most frequent words are shown, but number of results " +
+                "can be changed with `-r`. By default, only words of `len > 3` will be considered. " +
+                "A minimum word len can be specified with `-min`.", args="[-r <n>] [-min <n>] [n]", public=True)
+@alemiBot.on_message(is_allowed & filterCommand(["freq", "frequent"], list(alemiBot.prefixes), options={
+    "results" : ["-r", "-res"],
+    "minlen" : ["-min"]
+}))
+async def cmd_frequency(client, message):
+    results = int(message.command["results"]) if "results" in message.command else 10
+    number = int(message.command["cmd"][0]) if "cmd" in message.command else 100
+    min_len = int(message.command["minlen"]) if "minlen" in message.command else 3
+    try:
+        logger.info(f"Counting {results} most frequent words in last {number} messages")
+        response = await edit_or_reply(message, f"` → ` Counting word occurrences...")
+        await client.send_chat_action(message.chat.id, "playing")
+        words = []
+        count = 0
+        async for msg in client.iter_history(message.chat.id, limit=number):
+            words += [ w for w in get_text(msg).split() if len(w) > min_len ]
+            count += 1
+            if count % 250 == 0:
+                await response.edit(f"` → [{count}/{number}] ` Counting word occurrences...")
+        count = Counter(words).most_common()
+        output = f"`→ ` **{results}** most frequent words __(len > {min_len})__ in last **{number}** messages:\n"
+        for i in range(results):
+            output += f"`{i+1:02d}]{'-'*(results-i-1)}>` `{count[i][0]}` `({count[i][1]})`\n"
+        await response.edit(output)
+    except Exception as e:
+        traceback.print_exc()
+        await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()

@@ -1,5 +1,5 @@
 # alemibot / ᚨᛚᛖᛗᛁᛒᛟᛏ  v0.2
-### Join the bot telegram group on https://t.me/alemibothelp
+### Join [bot help telegram group](https://t.me/joinchat/GXHgdUX7RdB8kLECesN0Dg) (kinda spammy)
 
 My personal Telegram userbot. This bot can provide, out of the box, some 
 math/moderation/meme/textediting commands. The most relevant features come 

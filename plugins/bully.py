@@ -39,7 +39,7 @@ except:
 
 INTERRUPT = False
 
-HELP.add_help(["censor", "c"], "immediately delete messages from users",
+HELP.add_help(["censor", "c"], "immediately delete messages",
             "Start censoring someone in current chat. Use flag `-mass` to toggle mass censorship in current chat. " +
             "Add flag -free to stop istead stop censoring target. Use flag `-list` to get censored " +
             "users in current chat. Messages from self will never be censored. More than one target can be specified",
@@ -97,12 +97,12 @@ async def censor_cmd(client, message):
         with open("data/censoring.json", "w") as f:
             json.dump(censoring, f)
 
-HELP.add_help(["free", "f"], "stop censoring someone",
+HELP.add_help(["free", "f", "stop"], "stop censoring someone",
             "Stop censoring someone in current chat. Use flag `-mass` to stop mass censorship current chat. " +
             "You can add `-i` to make target immune to mass censoring. More than one target can be specified (separate with spaces). " +
             "Add `-list` flag to list immune users (censor immunity is global but doesn't bypass specific censorship)",
             args="[-mass] [-list] [-i] <targets>")
-@alemiBot.on_message(filters.me & filterCommand(["free", "f"], list(alemiBot.prefixes), flags=["-list", "-i", "-mass"]))
+@alemiBot.on_message(filters.me & filterCommand(["free", "f", "stop"], list(alemiBot.prefixes), flags=["-list", "-i", "-mass"]))
 async def free_cmd(client, message):
     global censoring
     args = message.command
@@ -210,9 +210,9 @@ async def spam(client, message):
             extra["reply_to_message_id"] = message.reply_to_message.message_id
         for i in range(number):
             msg = await client.send_message(message.chat.id, text, **extra)
+            await asyncio.sleep(wait)
             if delme:
                 await msg.delete()
-            await asyncio.sleep(wait)
             if INTERRUPT:
                 INTERRUPT = False
                 await message.edit(message.text.markdown + f"\n` → ` Canceled after {i + 1} events")

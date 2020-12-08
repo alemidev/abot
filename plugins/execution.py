@@ -1,3 +1,4 @@
+import asyncio
 import subprocess
 import io
 import re
@@ -57,12 +58,16 @@ HELP.add_help(["run", "r"], "run command on server",
                 "Every command starts in bot root folder.", args="<cmd>")
 @alemiBot.on_message(filters.me & filterCommand(["run", "r"], list(alemiBot.prefixes)))
 async def runit(client, message):
-    args = message.text.raw.replace(message.command["base"], "").replace("-delme", "")
+    args = re.sub(r"-delme(?: |)(?:[0-9]+|)", "", message.command["raw"])
     try:
         logger.info(f"Running command \"{args}\"")
-        result = subprocess.run(args, shell=True, stdout=subprocess.PIPE,
-                                        stderr=subprocess.STDOUT, timeout=60)
-        output = cleartermcolor(result.stdout.decode())
+        proc = await asyncio.create_subprocess_shell(
+            args,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT)
+
+        stdout, stderr = await proc.communicate()
+        output = cleartermcolor(stdout.decode())
         if len(args) + len(output) > 4080:
             await message.edit(f"```$ {args}\n → Output too long, sending as file```")
             out = io.BytesIO((f"$ {args}\n" + output).encode('utf-8'))
@@ -85,7 +90,7 @@ HELP.add_help(["eval", "e"], "eval a python expression",
 @alemiBot.on_message(filters.me & filterCommand(["eval", "e"], list(alemiBot.prefixes)))
 async def evalit(client, message):
     global GLOBALS
-    args = message.text.raw.replace(message.command["base"], "").replace("-delme", "")
+    args = re.sub(r"-delme(?: |)(?:[0-9]+|)", "", message.command["raw"])
     try:
         logger.info(f"Evaluating \"{args}\"")
         with stdoutWrapper() as fake_stdout:
@@ -123,7 +128,7 @@ HELP.add_help(["exec", "ex"], "execute python code",
                 "code.", args="<code>")
 @alemiBot.on_message(filters.me & filterCommand(["exec", "ex"], list(alemiBot.prefixes)))
 async def execit(client, message):
-    args = message.text.raw.replace(message.command["base"], "").replace("-delme", "")
+    args = re.sub(r"-delme(?: |)(?:[0-9]+|)", "", message.command["raw"])
     fancy_args = args.replace("\n", "\n... ")
     try:
         logger.info(f"Executing \"{args}\"")
