@@ -60,9 +60,13 @@ async def runit(client, message):
     args = re.sub(r"-delme(?: |)(?:[0-9]+|)", "", message.command["raw"])
     try:
         logger.info(f"Running command \"{args}\"")
-        result = subprocess.run(args, shell=True, stdout=subprocess.PIPE,
-                                        stderr=subprocess.STDOUT, timeout=60)
-        output = cleartermcolor(result.stdout.decode())
+        proc = await asyncio.create_subprocess_shell(
+            args,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT)
+
+        stdout, stderr = await proc.communicate()
+        output = cleartermcolor(stdout.decode())
         if len(args) + len(output) > 4080:
             await message.edit(f"```$ {args}\n → Output too long, sending as file```")
             out = io.BytesIO((f"$ {args}\n" + output).encode('utf-8'))
