@@ -37,6 +37,7 @@ HELP.add_help(["joined", "jd"], "count active chats",
 @alemiBot.on_message(filters.me & filterCommand(["joined", "jd"], list(alemiBot.prefixes)))
 async def joined_cmd(client, message):
     logger.info("Listing active dialogs")
+    await message.edit(message.text + "\n` → ` Counting...")
     res = {}
     async for dialog in client.iter_dialogs():
       if dialog.chat.type in res:
