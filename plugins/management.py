@@ -40,7 +40,7 @@ async def get_user(arg, client):
         return await client.get_users(arg)
 
 HELP.add_help(["purge", "wipe", "clear"], "batch delete messages",
-                "delete last <n> sent messages from <target> (`-t`). If <n> is not given, will default to 1. " +
+                "delete last <n> sent messages from <target> (`-t`), excluding this one. If <n> is not given, will default to 1. " +
                 "If no target is given, only self messages will be deleted. Target can be `@all` and `@everyone`. " +
                 "A keyword can be specified (`-k`) so that only messages containing that keyword will be deleted.",
                 args="[-t <target>] [-k <keyword>] [<number>]", public=False)
@@ -56,7 +56,7 @@ async def purge(client, message):
 
     try:
         if "arg" in args:
-            if args["arg"].startswith("@"): # this to support older cmd usage
+            if args["cmd"][0].startswith("@"): # this to support older cmd usage
                 tgt = args["cmd"][0]
                 if tgt == "@me":
                     pass
@@ -66,7 +66,7 @@ async def purge(client, message):
                     target = (await get_user(tgt, client)).id
                 number = int(args["cmd"][1])
             else:
-                number = int(args["arg"])
+                number = int(args["cmd"][0])
 
         if "keyword" in args:
             keyword = args["keyword"]
@@ -82,6 +82,8 @@ async def purge(client, message):
         logger.info(f"Purging last {number} message from {target}")
         n = 0
         async for msg in client.iter_history(message.chat.id):
+            if msg.message_id == message.message_id: # ignore message that triggered this
+                continue
             if ((target is None or msg.from_user.id == target)
             and (keyword is None or keyword in msg.text)): # wait WTF why no raw here
                 print(colored("[DELETING] → ", "red", attrs=["bold"]) + split_for_window(get_text(msg), offset=13))
