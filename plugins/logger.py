@@ -109,12 +109,12 @@ async def stats_cmd(client, message):
     size = DB.command("collstats", alemiBot.config.get("database", "collection", fallback="events"))['totalSize']
     memenumber = len(os.listdir("data/memes"))
     proc_meme = await asyncio.create_subprocess_exec(
-        ["du", "-b", "data/memes"],
+        "du", "-b", "data/memes",
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.STDOUT)
     medianumber = len(os.listdir("data/scraped_media"))
     proc_media = await asyncio.create_subprocess_exec(
-        ["du", "-b", "data/scraped_media"],
+        "du", "-b", "data/scraped_media",
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.STDOUT)
     stdout, stderr = await proc_meme.communicate()

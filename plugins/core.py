@@ -62,7 +62,7 @@ async def update(client, message):
         out += "\n` → ` Fetching code"
         await msg.edit(out)
         proc = await asyncio.create_subprocess_exec(
-            ["git", "pull"],
+            "git", "pull",
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT)
         stdout, stderr = await proc.communicate()
@@ -71,7 +71,7 @@ async def update(client, message):
         out += " [OK]\n` → ` Checking libraries"
         await msg.edit(out) 
         proc = await asyncio.create_subprocess_exec(
-            ["pip", "install", "-r", "requirements.txt"],
+            "pip", "install", "-r", "requirements.txt",
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT)
         stdout, stderr = await proc.communicate()

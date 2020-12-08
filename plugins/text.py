@@ -162,13 +162,13 @@ async def fortune(client, message):
         stdout = b""
         if "-cow" in message.command["flags"]:
             proc = await asyncio.create_subprocess_exec(
-                    ["fortune", "|", "cowsay", "-W", "30"],
+                    "fortune", "|", "cowsay", "-W", "30",
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.STDOUT)
             stdout, stderr = await proc.communicate()
         else:
             proc = await asyncio.create_subprocess_exec(
-                    ["fortune"],
+                    "fortune",
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.STDOUT)
             stdout, stderr = await proc.communicate()
