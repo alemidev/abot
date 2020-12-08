@@ -55,7 +55,7 @@ HELP.add_help("update", "update and restart",
 async def update(client, message):
     out = message.text.markdown
     if not is_me(message):
-        msg = message.reply(out)
+        msg = await message.reply(out)
     else:
         msg = message
     try:
