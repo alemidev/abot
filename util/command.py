@@ -49,16 +49,17 @@ def filterCommand(commands: str or List[str], prefixes: str or List[str] = "/",
                 if not re.match(pattern.format(cmd=re.escape(cmd), uname=client.me.username), without_prefix):
                     continue
 
+                without_cmd = re.sub("^@[^ ]+(?: |)", "", without_prefix[len(cmd):])
                 # match.groups are 1-indexed, group(1) is the quote, group(2) is the text
                 # between the quotes, group(3) is unquoted, whitespace-split text
 
                 # Remove the escape character from the arguments
                 match_list = [
                     re.sub(r"\\([\"'])", r"\1", m.group(2) or m.group(3) or "")
-                    for m in command_re.finditer(without_prefix[len(cmd):].replace("@" + client.me.username, ""))
+                    for m in command_re.finditer(without_cmd)
                 ]
 
-                message.command = { "raw" : without_prefix[len(cmd)+1:], # +1 to skip the 1st space too
+                message.command = { "raw" : without_cmd,
                                     "flags" : [],
                                     "base" : cmd }
 
