@@ -54,10 +54,7 @@ HELP.add_help("update", "update and restart",
 @alemiBot.on_message(is_superuser & filterCommand("update", list(alemiBot.prefixes)))
 async def update(client, message):
     out = message.text.markdown
-    if not is_me(message):
-        msg = await message.reply(out)
-    else:
-        msg = message
+    msg = message if is_me(message) else await message.reply(out)
     try:
         logger.info(f"Updating bot ...")
         uptime = str(datetime.now() - client.start_time)
@@ -96,8 +93,7 @@ async def where_cmd(client, message):
             else:
                 tgt = await client.get_chat(arg)
         logger.info(f"Getting info of chat")
-        if is_me(message):
-            await edit_or_reply(message, message.text.markdown + f"` → ` Getting data of chat `{tgt.id}`")
+        await edit_or_reply(message, f"` → ` Getting data of chat `{tgt.id}`")
         if not "-no" in message.command["flags"]:
             out = io.BytesIO((str(tgt)).encode('utf-8'))
             out.name = f"chat-{message.chat.id}.json"
@@ -127,8 +123,7 @@ async def who_cmd(client, message):
         else:
             peer = await client.get_me()
         logger.info("Getting info of user")
-        if is_me(message):
-            await edit_or_reply(message, message.text.markdown + f"` → ` Getting data of user `{peer.id}`")
+        await edit_or_reply(message, f"` → ` Getting data of user `{peer.id}`")
         if not "-no" in message.command["flags"]:
             out = io.BytesIO((str(peer)).encode('utf-8'))
             out.name = f"user-{peer.id}.json"
@@ -160,8 +155,7 @@ async def what_cmd(client, message):
                     chat_id = (await client.get_chat(message.command["group"])).id
             msg = await client.get_messages(chat_id, int(message.command["cmd"][0]))
         logger.info("Getting info of msg")
-        if is_me(message):
-            await edit_or_reply(message, message.text.markdown + f"` → ` Getting data of msg `{msg.message_id}`")
+        await edit_or_reply(message, f"` → ` Getting data of msg `{msg.message_id}`")
         if not "-no" in message.command["flags"]:
             out = io.BytesIO((str(msg)).encode('utf-8'))
             out.name = f"msg-{msg.message_id}.json"
