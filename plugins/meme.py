@@ -151,7 +151,7 @@ async def deepfry(client, message):
     if target.media:
         await client.send_chat_action(message.chat.id, "upload_photo")
         logger.info(f"Frying meme")
-        msg = edit_or_reply(message, "` → ` Downloading...")
+        msg = await edit_or_reply(message, "` → ` Downloading...")
         try:
             count = 1
             if "count" in args:
