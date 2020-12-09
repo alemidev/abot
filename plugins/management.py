@@ -46,7 +46,7 @@ HELP.add_help(["purge", "wipe", "clear"], "batch delete messages",
                 args="[-t <target>] [-k <keyword>] [-o <n>] [<number>]", public=False)
 @alemiBot.on_message(is_superuser & filterCommand(["purge", "wipe", "clear"], list(alemiBot.prefixes), options={
     "target" : ["-t", "-target"],
-    "keyword" : ["-k", "-keyword"]
+    "keyword" : ["-k", "-keyword"],
     "offset" : ["-o", "-offset"]
 }))
 async def purge(client, message):
