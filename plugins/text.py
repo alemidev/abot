@@ -166,6 +166,7 @@ async def fortune(client, message):
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.STDOUT)
             stdout, stderr = await proc.communicate()
+            stdout = b"\n" + stdout
         else:
             proc = await asyncio.create_subprocess_exec(
                     "fortune",
