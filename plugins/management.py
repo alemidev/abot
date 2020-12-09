@@ -41,17 +41,20 @@ async def get_user(arg, client):
 HELP.add_help(["purge", "wipe", "clear"], "batch delete messages",
                 "delete last <n> sent messages from <target> (`-t`), excluding this one. If <n> is not given, will default to 1. " +
                 "If no target is given, only self messages will be deleted. Target can be `@all` and `@everyone`. " +
-                "A keyword can be specified (`-k`) so that only messages containing that keyword will be deleted.",
-                args="[-t <target>] [-k <keyword>] [<number>]", public=False)
+                "A keyword can be specified (`-k`) so that only messages containing that keyword will be deleted. " +
+                "An offset can be specified with `-o`, to start deleting after a specific number of messages.",
+                args="[-t <target>] [-k <keyword>] [-o <n>] [<number>]", public=False)
 @alemiBot.on_message(is_superuser & filterCommand(["purge", "wipe", "clear"], list(alemiBot.prefixes), options={
-    "target" : ["-t"],
-    "keyword" : ["-k"]
+    "target" : ["-t", "-target"],
+    "keyword" : ["-k", "-keyword"]
+    "offset" : ["-o", "-offset"]
 }))
 async def purge(client, message):
     args = message.command
     target = message.from_user.id
     number = 1
-    keyword = None
+    keyword = args["keyword"] if "keyword" in args else None
+    offset = args["offset"] if "offset" in args else 0
 
     try:
         if "arg" in args:
@@ -68,9 +71,6 @@ async def purge(client, message):
             elif args["cmd"][0] != "-delme":
                 number = int(args["cmd"][0])
 
-        if "keyword" in args:
-            keyword = args["keyword"]
-
         if "target" in args:
             if args["target"] == "@me":
                 pass
@@ -86,7 +86,9 @@ async def purge(client, message):
                 continue
             if ((target is None or msg.from_user.id == target)
             and (keyword is None or keyword in get_text(msg))): # wait WTF why no raw here
-                print(colored("[DELETING] → ", "red", attrs=["bold"]) + split_for_window(get_text(msg), offset=13))
+                if offset > 0:
+                    offset -=1
+                    continue
                 await msg.delete()
                 n += 1
             if n >= number:
