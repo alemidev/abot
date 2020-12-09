@@ -156,7 +156,7 @@ async def deepfry(client, message):
             count = 1
             if "count" in args:
                 count = int(args["count"])
-            fpath = await client.download_media(msg, file_name="tofry")
+            fpath = await client.download_media(target, file_name="tofry")
             msg.edit(message.text.markdown + "\n` → ` Downloading [OK]\n` → ` Frying...")
             image = Image.open(fpath)
     
@@ -176,6 +176,7 @@ async def deepfry(client, message):
                 await msg.edit(message.text.markdown +
                     "\n` → ` Downloading [OK]\n` → ` Frying [OK]\n` → ` Uploading [OK]")
         except Exception as e:
+            traceback.print_exc()
             await msg.edit(get_text(message) + "\n`[!] → ` " + str(e))
         await client.send_chat_action(message.chat.id, "cancel")
     else:
