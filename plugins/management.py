@@ -63,8 +63,9 @@ async def purge(client, message):
                     target = None
                 else:
                     target = (await get_user(tgt, client)).id
-                number = int(args["cmd"][1])
-            else:
+                if args["cmd"][1] != "-delme":
+                    number = int(args["cmd"][1])
+            elif args["cmd"][0] != "-delme":
                 number = int(args["cmd"][0])
 
         if "keyword" in args:
