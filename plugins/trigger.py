@@ -1,5 +1,6 @@
 import traceback
 import json
+import re
 
 from pyrogram import filters
 
@@ -21,8 +22,11 @@ try:
         buf = json.load(f)
         for k in buf:
             TRIGGERS[k] = { "pattern" : re.compile(k), "reply" : buf[k] }
+except FileNotFoundError:
+    with open("data/triggers.json", "w") as f:
+        json.dump({}, f)
 except:
-    pass
+    traceback.print_exc()
 
 def serialize():
     global TRIGGERS
@@ -73,8 +77,8 @@ async def search_triggers(client, message):
     global TRIGGERS
     if is_me(message) or message.edit_date is not None: # TODO allow triggers for self?
         return # pyrogram gets edit events as message events!
-    if message.chat is None:
-        return # wtf messages with no chat???
+    if message.chat is None or (message.from_user and message.from_user.is_bot):
+        return # messages with no chat or from bots should not cause triggers
     if message.chat.type != "private" and not message.mentioned:
         return # in groups only get triggered in mentions
     msg_txt = get_text(message).lower()
