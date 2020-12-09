@@ -161,8 +161,8 @@ async def fortune(client, message):
         logger.info(f"Running command \"fortune\"")
         stdout = b""
         if "-cow" in message.command["flags"]:
-            proc = await asyncio.create_subprocess_exec(
-                    "fortune", "|", "cowsay", "-W", "30",
+            proc = await asyncio.create_subprocess_shell(
+                    "fortune | cowsay -W 30",
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.STDOUT)
             stdout, stderr = await proc.communicate()
