@@ -54,7 +54,7 @@ async def purge(client, message):
     target = message.from_user.id
     number = 1
     keyword = args["keyword"] if "keyword" in args else None
-    offset = args["offset"] if "offset" in args else 0
+    offset = int(args["offset"]) if "offset" in args else 0
 
     try:
         if "arg" in args:
