@@ -28,7 +28,8 @@ def check_allowed(_, __, message):
 is_allowed = filters.create(check_allowed)
 
 async def superuser_filter(_, __, m): # basically filters.me plus lookup in a list
-    return bool(m.from_user and m.from_user.is_self or m.outgoing or str(m.from_user.id) in SUPERUSER)
+    return bool(m.from_user and (m.from_user.is_self or str(m.from_user.id) in SUPERUSER)
+                or m.outgoing)
 
 is_superuser = create(superuser_filter)
 
