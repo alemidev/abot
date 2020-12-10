@@ -48,9 +48,9 @@ async def joined_cmd(client, message):
     await msg.edit(out)
 
 HELP.add_help("update", "update and restart",
-                "will pull changes from git (`git pull`), install requirements with `pip` and then restart " +
-                "itself with an `execv` call. If nothing is pulled from `git` and no `-force` flag was given, " +
-                "update will stop.", args="[-force]")
+                "will pull changes from git (`git pull`), install requirements (`pip install -r requirements.txt`) " +
+                "and then restart process with an `execv` call. If nothing gets pulled from `git`, update will stop unless " +
+                "the `-force` flag was given.", args="[-force]")
 @alemiBot.on_message(is_superuser & filterCommand("update", list(alemiBot.prefixes), flags=["-force"]))
 async def update(client, message):
     out = message.text.markdown
