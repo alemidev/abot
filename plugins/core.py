@@ -87,7 +87,7 @@ async def update(client, message):
         if b"ERROR" in stdout:
             out += " [WARN]"
         else:
-            out += " [OK]"
+            out += " [{stdout.count(b'Collecting')} new]"
         out += "\n` → ` Restarting process"
         await msg.edit(out) 
         with open("data/lastmsg.json", "w") as f:
