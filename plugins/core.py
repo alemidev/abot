@@ -59,7 +59,7 @@ async def update(client, message):
         uptime = str(datetime.now() - client.start_time)
         out += f"\n`→ ` --runtime-- `{uptime}`"
         await msg.edit(out) 
-        out += "\n` → ` Fetching code"
+        out += "\n` → ` Fetching updates"
         await msg.edit(out)
         proc = await asyncio.create_subprocess_exec(
             "git", "pull",
@@ -68,7 +68,11 @@ async def update(client, message):
         stdout, stderr = await proc.communicate()
         if b"Aborting" in stdout:
             return await msg.edit(out + " [FAIL]")
-        out += " [OK]\n` → ` Checking libraries"
+        elif b"Already up to date" in stdout:
+            out += " [N/A]\n"
+        else:
+            out += " [OK]\n"
+        out += "` → ` Checking libraries"
         await msg.edit(out) 
         proc = await asyncio.create_subprocess_exec(
             "pip", "install", "-r", "requirements.txt",
