@@ -22,7 +22,7 @@ class alemiBot(Client):
         super().__init__(
             name,
             workdir="./",
-            app_version="0.2",)
+            app_version="0.3",)
         self.start_time = datetime.now()
         # Get current commit hash and append to app version
         res = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True)
