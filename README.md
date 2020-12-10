@@ -30,7 +30,7 @@ It is strongly recommended to install this on a UNIX system. If you plan to inst
 * Activate `venv` with `source <venvfolder>/bin/activate`
 * Install required libraries with `pip install -r requirements.txt`
 * Edit the `config.ini` file with your API hash and ID (visit https://my.telegram.org/)
-* Run bot : `./bot.py` or `python bot.py`
+* Run bot : `python bot.py`. First time it will request your phone number and a verification code.
 
 ## config file
 The defualt config contains the usable fields already. You just need to fill in `api_id` and `api_hash`.
