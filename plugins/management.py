@@ -46,8 +46,11 @@ HELP.add_help(["purge", "wipe", "clear"], "batch delete messages",
                 "A keyword can be specified (`-k`) so that only messages containing that keyword will be deleted. " +
                 "An offset can be specified with `-o`, to start deleting after a specific number of messages. " +
                 "A time frame can be given: you can limit deletion to messages before (`-before`) a certain time " +
-                "(all messages from now up to <time> ago), or after (`-after`) a certain interval (all messages older than <time>).",
-                args="[-k <keyword>] [-o <n>] [<target>] [<number>]", public=False)
+                "(all messages from now up to <time> ago), or after (`-after`) a certain interval (all messages older than <time>). " +
+                "Time can be given as a packed string like this : `8y3d4h15m3s` (years, days, hours, minutes, seconds), " +
+                "any individual token can be given in any position and all are optional, it can just be `30s` or `5m`. If " +
+                "you want to include spaces, wrap the 'time' string in `\"`.",
+                args="[-k <keyword>] [-o <n>] [-before <time>] [-after <time>] [<target>] [<number>]", public=False)
 @alemiBot.on_message(is_superuser & filterCommand(["purge", "wipe", "clear"], list(alemiBot.prefixes), options={
     "keyword" : ["-k", "-keyword"],
     "offset" : ["-o", "-offset"],
@@ -64,7 +67,7 @@ async def purge(client, message):
     time_limit = time.time() - parse_timedelta(args["before"]).total_seconds() if \
                 "before" in args else None
     if "after" in args:
-        opts["offset_date"] = time.time() - parse_timedelta(args["after"]).total_seconds()
+        opts["offset_date"] = int(time.time() - parse_timedelta(args["after"]).total_seconds())
     try:
         if "cmd" in args:
             for a in args["cmd"]:
