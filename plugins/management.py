@@ -75,7 +75,7 @@ async def purge(client, message):
                     if a in { "@all", "@everyone" }:
                         target = None
                     else:
-                        target = (await get_user(tgt, client)).id
+                        target = (await get_user(a, client)).id
                 elif a.isnumeric():
                     number = int(a)
 
