@@ -75,8 +75,11 @@ async def purge(client, message):
     try:
         if "cmd" in args:
             for a in args["cmd"]:
-                if a.startswith("@") and a != "@me":
-                    target.append((await get_user(a, client)).id)
+                if a.startswith("@"):
+                    if a == "@me":
+                        target.append(message.from_user.id)
+                    else:
+                        target.append((await get_user(a, client)).id)
                 elif a.isnumeric():
                     number = int(a)
         if "ids" in args:
