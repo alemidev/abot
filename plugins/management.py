@@ -1,5 +1,6 @@
 import asyncio
 import traceback
+import time
 
 from pyrogram import filters
 
@@ -12,6 +13,7 @@ from util.user import get_username
 from util.message import edit_or_reply, get_text
 from util.text import split_for_window
 from util.command import filterCommand
+from util.time import parse_timedelta
 from plugins.help import HelpCategory
 
 import logging
@@ -39,49 +41,44 @@ async def get_user(arg, client):
         return await client.get_users(arg)
 
 HELP.add_help(["purge", "wipe", "clear"], "batch delete messages",
-                "delete last <n> sent messages from <target> (`-t`), excluding this one. If <n> is not given, will default to 1. " +
+                "delete last <n> sent messages from <target>, excluding this one. If <n> is not given, will default to 1. " +
                 "If no target is given, only self messages will be deleted. Target can be `@all` and `@everyone`. " +
                 "A keyword can be specified (`-k`) so that only messages containing that keyword will be deleted. " +
-                "An offset can be specified with `-o`, to start deleting after a specific number of messages.",
-                args="[-t <target>] [-k <keyword>] [-o <n>] [<number>]", public=False)
+                "An offset can be specified with `-o`, to start deleting after a specific number of messages. " +
+                "A time frame can be given: you can limit deletion to messages before (`-before`) a certain time " +
+                "(all messages from now up to <time> ago), or after (`-after`) a certain interval (all messages older than <time>).",
+                args="[-k <keyword>] [-o <n>] [<target>] [<number>]", public=False)
 @alemiBot.on_message(is_superuser & filterCommand(["purge", "wipe", "clear"], list(alemiBot.prefixes), options={
-    "target" : ["-t", "-target"],
     "keyword" : ["-k", "-keyword"],
-    "offset" : ["-o", "-offset"]
+    "offset" : ["-o", "-offset"],
+    "before" : ["-before"],
+    "after" : ["-after"]
 }))
 async def purge(client, message):
     args = message.command
     target = message.from_user.id
+    opts = {}
     number = 1
     keyword = args["keyword"] if "keyword" in args else None
     offset = int(args["offset"]) if "offset" in args else 0
-
+    time_limit = time.time() - parse_timedelta(args["before"]).total_seconds() if \
+                "before" in args else None
+    if "after" in args:
+        opts["offset_date"] = time.time() - parse_timedelta(args["after"]).total_seconds()
     try:
-        if "arg" in args:
-            if args["cmd"][0].startswith("@"): # this to support older cmd usage
-                tgt = args["cmd"][0]
-                if tgt == "@me":
-                    pass
-                elif tgt in { "@all", "@everyone" }:
-                    target = None
-                else:
-                    target = (await get_user(tgt, client)).id
-                if args["cmd"][1] != "-delme":
-                    number = int(args["cmd"][1])
-            elif args["cmd"][0] != "-delme":
-                number = int(args["cmd"][0])
-
-        if "target" in args:
-            if args["target"] == "@me":
-                pass
-            elif args["target"] in { "@all", "@everyone" }:
-                target = None
-            else:
-                target = (await get_user(args["target"], client)).id
+        if "cmd" in args:
+            for a in args["cmd"]:
+                if a.startswith("@") and a != "@me":
+                    if a in { "@all", "@everyone" }:
+                        target = None
+                    else:
+                        target = (await get_user(tgt, client)).id
+                elif a.isnumeric():
+                    number = int(a)
 
         logger.info(f"Purging last {number} message from {target}")
         n = 0
-        async for msg in client.iter_history(message.chat.id):
+        async for msg in client.iter_history(message.chat.id, **opts):
             if msg.message_id == message.message_id: # ignore message that triggered this
                 continue
             if ((target is None or msg.from_user.id == target)
@@ -92,6 +89,8 @@ async def purge(client, message):
                 await msg.delete()
                 n += 1
             if n >= number:
+                break
+            if time_limit is not None and msg.date < time_limit:
                 break
     except Exception as e:
         traceback.print_exc()
