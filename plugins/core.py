@@ -48,9 +48,10 @@ async def joined_cmd(client, message):
     await msg.edit(out)
 
 HELP.add_help("update", "update and restart",
-                "will pull changes from git (`git pull`) and then restart " +
-                "itself with an `execv` call.")
-@alemiBot.on_message(is_superuser & filterCommand("update", list(alemiBot.prefixes)))
+                "will pull changes from git (`git pull`), install requirements with `pip` and then restart " +
+                "itself with an `execv` call. If nothing is pulled from `git` and no `-force` flag was given, " +
+                "update will stop.", args="[-force]")
+@alemiBot.on_message(is_superuser & filterCommand("update", list(alemiBot.prefixes), flags=["-force"]))
 async def update(client, message):
     out = message.text.markdown
     msg = message if is_me(message) else await message.reply(out)
@@ -67,9 +68,13 @@ async def update(client, message):
             stderr=asyncio.subprocess.STDOUT)
         stdout, stderr = await proc.communicate()
         if b"Aborting" in stdout:
-            return await msg.edit(out + " [FAIL]")
+            out += " [FAIL]\n"
+            if not "-force" in message.command["flags"]:
+                return await msg.edit(out)
         elif b"Already up to date" in stdout:
             out += " [N/A]\n"
+            if not "-force" in message.command["flags"]:
+                return await msg.edit(out)
         else:
             out += " [OK]\n"
         out += "` → ` Checking libraries"
