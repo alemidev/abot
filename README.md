@@ -1,4 +1,4 @@
-# alemibot / ᚨᛚᛖᛗᛁᛒᛟᛏ  v0.2
+# alemibot / ᚨᛚᛖᛗᛁᛒᛟᛏ  v0.3
 ### Join [the help channel](https://t.me/alemibothelp)
 
 My personal Telegram userbot. This bot can provide, out of the box, some 
