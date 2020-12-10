@@ -105,9 +105,8 @@ async def urbandict(client, message):
         return await edit_or_reply(message, "`[!] → ` No query given")
     try:
         await client.send_chat_action(message.chat.id, "upload_document")
-        arg = message.command["arg"]
-        logger.info(f"Searching \"{arg}\" on urban dictionary")
-        res = ud_define(arg)
+        logger.info(f"Searching \"{message.command['arg']}\" on urban dictionary")
+        res = ud_define(message.command["arg"])
         if res is None:
             return await edit_or_reply(message, "`[!] → ` Not found")
         out = ""
@@ -123,17 +122,19 @@ async def urbandict(client, message):
     await client.set_offline()
 
 HELP.add_help("wiki", "search on wikipedia",
-                "search on wikipedia, attaching initial text and a link.",
-                args="<query>", public=True)
-@alemiBot.on_message(is_allowed & filterCommand("wiki", list(alemiBot.prefixes)))
+                "search on wikipedia, attaching initial text and a link. Language will default to " +
+                "english if not specified with `-l`.", args="[-l <lang>] <query>", public=True)
+@alemiBot.on_message(is_allowed & filterCommand("wiki", list(alemiBot.prefixes), options={
+    "lang" : ["-l", "-lang"]
+}))
 async def wiki(client, message):
     if "arg" not in message.command:
         return await edit_or_reply(message, "`[!] → ` No query given")
     try:
         await client.send_chat_action(message.chat.id, "upload_document")
-        arg = message.command["arg"]
-        logger.info(f"Searching \"{arg}\" on wikipedia")
-        page = wikipedia.page(arg)
+        wikipedia.set_lang(message.command["lang"] if "lang" in message.command else "en")
+        logger.info(f"Searching \"{message.command['arg']}\" on wikipedia")
+        page = wikipedia.page(message.command["arg"])
         out = f"` → {page.title}`\n"
         out += page.content[:750]
         out += f"... {page.url}"
@@ -212,11 +213,13 @@ WTTR_STRING = "`→ {loc} `\n` → `**{desc}**\n` → ` {mintemp:.0f}C - {maxtem
 
 HELP.add_help(["weather", "wttr"], "get weather of location",
                 "makes a request to wttr.in for provided location. Props to https://github.com/chubin/wttr.in " +
-                "for awesome site, remember you can `curl wttr.in` in terminal.",
+                "for awesome site, remember you can `curl wttr.in` in terminal. Result language can be specified with `-l`.",
                 # "searches OpenWeatherMap for specified location. To make queries to OpenWeatherMap " +
                 # "an API key is necessary, thus registering to OpenWeatherMap. This is super early and shows very little.",
-                args="<location>", public=True)
-@alemiBot.on_message(is_allowed & filterCommand(["weather", "wttr"], list(alemiBot.prefixes)))
+                args="[-l <lang>] <location>", public=True)
+@alemiBot.on_message(is_allowed & filterCommand(["weather", "wttr"], list(alemiBot.prefixes), options={
+    "lang" : ["-l", "-lang"]
+}))
 async def weather_cmd(client, message):
     if "arg" not in message.command:
         return await edit_or_reply(message, "`[!] → ` Not enough arguments")
@@ -227,7 +230,8 @@ async def weather_cmd(client, message):
         logger.info("curl wttr.in")
         await client.send_chat_action(message.chat.id, "find_location")
         q = message.command["arg"]
-        r = requests.get(f"https://wttr.in/{q}?mnTC0&lang=en")
+        lang = message.command["lang"] if "lang" in message.command else "en"
+        r = requests.get(f"https://wttr.in/{q}?mnTC0&lang={lang}")
         await edit_or_reply(message, "<code> → " + r.text + "</code>", parse_mode="html")
         # # Why bother with OpenWeatherMap?
         # r = requests.get(f'http://api.openweathermap.org/data/2.5/weather?q={q}&APPID={APIKEY}').json()
