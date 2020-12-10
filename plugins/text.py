@@ -109,10 +109,10 @@ async def eyy_replace(client, message):
 
 HELP.add_help("holup", "(▀̿Ĺ̯▀̿ ̿)", "will replace `.holup` anywhere "+
                 "in yor message with the composite emoji. (this will ignore your custom prefixes)")
-@alemiBot.on_message(filters.me & filters.regex(pattern="[\\" + "\\".join(list(alemiBot.prefixes)) + "]eyy"), group=2)
+@alemiBot.on_message(filters.me & filters.regex(pattern="[\\" + "\\".join(list(alemiBot.prefixes)) + "]holup"), group=2)
 async def holup_replace(client, message):
     logger.info(f" (▀̿Ĺ̯▀̿ ̿) ")
-    await message.edit(re.sub(r"[\.\/\!]eyy","(▀̿Ĺ̯▀̿ ̿)", message.text.markdown))
+    await message.edit(re.sub(r"[\.\/\!]holup","(▀̿Ĺ̯▀̿ ̿)", message.text.markdown))
 
 @alemiBot.on_message(filters.me & filters.regex(pattern=r"<-|->|=>|<="), group=3)
 async def replace_arrows(client, message):
