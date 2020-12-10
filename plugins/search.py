@@ -160,7 +160,7 @@ async def lmgtfy(client, message):
     if "arg" not in message.command:
         return await edit_or_reply(message, "`[!] → ` No query given")
     try:
-        arg = message.command["arg"]
+        arg = message.command["arg"].replace(" ", "+")
         logger.info(f"lmgtfy {arg}")
         await edit_or_reply(message, f"` → ` http://letmegooglethat.com/?q={arg}")
     except Exception as e:
