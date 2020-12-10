@@ -42,27 +42,30 @@ async def get_user(arg, client):
         return await client.get_users(arg)
 
 HELP.add_help(["purge", "wipe", "clear"], "batch delete messages",
-                "delete last <n> sent messages from <target>, excluding this one. If <n> is not given, will default to 1. " +
-                "If no target is given, only self messages will be deleted. Target can be `@all` and `@everyone`. " +
+                "delete last <n> sent messages (excluding this) from <targets> (can be more than one). If <n> is not given, will default to 1. " +
+                "If no target is given, messages from author of replied msg or self msgs will be deleted. You can give flag `-all` to delete from everyone. " +
                 "A keyword (regex) can be specified (`-k`) so that only messages matching given pattern will be deleted. " +
                 "An offset can be specified with `-o`, to start deleting after a specific number of messages. " +
                 "A time frame can be given: you can limit deletion to messages before (`-before`) a certain time " +
                 "(all messages from now up to <time> ago), or after (`-after`) a certain interval (all messages older than <time>). " +
                 "Time can be given as a packed string like this : `8y3d4h15m3s` (years, days, hours, minutes, seconds), " +
                 "any individual token can be given in any position and all are optional, it can just be `30s` or `5m`. If " +
-                "you want to include spaces, wrap the 'time' string in `\"`.",
-                args="[-k <keyword>] [-o <n>] [-before <time>] [-after <time>] [<target>] [<number>]", public=False)
+                "you want to include spaces, wrap the 'time' string in `\"`. If you need to purge messages from an user without an @username, " +
+                "you can give its user id with the `-id` flag. If you need to provide more than 1 id, wrap them in `\"` and separate with a space.",
+                args="[-k <keyword>] [-o <n>] [-before <time>] [-after <time>] [-all] [-id <ids>] [<targets>] [<number>]", public=False)
 @alemiBot.on_message(is_superuser & filterCommand(["purge", "wipe", "clear"], list(alemiBot.prefixes), options={
     "keyword" : ["-k", "-keyword"],
     "offset" : ["-o", "-offset"],
+    "ids" : ["-id"],
     "before" : ["-before"],
     "after" : ["-after"]
-}))
+}, flags=["-all"]))
 async def purge(client, message):
     args = message.command
-    target = message.from_user.id
+    target = []
     opts = {}
     number = 1
+    delete_all = "-all" in args["flags"]
     keyword = re.compile(args["keyword"]) if "keyword" in args else None
     offset = int(args["offset"]) if "offset" in args else 0
     time_limit = time.time() - parse_timedelta(args["before"]).total_seconds() if \
@@ -73,22 +76,28 @@ async def purge(client, message):
         if "cmd" in args:
             for a in args["cmd"]:
                 if a.startswith("@") and a != "@me":
-                    if a in { "@all", "@everyone" }:
-                        target = None
-                    else:
-                        target = (await get_user(a, client)).id
+                    target.append((await get_user(a, client)).id)
                 elif a.isnumeric():
                     number = int(a)
+        if "ids" in args:
+            for single_id in args["ids"].split():
+                target.append(int(single_id))
+        
+        if not target:
+            if message.reply_to_message:
+                target.append(message.reply_to_message.from_user.id)
+            else:
+                target.append(message.from_user.id)
 
         logger.info(f"Purging last {number} message from {target}")
         n = 0
         async for msg in client.iter_history(message.chat.id, **opts):
             if msg.message_id == message.message_id: # ignore message that triggered this
                 continue
-            if ((target is None or msg.from_user.id == target)
+            if ((delete_all or msg.from_user.id in target)
             and (keyword is None or keyword.search(get_text(msg)))): # wait WTF why no raw here
-                if offset > 0:
-                    offset -=1
+                if offset > 0: # do an offset like this because
+                    offset -=1 #  we want to offset messages from target user, not all messages
                     continue
                 await msg.delete()
                 n += 1
@@ -96,6 +105,7 @@ async def purge(client, message):
                 break
             if time_limit is not None and msg.date < time_limit:
                 break
+        await edit_or_reply(message, "` → ` Done")
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
