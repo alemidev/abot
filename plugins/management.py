@@ -1,6 +1,7 @@
 import asyncio
 import traceback
 import time
+import re
 
 from pyrogram import filters
 
@@ -43,7 +44,7 @@ async def get_user(arg, client):
 HELP.add_help(["purge", "wipe", "clear"], "batch delete messages",
                 "delete last <n> sent messages from <target>, excluding this one. If <n> is not given, will default to 1. " +
                 "If no target is given, only self messages will be deleted. Target can be `@all` and `@everyone`. " +
-                "A keyword can be specified (`-k`) so that only messages containing that keyword will be deleted. " +
+                "A keyword (regex) can be specified (`-k`) so that only messages matching given pattern will be deleted. " +
                 "An offset can be specified with `-o`, to start deleting after a specific number of messages. " +
                 "A time frame can be given: you can limit deletion to messages before (`-before`) a certain time " +
                 "(all messages from now up to <time> ago), or after (`-after`) a certain interval (all messages older than <time>). " +
@@ -62,7 +63,7 @@ async def purge(client, message):
     target = message.from_user.id
     opts = {}
     number = 1
-    keyword = args["keyword"] if "keyword" in args else None
+    keyword = re.compile(args["keyword"]) if "keyword" in args else None
     offset = int(args["offset"]) if "offset" in args else 0
     time_limit = time.time() - parse_timedelta(args["before"]).total_seconds() if \
                 "before" in args else None
@@ -85,7 +86,7 @@ async def purge(client, message):
             if msg.message_id == message.message_id: # ignore message that triggered this
                 continue
             if ((target is None or msg.from_user.id == target)
-            and (keyword is None or keyword in get_text(msg))): # wait WTF why no raw here
+            and (keyword is None or keyword.search(get_text(msg)))): # wait WTF why no raw here
                 if offset > 0:
                     offset -=1
                     continue
