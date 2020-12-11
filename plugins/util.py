@@ -325,17 +325,19 @@ async def voice_cmd(client, message):
     await client.set_offline()
 
 HELP.add_help(["scribe"], "transcribes a voice message",
-                "reply to a voice message to transcribe it. You can specify speech recognition " +
-                "engine with the `-e` option. Accepted values are `google`, `ibm`, `bing`, " +
-                "`wit`, `soundhound`. Default is `google`.", args="[-e <eng>]", public=True)
+                "reply to a voice message to transcribe it. It uses Google Speech Recognition API. " +
+                "It will work without a key but usage may get limited. You should [get a key](http://www.chromium.org/developers/how-tos/api-keys) " +
+                "and add it to your config under category [scribe] in a field named \"key\". You can specify speech " +
+                "recognition language with `-l` (using `RFC5646` language tag format :  `en-US`, `it-IT`, ...)",
+                args="[-l <lang>]", public=True)
 @alemiBot.on_message(is_allowed & filterCommand(["scribe"], list(alemiBot.prefixes), options={
-    "engine" : ["-e", "-engine"]
+    "lang" : ["-l", "-lang"]
 }))
 async def transcribe_cmd(client, message):
     await client.send_chat_action(message.chat.id, "record_audio")
     msg = await edit_or_reply(message, "` → ` Working...")
     path = None
-    engine = message.command["engine"] if "engine" in message.command else "google"
+    lang = message.command["lang"] if "lang" in message.command else "en-US"
     if message.reply_to_message and message.reply_to_message.voice:
         path = await client.download_media(message.reply_to_message)
     elif message.voice:
@@ -348,19 +350,8 @@ async def transcribe_cmd(client, message):
         voice = sr.AudioFile("data/voice.wav")
         with voice as source:
             audio = recognizer.record(source)
-        out = ""
-        if engine == "google":
-            out = "` → `" + recognizer.recognize_google(audio)
-        elif engine == "ibm":
-            out = "` → `" + recognizer.recognize_ibm(audio)
-        elif engine == "bing":
-            out = "` → `" + recognizer.recognize_bing(audio)
-        elif engine == "wit":
-            out = "` → `" + recognizer.recognize_wit(audio)
-        elif engine == "soundhound":
-            out = "` → `" + recognizer.recognize_houndify(audio)
-        else:
-            out = "`[!] → ` Unrecognized engine"
+        out = "` → `" + recognizer.recognize_google(audio, language=lang,
+                            key=alemiBot.config.get("scribe", "key", fallback=None))
         await edit_or_reply(msg, out)
     except Exception as e:
         traceback.print_exc()
