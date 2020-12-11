@@ -58,22 +58,26 @@ def filterCommand(commands: str or List[str], prefixes: str or List[str] = "/",
                     re.sub(r"\\([\"'])", r"\1", m.group(2) or m.group(3) or "")
                     for m in command_re.finditer(without_cmd)
                 ]
+                
+                raw_buf = without_cmd
 
-                message.command = { "raw" : without_cmd,
-                                    "flags" : [],
+                message.command = { "flags" : [],
                                     "base" : cmd }
 
                 i = 0
                 while i < len(match_list):
                     if match_list[i] in flt.flags:
-                        message.command["flags"].append(match_list.pop(i))
+                        token = match_list.pop(i)
+                        raw_buf = raw_buf.replace(token, "")
+                        message.command["flags"].append(token)
                         continue
                     op = False
                     for k in flt.options:
                         if match_list[i] in flt.options[k]:
                             op = True
-                            match_list.pop(i)
+                            raw_buf = raw_buf.replace(match_list.pop(i), "") # most importantly, pop one token!
                             message.command[k] = match_list.pop(i)
+                            raw_buf = raw_buf.replace(message.command[k], "")
                             break
                     if not op:
                         i +=1
@@ -81,6 +85,7 @@ def filterCommand(commands: str or List[str], prefixes: str or List[str] = "/",
                 if len(match_list) > 0:
                     message.command["cmd"] = match_list # everything not consumed
                     message.command["arg"] = " ".join(match_list) # provide a joined argument already
+                message.command["raw"] = re.sub(' +', ' ', raw_buf.replace('""', '')
 
                 return True
 
