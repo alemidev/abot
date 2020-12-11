@@ -326,7 +326,7 @@ async def voice_cmd(client, message):
 
 HELP.add_help(["scribe"], "transcribes a voice message",
                 "reply to a voice message to transcribe it. It uses Google Speech Recognition API. " +
-                "It will work without a key but usage may get limited. You should [get a key](http://www.chromium.org/developers/how-tos/api-keys) " +
+                "It will work without a key but usage may get limited. You can try to [get a free key](http://www.chromium.org/developers/how-tos/api-keys) " +
                 "and add it to your config under category [scribe] in a field named \"key\". You can specify speech " +
                 "recognition language with `-l` (using `RFC5646` language tag format :  `en-US`, `it-IT`, ...)",
                 args="[-l <lang>]", public=True)
