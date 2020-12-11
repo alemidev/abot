@@ -84,7 +84,14 @@ async def zalgo_cmd(client, message):
         z.numAccentsDown = (1*noise, 3*noise)
         z.numAccentsMiddle = (1*noise, 2*noise)
         out = z.zalgofy(text)
-        
+
+        first = True # kinda ugly but this is kinda different from edit_or_reply
+        for batch in batchify(out, 4090):
+            if first and is_me(message):
+                await message.edit(batch)
+            else:
+                await client.send_message(message.chat.id, batch)
+            first = False
         await edit_or_reply(message, out) 
     except Exception as e:
         traceback.print_exc()
