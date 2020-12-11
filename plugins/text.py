@@ -92,7 +92,6 @@ async def zalgo_cmd(client, message):
             else:
                 await client.send_message(message.chat.id, batch)
             first = False
-        await edit_or_reply(message, out) 
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
