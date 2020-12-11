@@ -325,20 +325,27 @@ async def voice_cmd(client, message):
 
 HELP.add_help(["scribe"], "transcribes a voice message",
                 ":)", args="[reply to audio]", public=True)
-@alemiBot.on_message(is_allowed & filterCommand(["voice"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filterCommand(["scribe"], list(alemiBot.prefixes)))
 async def transcribe_cmd(client, message):
     path = None
-    if message.reply_to_message and message.reply_to_message.audio:
+    if message.reply_to_message and message.reply_to_message.voice:
         path = await client.download_media(message.reply_to_message)
-    elif message.audio:
+    elif message.voice:
         path = await client.download_media(message)
     else:
         return await edit_or_reply(message, "`[!] → ` No audio given")
     lang = message.command["lang"] if "lang" in message.command else "en"
     try:
+        proc = await asyncio.create_subprocess_exec(
+            f"ffmpeg -i \"{path}\" -o data/voicerec.wav && rm \"{path}\"",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT)
+        stdout, stderr = await proc.communicate()
         await client.send_chat_action(message.chat.id, "record_audio")
-        voice = sr.AudioFile(path)
-        out = recognizer.recognize_google(voice)
+        voice = sr.AudioFile("data/voicerec.wav")
+        with voice as source:
+            audio = recognizer.record(source)
+        out = recognizer.recognize_google(audio)
         await edit_or_reply(message, out)
     except Exception as e:
         traceback.print_exc()
