@@ -34,9 +34,17 @@ HELP = HelpCategory("LOG")
 
 LAST_GROUP = "N/A"
 
-M_CLIENT = MongoClient('localhost', 27017,
-    username=alemiBot.config.get("database", "username", fallback=""),
-    password=alemiBot.config.get("database", "password", fallback=""))
+kwargs = {}
+host = alemiBot.config.get("database", "host", fallback="localhost")
+port = int(alemibot.config.get("database", "port", fallback=27017))
+username = alemiBot.config.get("database", "username", fallback=None)
+if username:
+    kwargs["username"] = username
+password = alemiBot.config.get("database", "password", fallback=None)
+if password:
+    kwargs["password"] = password
+
+M_CLIENT = MongoClient(host, port, **kwargs)
 DB = M_CLIENT[alemiBot.config.get("database", "dbname", fallback="alemibot")]
 EVENTS = DB[alemiBot.config.get("database", "collection", fallback="events")]
 
