@@ -15,6 +15,7 @@ from util.command import filterCommand
 from bot import alemiBot
 
 import pyfiglet
+from zalgo_text import zalgo
 
 from plugins.help import HelpCategory
 
@@ -61,6 +62,33 @@ async def slowtype(client, message):
         traceback.print_exc()
         pass # msg was deleted probably
     await client.send_chat_action(message.chat.id, "cancel")
+
+HELP.add_help(["zalgo"], "h̴͔̣̰̲̣̫̲͉̞͍͖̩͖̭͓̬̼ͫ̈͒̊͟͟͠e̵̙͓̼̻̳̝͍̯͇͕̳̝͂̌͐ͫ̍ͬͨ͑̕ ̷̴̢̛̝̙̼̣̔̎̃ͨ͆̾ͣͦ̑c̵̥̼͖̲͓̖͕̭ͦ̽ͮͮ̇ͭͥ͠o̷̷͔̝̮̩͍͉͚͌̿ͥ̔ͧ̉͛ͭ͊̀͜ͅm̵̸̡̰̭͓̩̥͚͍͎̹͖̠̩͙̯̱͙͈͍͉͂ͩ̄̅͗͞e̢̛͖̪̞̐̒̈̓̒́͒̈́̀ͅṡ̡̢̟͖̩̝̣͙̣͔̑́̓̿̊̑̍̉̓͘͢",
+                "Will completely fuck up the text with 'zalgo' patterns. You can increase noise " +
+                "with the `-n` flag, otherwise will default to 10. The max number of extra characters " +
+                "per letter can be specified with `-max`, with default 50.", args="[-n <n>] <text>", public=True)
+@alemiBot.on_message(is_allowed & filterCommand(["zalgo"], list(alemiBot.prefixes), options={
+    "noise" : ["-n", "-noise"],
+    "max" : ["-max"]
+}), group=2)
+async def zalgo_cmd(client, message):
+    logger.info(f"Making message zalgoed")
+    text = re.sub(r"-delme(?: |)(?:[0-9]+|)", "", message.command["raw"])
+    if text == "":
+        return 
+    noise = int(message.command["noise"]) if "noise" in message.command else 10
+    z = zalgo.zalgo()
+    z.maxAccentsPerLetter = int(message.command["max"]) if "max" in message.command else 50
+    z.numAccentsUp = (1*noise, 3*noise)
+    z.numAccentsDown = (1*noise, 3*noise)
+    z.numAccentsMiddle = (1*noise, 2*noise)
+    out = z.zalgofy(text)
+    
+    if is_me(message):
+        await message.edit(out)
+    else:
+        await message.reply(out)
+    await client.set_offline()
 
 HELP.add_help(["rc", "randomcase"], "make text randomly capitalized",
                 "will edit message applying random capitalization to every letter, like the spongebob meme.",

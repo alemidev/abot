@@ -16,3 +16,4 @@ pymongo
 qrcode
 gtts
 pydub
+zalgo_text
