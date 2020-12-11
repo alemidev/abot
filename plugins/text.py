@@ -85,7 +85,7 @@ async def zalgo_cmd(client, message):
         z.numAccentsMiddle = (1*noise, 2*noise)
         out = z.zalgofy(text)
         
-        await edit_or_reply(message, out, replace=True) 
+        await edit_or_reply(message, out) 
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
