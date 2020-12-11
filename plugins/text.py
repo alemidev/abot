@@ -73,7 +73,7 @@ HELP.add_help(["zalgo"], "h̴͔̣̰̲̣̫̲͉̞͍͖̩͖̭͓̬̼ͫ̈͒̊͟͟͠e͂
 }), group=2)
 async def zalgo_cmd(client, message):
     logger.info(f"Making message zalgoed")
-    text = re.sub(r"-delme(?: |)(?:[0-9]+|)", "", message.command["arg"])
+    text = re.sub(r"-delme(?: |)(?:[0-9]+|)", "", message.command["raw"])
     if text == "":
         return 
     try:
