@@ -39,6 +39,7 @@ async def callback_spoiler(client, callback_query):
     if callback_query.data.startswith("FP|"):
         poll_id = callback_query.data.split("|")[2]
         answ = callback_query.data.split("|")[1]
+        FAKEPOLLS[poll_id] += 1
         if answ == "correct":
             await client.answer_callback_query(
                 callback_query.id,
@@ -145,7 +146,6 @@ async def inline_fakepoll(client, inline_query):
                                 callback_data=f"FP|correct|{str(hash(text))}"),
                             InlineKeyboardButton("0 | No",
                                 callback_data=f"FP|wrong|{str(hash(text))}")
-                            )
                         ]]))
         ],
         cache_time=1
