@@ -1,6 +1,7 @@
 import asyncio
 import secrets
 import re
+import os
 import io
 import json
 import time
@@ -324,28 +325,41 @@ async def voice_cmd(client, message):
     await client.set_offline()
 
 HELP.add_help(["scribe"], "transcribes a voice message",
-                ":)", args="[reply to audio]", public=True)
-@alemiBot.on_message(is_allowed & filterCommand(["scribe"], list(alemiBot.prefixes)))
+                "reply to a voice message to transcribe it. You can specify speech recognition " +
+                "engine with the `-e` option. Accepted values are `google`, `ibm`, `bing`, " +
+                "`wit`, `soundhound`. Default is `google`.", args="[-e <eng>]", public=True)
+@alemiBot.on_message(is_allowed & filterCommand(["scribe"], list(alemiBot.prefixes), options={
+    "engine" : ["-e", "-engine"]
+}))
 async def transcribe_cmd(client, message):
+    await client.send_chat_action(message.chat.id, "record_audio")
     path = None
+    engine = message.command["engine"] if "engine" in message.command else "google"
     if message.reply_to_message and message.reply_to_message.voice:
         path = await client.download_media(message.reply_to_message)
     elif message.voice:
         path = await client.download_media(message)
     else:
         return await edit_or_reply(message, "`[!] → ` No audio given")
-    lang = message.command["lang"] if "lang" in message.command else "en"
     try:
-        proc = await asyncio.create_subprocess_exec(
-            f"ffmpeg -i \"{path}\" -o data/voicerec.wav && rm \"{path}\"",
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.STDOUT)
-        stdout, stderr = await proc.communicate()
-        await client.send_chat_action(message.chat.id, "record_audio")
-        voice = sr.AudioFile("data/voicerec.wav")
+        AudioSegment.from_ogg(path).export("data/voice.wav", format="wav")
+        os.remove(path)
+        voice = sr.AudioFile("data/voice.wav")
         with voice as source:
             audio = recognizer.record(source)
-        out = recognizer.recognize_google(audio)
+        out = ""
+        if engine == "google":
+            out = "` → `" + recognizer.recognize_google(audio)
+        elif engine == "ibm":
+            out = "` → `" + recognizer.recognize_ibm(audio)
+        elif engine == "bing":
+            out = "` → `" + recognizer.recognize_bing(audio)
+        elif engine == "wit":
+            out = "` → `" + recognizer.recognize_wit(audio)
+        elif engine == "soundhound":
+            out = "` → `" + recognizer.recognize_houndify(audio)
+        else:
+            out = "`[!] → ` Unrecognized engine"
         await edit_or_reply(message, out)
     except Exception as e:
         traceback.print_exc()
