@@ -16,6 +16,7 @@ import logging
 lgr = logging.getLogger(__name__)
 
 SPOILERS = {}
+FAKEPOLLS = {}
 
 @alemiBot.on_message(filterCommand("start", list(alemiBot.prefixes)))
 async def cmd_start(client, message):
@@ -34,6 +35,34 @@ async def cmd_make_botfather_list(client, message):
 @alemiBot.on_callback_query()
 async def callback_spoiler(client, callback_query):
     global SPOILERS
+    global FAKEPOLLS
+    if callback_query.data.startswith("FP|"):
+        poll_id = callback_query.data.split("|")[2]
+        answ = callback_query.data.split("|")[1]
+        if answ == "correct":
+            await client.answer_callback_query(
+                callback_query.id,
+                text="Correct!",
+                show_alert=True
+            )
+        elif answ == "wrong":
+            await client.answer_callback_query(
+                callback_query.id,
+                text="Wrong, lemme correct the answer for you",
+                show_alert=True
+            )
+        try:
+            await client.edit_inline_reply_markup(callback_query.inline_message_id, 
+                            reply_markup=InlineKeyboardMarkup([[
+                            InlineKeyboardButton("{FAKEPOLLS[poll_id]} | Yes",
+                                callback_data=f"FP|correct|{str(hash(text))}"),
+                            InlineKeyboardButton("0 | No",
+                                callback_data=f"FP|wrong|{str(hash(text))}")
+                                )
+                            ]]))
+        except: # Message deleted? In FloodWait? Don't wait anyway it will cause inconsistency
+            pass
+        return
     if callback_query.data in SPOILERS and "cantopen" in SPOILERS[callback_query.data] \
     and SPOILERS[callback_query.data]["cantopen"] == callback_query.from_user.id:
         return await client.answer_callback_query(
@@ -91,6 +120,32 @@ async def inline_spoiler(client, inline_query):
                         reply_markup=InlineKeyboardMarkup([[
                             InlineKeyboardButton("Show",
                                 callback_data=str(hash(text))
+                            )
+                        ]]))
+        ],
+        cache_time=1
+    )
+
+@alemiBot.on_inline_query(filters.regex(pattern="^[\\"+ "\\".join(alemiBot.prefixes) +"]fakepoll(?: |)(?P<text>.*)"))
+async def inline_fakepoll(client, inline_query):
+    global FAKEPOLLS
+    lgr.warning(f"Received FAKEPOLL query from {get_username(inline_query.from_user)}")
+    text = inline_query.matches[0]["text"]
+    FAKEPOLLS[str(hash(text))] = 0
+
+    await inline_query.answer(
+        results=[
+                    InlineQueryResultArticle(
+                        id=uuid4(),
+                        title=f"send fake poll",
+                        input_message_content=InputTextMessageContent(
+                            f"--{get_username(inline_query.from_user)} :-- {text}"),
+                        description=f"→ ask \"{text}\"",
+                        reply_markup=InlineKeyboardMarkup([[
+                            InlineKeyboardButton("0 | Yes",
+                                callback_data=f"FP|correct|{str(hash(text))}"),
+                            InlineKeyboardButton("0 | No",
+                                callback_data=f"FP|wrong|{str(hash(text))}")
                             )
                         ]]))
         ],
