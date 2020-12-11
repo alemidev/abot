@@ -66,7 +66,7 @@ async def slowtype(client, message):
 HELP.add_help(["zalgo"], "h̴͔̣̰̲̣̫̲͉̞͍͖̩͖̭͓̬̼ͫ̈͒̊͟͟͠e̵̙͓̼̻̳̝͍̯͇͕̳̝͂̌͐ͫ̍ͬͨ͑̕ ̷̴̢̛̝̙̼̣̔̎̃ͨ͆̾ͣͦ̑c̵̥̼͖̲͓̖͕̭ͦ̽ͮͮ̇ͭͥ͠o̷̷͔̝̮̩͍͉͚͌̿ͥ̔ͧ̉͛ͭ͊̀͜ͅm̵̸̡̰̭͓̩̥͚͍͎̹͖̠̩͙̯̱͙͈͍͉͂ͩ̄̅͗͞e̢̛͖̪̞̐̒̈̓̒́͒̈́̀ͅṡ̡̢̟͖̩̝̣͙̣͔̑́̓̿̊̑̍̉̓͘͢",
                 "Will completely fuck up the text with 'zalgo' patterns. You can increase noise " +
                 "with the `-n` flag, otherwise will default to 1. The max number of extra characters " +
-                "per letter can be specified with `-max`, with default 50.", args="[-n <n>] <text>", public=True)
+                "per letter can be specified with `-max`, with default 50.", args="[-n <n>] [-max <n>] <text>", public=True)
 @alemiBot.on_message(is_allowed & filterCommand(["zalgo"], list(alemiBot.prefixes), options={
     "noise" : ["-n", "-noise"],
     "max" : ["-max"]
