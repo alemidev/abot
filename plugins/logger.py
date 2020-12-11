@@ -36,7 +36,7 @@ LAST_GROUP = "N/A"
 
 kwargs = {}
 host = alemiBot.config.get("database", "host", fallback="localhost")
-port = int(alemibot.config.get("database", "port", fallback=27017))
+port = int(alemiBot.config.get("database", "port", fallback=27017))
 username = alemiBot.config.get("database", "username", fallback=None)
 if username:
     kwargs["username"] = username
