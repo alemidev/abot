@@ -52,12 +52,15 @@ def parse_sys_dict(msg):
         events.append("game score")
     return "SYS[ " + " | ".join(events) + " ]"
 
-async def edit_or_reply(message, text, *args, **kwargs):
+async def edit_or_reply(message, text, *args, replace=False, **kwargs):
     if is_me(message) and len(message.text.markdown + text) < 4090:
         if message.scheduled: # lmao ye right import more bloat
             await edit_scheduled(message._client, message, text, *args, **kwargs)
         else:
-            await message.edit(message.text.markdown + "\n" + text, *args, **kwargs)
+            if replace:
+                await message.edit(text, *args, **kwargs)
+            else:
+                await message.edit(message.text.markdown + "\n" + text, *args, **kwargs)
         return message
     else:
         ret = None
