@@ -16,4 +16,5 @@ pymongo
 qrcode
 gtts
 pydub
+SpeechRecognition
 zalgo_text

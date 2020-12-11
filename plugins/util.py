@@ -10,6 +10,7 @@ import requests
 from collections import Counter
 from gtts import gTTS 
 from pydub import AudioSegment
+import speech_recognition as sr
 
 from pyrogram import filters
 
@@ -31,6 +32,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 translator = Translator()
+recognizer = sr.Recognizer()
 
 HELP = HelpCategory("UTIL")
 
@@ -321,6 +323,28 @@ async def voice_cmd(client, message):
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()
 
+HELP.add_help(["scribe"], "transcribes a voice message",
+                ":)", args="[reply to audio]", public=True)
+@alemiBot.on_message(is_allowed & filterCommand(["voice"], list(alemiBot.prefixes)))
+async def transcribe_cmd(client, message):
+    path = None
+    if message.reply_to_message and message.reply_to_message.audio:
+        path = await client.download_media(message.reply_to_message)
+    elif message.audio:
+        path = await client.download_media(message)
+    else:
+        return await edit_or_reply(message, "`[!] → ` No audio given")
+    lang = message.command["lang"] if "lang" in message.command else "en"
+    try:
+        await client.send_chat_action(message.chat.id, "record_audio")
+        voice = sr.AudioFile(path)
+        out = recognizer.recognize_google(voice)
+        await edit_or_reply(message, out)
+    except Exception as e:
+        traceback.print_exc()
+        await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.send_chat_action(message.chat.id, "cancel")
+    await client.set_offline()
 
 HELP.add_help(["ocr"], "read text in photos",
                 "make a request to https://api.ocr.space/parse/image. The number of allowed queries " +
