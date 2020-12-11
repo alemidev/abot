@@ -333,6 +333,7 @@ HELP.add_help(["scribe"], "transcribes a voice message",
 }))
 async def transcribe_cmd(client, message):
     await client.send_chat_action(message.chat.id, "record_audio")
+    msg = await edit_or_reply(message, "` → ` Working...")
     path = None
     engine = message.command["engine"] if "engine" in message.command else "google"
     if message.reply_to_message and message.reply_to_message.voice:
@@ -360,10 +361,10 @@ async def transcribe_cmd(client, message):
             out = "` → `" + recognizer.recognize_houndify(audio)
         else:
             out = "`[!] → ` Unrecognized engine"
-        await edit_or_reply(message, out)
+        await edit_or_reply(msg, out)
     except Exception as e:
         traceback.print_exc()
-        await edit_or_reply(message, "`[!] → ` " + str(e))
+        await edit_or_reply(msg, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()
 
