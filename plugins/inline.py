@@ -58,7 +58,6 @@ async def callback_spoiler(client, callback_query):
                                 callback_data=f"FP|correct|{str(hash(text))}"),
                             InlineKeyboardButton("0 | No",
                                 callback_data=f"FP|wrong|{str(hash(text))}")
-                                )
                             ]]))
         except: # Message deleted? In FloodWait? Don't wait anyway it will cause inconsistency
             pass
@@ -209,7 +208,10 @@ async def inline_always(client, inline_query):
                         input_message_content=InputTextMessageContent(f"`[inline] → ` @{client.me.username} /help")),
                     InlineQueryResultArticle(id=uuid4(),title=f"/hide",
                         description="Create a hidden message",
-                        input_message_content=InputTextMessageContent(f"`[inline] → ` @{client.me.username} /hide")),
+                        input_message_content=InputTextMessageContent(f"`[inline] → ` @{client.me.username} /hide [@who] <text>")),
+                    InlineQueryResultArticle(id=uuid4(),title=f"/fakepoll",
+                        description="Create a fake poll",
+                        input_message_content=InputTextMessageContent(f"`[inline] → ` @{client.me.username} /fakepoll <text>")),
                     InlineQueryResultArticle(id=uuid4(),title=f"/run",
                         description="Send prefix and command",
                         input_message_content=InputTextMessageContent(f"`[inline] → ` @{client.me.username} /run")),
