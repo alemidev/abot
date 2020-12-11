@@ -80,7 +80,7 @@ async def zalgo_cmd(client, message):
         return 
     try:
         noise = int(message.command["noise"]) if "noise" in message.command else 1
-        damage = int(message.command["damage"]) if "damage" in message.command else 0
+        damage = float(message.command["damage"]) if "damage" in message.command else 0
         z = zalgo.zalgo()
         z.maxAccentsPerLetter = int(message.command["max"]) if "max" in message.command else 10
         z.numAccentsUp = ( 1+ (damage*noise), 3 * noise )
