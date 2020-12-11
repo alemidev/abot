@@ -56,11 +56,12 @@ async def callback_spoiler(client, callback_query):
             await client.edit_inline_reply_markup(callback_query.inline_message_id, 
                             reply_markup=InlineKeyboardMarkup([[
                             InlineKeyboardButton("{FAKEPOLLS[poll_id]} | Yes",
-                                callback_data=f"FP|correct|{str(hash(text))}"),
+                                callback_data=f"FP|correct|{poll_id}"),
                             InlineKeyboardButton("0 | No",
-                                callback_data=f"FP|wrong|{str(hash(text))}")
+                                callback_data=f"FP|wrong|{poll_id}")
                             ]]))
         except: # Message deleted? In FloodWait? Don't wait anyway it will cause inconsistency
+            traceback.print_exc()
             pass
         return
     if callback_query.data in SPOILERS and "cantopen" in SPOILERS[callback_query.data] \
