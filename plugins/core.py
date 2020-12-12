@@ -80,7 +80,7 @@ async def update(client, message):
         out += "` → ` Checking libraries"
         await msg.edit(out) 
         proc = await asyncio.create_subprocess_exec(
-            "pip", "install", "-r", "requirements.txt",
+            "pip", "install", "-r", "requirements.txt", "--upgrade",
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT)
         stdout, stderr = await proc.communicate()
