@@ -131,7 +131,7 @@ async def merge_cmd(client, message):
     try:
         logger.info(f"Merging messages")
         out = ""
-        async for msg in message.chat.iter_history(offset_id=m_id, reverse=True):
+        async for msg in client.iter_history(message.chat.id, offset_id=m_id, reverse=True):
             if not is_me(msg):
                 break
             out += msg.text.markdown + sep + " "
