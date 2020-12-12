@@ -114,6 +114,35 @@ async def purge(client, message):
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()
 
+HELP.add_help(["merge"], "join multiple messages into one",
+                "join multiple messages sent by you into one. Reply to the first one to merge, bot will join " +
+                "every consecutive message you sent. You can stop the bot from deleting merged messages with " +
+                "`-nodel` flag. You can specify a separator with `-s`, it will default to `.`",
+                args="[-s <sep>]", public=False)
+@alemiBot.on_message(is_superuser & filterCommand(["merge"], list(alemiBot.prefixes), options={
+    "separator" : ["-s"]
+}, flags=["-nodel"]))
+async def merge_cmd(client, message):
+    if not message.reply_to_message:
+        return await edit_or_reply(message, "`[!] → ` No start message given")
+    m_id = message.reply_to_message.message_id
+    sep = message.command["separator"] if "separator" in message.command else "."
+    del_msg = "-nodel" not in message.command["flags"]
+    try:
+        logger.info(f"Merging messages")
+        out = ""
+        async for msg in message.chat.iter_history(offset_id=m_id, reverse=True):
+            if not is_me(msg):
+                break
+            out += msg.text.markdown + sep + " "
+            if del_msg:
+                await msg.delete()
+        await message.reply_to_message.edit(out)
+    except Exception as e:
+        traceback.print_exc()
+        await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.set_offline()
+
 HELP.add_help(["allow", "disallow", "revoke"], "allow/disallow to use bot",
                 "this command will work differently if invoked with `allow` or with `disallow`. Target user " +
                 "will be given/revoked access to public bot commands. ~~Use `@here` or `@everyone` to allow " +
