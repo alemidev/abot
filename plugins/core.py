@@ -54,7 +54,7 @@ HELP.add_help("update", "update and restart",
                 "the `-force` flag was given.", args="[-force]")
 @alemiBot.on_message(is_superuser & filterCommand("update", list(alemiBot.prefixes), flags=["-force"]))
 async def update(client, message):
-    out = message.text.markdown if is_me(message) else "`→ ` {get_username(message.from_user)} requested update\n"
+    out = message.text.markdown if is_me(message) else f"`→ ` {get_username(message.from_user)} requested update"
     msg = message if is_me(message) else await message.reply(out)
     try:
         logger.info(f"Updating bot ...")
