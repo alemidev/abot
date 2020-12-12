@@ -49,7 +49,7 @@ def filterCommand(commands: str or List[str], prefixes: str or List[str] = "/",
                 if not re.match(pattern.format(cmd=re.escape(cmd), uname=client.me.username), without_prefix):
                     continue
 
-                without_cmd = re.sub("^@[^ ]+(?: |)", "", without_prefix[len(cmd):])
+                without_cmd = re.sub("^@[^ ]+ ", "", without_prefix[len(cmd):])
                 # match.groups are 1-indexed, group(1) is the quote, group(2) is the text
                 # between the quotes, group(3) is unquoted, whitespace-split text
 
