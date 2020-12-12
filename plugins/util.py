@@ -19,7 +19,7 @@ from util.permission import is_allowed
 from util.message import edit_or_reply, is_me, tokenize_json
 from util.command import filterCommand
 
-from googletrans import Translator
+import translators as ts
 from google_currency import convert
 from unit_converter.converter import converts
 from PIL import Image
@@ -182,11 +182,12 @@ async def rand_cmd(client, message):
 
 HELP.add_help(["translate", "tran", "tr"], "translate to/from",
                 "translate text from a language (autodetected if not specified, `-s`) to another " +
-                "specified lang (defaults to eng, `-d`). It will show the confidence for detected lang. This " +
-                "uses google translate. The lang codes must be 2 letter long (en, ja...)", args="[-s <src>] [-d <des>]", public=True)
+                "specified lang (defaults to eng, `-d`). Used engine can be specified with `-e` (available `google`, `deepl`, `bing`). " +
+                "The lang codes must be 2 letter long (en, ja...)", args="[-s <src>] [-d <des>] [-e <engine>]", public=True)
 @alemiBot.on_message(is_allowed & filterCommand(["translate", "tran", "tr"], list(alemiBot.prefixes), options={
     "src" : ["-s", "-src"],
-    "dest" : ["-d", "-dest"]
+    "dest" : ["-d", "-dest"],
+    "engine" : ["-e", "-engine"]
 }))
 async def translate_cmd(client, message):
     args = message.command
@@ -195,15 +196,24 @@ async def translate_cmd(client, message):
     tr_options = {}
     # lmao I can probably pass **args directly
     if "src" in args:
-        tr_options["src"] = args["src"]
+        tr_options["from_language"] = args["src"]
     if "dest" in args:
-        tr_options["dest"] = args["dest"]
+        tr_options["to_language"] = args["dest"]
+    engine = args["engine"] if "engine" in args else "google"
     try:
         await client.send_chat_action(message.chat.id, "find_location")
         q = message.reply_to_message.text if message.reply_to_message is not None else args["arg"]
         logger.info(f"Translating {q}")
-        res = translator.translate(q, **tr_options)
-        out = f"`[{res.extra_data['confidence']:.2f}] → ` {res.text}"
+        if engine == "google":
+            res = ts.google(q, **tr_options)
+        elif engine == "deepl":
+            res = ts.deepl(q, **tr_options)
+        elif engine == "bing":
+            res = ts.bing(q, **tr_options)
+        else:
+            res = "`[!] → ` Unknown engine"
+        out = res # TODO temporary!
+        # out = f"`[{res.extra_data['confidence']:.2f}] → ` {res.text}"
         await edit_or_reply(message, out)
     except Exception as e:
         traceback.print_exc()
