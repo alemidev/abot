@@ -11,7 +11,7 @@ from termcolor import colored
 
 from util.permission import is_allowed, is_superuser, allow, disallow, serialize, list_allowed, ALLOWED
 from util.user import get_username
-from util.message import edit_or_reply, get_text
+from util.message import edit_or_reply, get_text, is_me
 from util.text import split_for_window
 from util.command import filterCommand
 from util.time import parse_timedelta
