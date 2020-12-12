@@ -98,7 +98,7 @@ async def purge(client, message):
         total = 0
         async for msg in client.iter_history(message.chat.id, **opts):
             total += 1
-            if hard_limit and total > 100:
+            if hard_limit and total > max(100, number):
                 break
             if msg.message_id == message.message_id: # ignore message that triggered this
                 continue
