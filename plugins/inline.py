@@ -172,14 +172,14 @@ async def inline_always(client, inline_query):
                 results.append(
                     InlineQueryResultArticle(
                         id=uuid4(),
-                        title=e.title,
+                        title=f"→ {e.title} | {e.shorttext}",
                         input_message_content=InputTextMessageContent(f"`→ {e.title} {e.args} `\n{e.longtext}"),
-                        description=f"→ {e.shorttext}",
+                        description=f"{e.args}",
                     )
                 )
 
     await inline_query.answer(
-        switch_pm_text=f"→ Type command to get help",
+        switch_pm_text=f"Type command to get help",
         switch_pm_parameter="help",
         results=results,
         cache_time=5
