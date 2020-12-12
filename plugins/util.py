@@ -32,7 +32,6 @@ from plugins.help import HelpCategory
 import logging
 logger = logging.getLogger(__name__)
 
-translator = Translator()
 recognizer = sr.Recognizer()
 
 HELP = HelpCategory("UTIL")
