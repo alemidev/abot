@@ -117,7 +117,7 @@ async def purge(client, message):
 HELP.add_help(["merge"], "join multiple messages into one",
                 "join multiple messages sent by you into one. Reply to the first one to merge, bot will join " +
                 "every consecutive message you sent. You can stop the bot from deleting merged messages with " +
-                "`-nodel` flag. You can specify a separator with `-s`, it will default to `.`",
+                "`-nodel` flag. You can specify a separator with `-s`, it will default to `,`",
                 args="[-s <sep>]", public=False)
 @alemiBot.on_message(is_superuser & filterCommand(["merge"], list(alemiBot.prefixes), options={
     "separator" : ["-s"]
@@ -126,18 +126,21 @@ async def merge_cmd(client, message):
     if not message.reply_to_message:
         return await edit_or_reply(message, "`[!] → ` No start message given")
     m_id = message.reply_to_message.message_id
-    sep = message.command["separator"] if "separator" in message.command else "."
+    sep = message.command["separator"] if "separator" in message.command else ","
     del_msg = "-nodel" not in message.command["flags"]
     try:
         logger.info(f"Merging messages")
         out = ""
+        count = 0
         async for msg in client.iter_history(message.chat.id, offset_id=m_id, reverse=True):
             if not is_me(msg):
                 break
             out += msg.text.markdown + sep + " "
+            cout += 1
             if del_msg and msg.message_id != m_id: # don't delete the one we want to merge into
                 await msg.delete()
         await message.reply_to_message.edit(out)
+        await edit_or_reply(message, f"` → ` Merged {count} messages")
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
