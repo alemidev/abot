@@ -54,10 +54,9 @@ async def slowtype(client, message):
             out += seg
             if seg.isspace() or seg == "":
                 continue # important because sending same message twice causes an exception
-            t = asyncio.sleep(interval) # does this "start" the coroutine early?
-            await msg.edit(out)
             await client.send_chat_action(message.chat.id, "typing")
-            await t # does this work? I should read asyncio docs
+            await msg.edit(out, parse_mode=None)
+            await asyncio.sleep(interval) # does this "start" the coroutine early?
     except:
         traceback.print_exc()
         pass # msg was deleted probably
