@@ -135,7 +135,7 @@ async def merge_cmd(client, message):
             if not is_me(msg):
                 break
             out += msg.text.markdown + sep + " "
-            if del_msg:
+            if del_msg and msg.message_id != m_id: # don't delete the one we want to merge into
                 await msg.delete()
         await message.reply_to_message.edit(out)
     except Exception as e:
