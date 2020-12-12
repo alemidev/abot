@@ -140,7 +140,7 @@ async def inline_fakepoll(client, inline_query):
                         id=uuid4(),
                         title=f"send fake poll",
                         input_message_content=InputTextMessageContent(
-                            f"--{get_username(inline_query.from_user)} :-- {text}"),
+                            f"--{get_username(inline_query.from_user)}-- : {text}"),
                         description=f"→ ask \"{text}\"",
                         reply_markup=InlineKeyboardMarkup([[
                             InlineKeyboardButton("0 | Yes",
