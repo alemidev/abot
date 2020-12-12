@@ -92,8 +92,8 @@ async def update(client, message):
         out += "\n` → ` Restarting process"
         await msg.edit(out) 
         with open("data/lastmsg.json", "w") as f:
-            json.dump({"message_id": message.message_id,
-                        "chat_id": message.chat.id}, f)
+            json.dump({"message_id": msg.message_id,
+                        "chat_id": msg.chat.id}, f)
         asyncio.get_event_loop().create_task(client.restart())
     except Exception as e:
         traceback.print_exc()
