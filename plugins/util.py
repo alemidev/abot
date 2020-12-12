@@ -181,8 +181,9 @@ async def rand_cmd(client, message):
 
 HELP.add_help(["translate", "tran", "tr"], "translate to/from",
                 "translate text from a language (autodetected if not specified, `-s`) to another " +
-                "specified lang (defaults to eng, `-d`). Used engine can be specified with `-e` (available `google`, `deepl`, `bing`). " +
-                "The lang codes must be 2 letter long (en, ja...)", args="[-s <src>] [-d <des>] [-e <engine>]", public=True)
+                "specified lang (defaults to eng, `-d`). Used engine can be specified with `-e` (available `google`, `deepl`, `bing`), " +
+                "only `bing` works as of now and is the default. The lang codes must be 2 letter long (en, ja...)",
+                args="[-s <src>] [-d <des>] [-e <engine>]", public=True)
 @alemiBot.on_message(is_allowed & filterCommand(["translate", "tran", "tr"], list(alemiBot.prefixes), options={
     "src" : ["-s", "-src"],
     "dest" : ["-d", "-dest"],
@@ -198,7 +199,7 @@ async def translate_cmd(client, message):
         tr_options["from_language"] = args["src"]
     if "dest" in args:
         tr_options["to_language"] = args["dest"]
-    engine = args["engine"] if "engine" in args else "google"
+    engine = args["engine"] if "engine" in args else "bing"
     try:
         await client.send_chat_action(message.chat.id, "find_location")
         q = message.reply_to_message.text if message.reply_to_message is not None else args["arg"]
