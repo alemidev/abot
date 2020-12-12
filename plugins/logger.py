@@ -9,8 +9,6 @@ import traceback
 from pymongo import MongoClient
 from datetime import datetime
 
-from termcolor import colored
-
 from pyrogram import filters
 from pyrogram.types import Object
 from pyrogram.errors.exceptions.flood_420 import FloodWait
@@ -32,6 +30,8 @@ lgr = logging.getLogger(__name__)
 
 HELP = HelpCategory("LOG")
 
+# TODO move all this shit in an object somewhere maybe???
+
 LAST_GROUP = "N/A"
 
 kwargs = {}
@@ -49,28 +49,18 @@ DB = M_CLIENT[alemiBot.config.get("database", "dbname", fallback="alemibot")]
 EVENTS = DB[alemiBot.config.get("database", "collection", fallback="events")]
 
 LOG_MEDIA = alemiBot.config.getboolean("database", "log_media", fallback=False)
+LOG_MESSAGES = alemiBot.config.getboolean("database", "log_messages", fallback=True)
 
 LOGGED_COUNT = 0
-
-def print_formatted(chat, user, message):
-    global LAST_GROUP
-    if chat.id != LAST_GROUP:
-        print(colored("━━━━━━━━━━┫ " + get_channel(chat), 'cyan', attrs=['bold']))
-    LAST_GROUP = chat.id
-    u_name = get_username(user)
-    pre = len(u_name) + 3
-    text = get_text(message).replace("\n", "\n" + " "*pre)
-    if message.media:
-        text = "[+MEDIA] " + text
-    if message.edit_date is not None:
-        text = "[EDIT] " + text
-    text = split_for_window(text, offset=pre)
-    print(f"{colored(u_name, 'cyan')} {colored('→', 'grey')} {text}")
 
 # Print in terminal received chats
 @alemiBot.on_message(group=10)
 async def msglogger(client, message):
     global LOGGED_COUNT
+    global LOG_MEDIA
+    global LOG_MESSAGES
+    if not LOG_MESSAGES:
+        return
     # print_formatted(message.chat, message.from_user, message)
     data = convert_to_dict(message)
     if message.media and LOG_MEDIA and message.edit_date is None: # don't redownload media at edits!
@@ -87,6 +77,9 @@ async def msglogger(client, message):
 @alemiBot.on_deleted_messages(group=10)
 async def dellogger(client, message):
     global LOGGED_COUNT
+    global LOG_MESSAGES
+    if not LOG_MESSAGES:
+        return
     data = convert_to_dict(message)
     for d in data:
         d["_"] = "Delete"

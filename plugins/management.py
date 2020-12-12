@@ -7,8 +7,6 @@ from pyrogram import filters
 
 from bot import alemiBot
 
-from termcolor import colored
-
 from util.permission import is_allowed, is_superuser, allow, disallow, serialize, list_allowed, ALLOWED
 from util.user import get_username
 from util.message import edit_or_reply, get_text, is_me
