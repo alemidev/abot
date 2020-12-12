@@ -152,40 +152,16 @@ async def inline_fakepoll(client, inline_query):
         cache_time=1
     )
 
-@alemiBot.on_inline_query(filters.regex(pattern="^[\\"+ "\\".join(alemiBot.prefixes) +"]run"))
-async def inline_run(client, inline_query):
-    lgr.warning(f"Received RUN query from {get_username(inline_query.from_user)}")
-    results = []
-    q = inline_query.query[1:].replace("run", "").strip()
-
-    for k in CATEGORIES:
-        for kk in CATEGORIES[k].HELP_ENTRIES:
-            e = CATEGORIES[k].HELP_ENTRIES[kk]
-            if q == "" or e.title.startswith(q):
-                results.append(
-                    InlineQueryResultArticle(
-                        id=uuid4(),
-                        title=f"run .{e.title}",
-                        input_message_content=InputTextMessageContent(f"/{e.title}"),
-                        description=f"→ {e.args}",
-                    )
-                )
-
-    await inline_query.answer(
-        results=results,
-        cache_time=1
-    )
-
-@alemiBot.on_inline_query(filters.regex(pattern="^[\\"+ "\\".join(alemiBot.prefixes) +"]help"))
+@alemiBot.on_inline_query(group=10)
 async def inline_help(client, inline_query):
     lgr.warning(f"Received HELP query from {get_username(inline_query.from_user)}")
-    q = inline_query.query[1:].replace("help", "").strip()
+    q = inline_query.query
     results = []
 
     for k in CATEGORIES:
         for kk in CATEGORIES[k].HELP_ENTRIES:
             e = CATEGORIES[k].HELP_ENTRIES[kk]
-            if q == "" or e.title.startswith(q):
+            if e != "" and e.title.startswith(q):
                 results.append(
                     InlineQueryResultArticle(
                         id=uuid4(),
@@ -204,18 +180,14 @@ async def inline_help(client, inline_query):
 async def inline_always(client, inline_query):
     await inline_query.answer(
         results=[
-                    InlineQueryResultArticle(id=uuid4(),title=f"/help",
-                        description="Show help for userbot commands",
-                        input_message_content=InputTextMessageContent(f"`[inline] → ` @{client.me.username} /help")),
                     InlineQueryResultArticle(id=uuid4(),title=f"/hide",
                         description="Create a hidden message",
                         input_message_content=InputTextMessageContent(f"`[inline] → ` @{client.me.username} /hide [@who] <text>")),
                     InlineQueryResultArticle(id=uuid4(),title=f"/fakepoll",
                         description="Create a fake poll",
-                        input_message_content=InputTextMessageContent(f"`[inline] → ` @{client.me.username} /fakepoll <text>")),
-                    InlineQueryResultArticle(id=uuid4(),title=f"/run",
-                        description="Send prefix and command",
-                        input_message_content=InputTextMessageContent(f"`[inline] → ` @{client.me.username} /run")),
+                        input_message_content=InputTextMessageContent(f"`[inline] → ` @{client.me.username} /fakepoll <text>"))
         ],
+        switch_pm_text=f"→ Type command to get help, or use bot functions",
+        switch_pm_parameter="help",
         cache_time=60
     )
