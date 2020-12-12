@@ -13,6 +13,7 @@ from pyrogram import filters
 from util.permission import is_allowed, is_superuser
 from util.command import filterCommand
 from util.message import edit_or_reply, is_me
+from util.user import get_username
 from plugins.help import HelpCategory
 
 logger = logging.getLogger(__name__)
@@ -53,7 +54,7 @@ HELP.add_help("update", "update and restart",
                 "the `-force` flag was given.", args="[-force]")
 @alemiBot.on_message(is_superuser & filterCommand("update", list(alemiBot.prefixes), flags=["-force"]))
 async def update(client, message):
-    out = message.text.markdown
+    out = message.text.markdown if is_me(message) else "`→ ` {get_username(message.from_user)} requested update\n"
     msg = message if is_me(message) else await message.reply(out)
     try:
         logger.info(f"Updating bot ...")
