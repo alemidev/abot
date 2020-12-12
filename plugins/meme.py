@@ -31,6 +31,8 @@ async def send_media_appropriately(client, message, fname, reply_to, extra_text=
                                 caption=f'` → {extra_text} ` **{fname}**')
     elif fname.endswith((".webp", ".tgs")):
         await client.send_sticker(message.chat.id, "data/memes/"+fname, reply_to_message_id=reply_to)
+    elif fname.endswith((".mp3", ".ogg", ".wav")):
+        await client.send_voice(message.chat.id, "data/memes/"+fname, reply_to_message_id=reply_to)
     else:
         await client.send_document(message.chat.id, "data/memes/"+fname, reply_to_message_id=reply_to,
                                         caption=f'` → {extra_text} ` **{fname}**')
