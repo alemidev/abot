@@ -204,16 +204,14 @@ async def translate_cmd(client, message):
         await client.send_chat_action(message.chat.id, "find_location")
         q = message.reply_to_message.text if message.reply_to_message is not None else args["arg"]
         logger.info(f"Translating {q}")
+        out = "`[!] → ` Unknown engine"
         if engine == "google":
-            res = ts.google(q, **tr_options)
+            out = "`[!] → ` As of now, this hangs forever, don't use yet!"
+            # res = ts.google(q, **tr_options)
         elif engine == "deepl":
-            res = ts.deepl(q, **tr_options)
+            out = ts.deepl(q, **tr_options)
         elif engine == "bing":
-            res = ts.bing(q, **tr_options)
-        else:
-            res = "`[!] → ` Unknown engine"
-        out = res # TODO temporary!
-        # out = f"`[{res.extra_data['confidence']:.2f}] → ` {res.text}"
+            out = "` → ` " + ts.bing(q, **tr_options)
         await edit_or_reply(message, out)
     except Exception as e:
         traceback.print_exc()
