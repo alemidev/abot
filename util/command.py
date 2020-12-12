@@ -85,7 +85,7 @@ def filterCommand(commands: str or List[str], prefixes: str or List[str] = "/",
                 if len(match_list) > 0:
                     message.command["cmd"] = match_list # everything not consumed
                     message.command["arg"] = " ".join(match_list) # provide a joined argument already
-                message.command["raw"] = raw_buf.replace('""', '').replace("''", "")
+                message.command["raw"] = raw_buf
 
                 return True
 
