@@ -117,10 +117,11 @@ async def purge(client, message):
 HELP.add_help(["merge"], "join multiple messages into one",
                 "join multiple messages sent by you into one. Reply to the first one to merge, bot will join " +
                 "every consecutive message you sent. You can stop the bot from deleting merged messages with " +
-                "`-nodel` flag. You can specify a separator with `-s`, it will default to `,`",
-                args="[-s <sep>]", public=False)
+                "`-nodel` flag. You can specify a separator with `-s`, it will default to `,`. You can specify max " +
+                "number of messages to merge with `-max`.", args="[-s <sep>] [-max <n>] [-nodel]", public=False)
 @alemiBot.on_message(is_superuser & filterCommand(["merge"], list(alemiBot.prefixes), options={
-    "separator" : ["-s"]
+    "separator" : ["-s"],
+    "max" : ["-max"]
 }, flags=["-nodel"]))
 async def merge_cmd(client, message):
     if not message.reply_to_message:
@@ -128,15 +129,16 @@ async def merge_cmd(client, message):
     m_id = message.reply_to_message.message_id
     sep = message.command["separator"] if "separator" in message.command else ","
     del_msg = "-nodel" not in message.command["flags"]
+    max_to_merge = message.command["max"] if "max" in message.command else -1
     try:
         logger.info(f"Merging messages")
         out = ""
         count = 0
         async for msg in client.iter_history(message.chat.id, offset_id=m_id, reverse=True):
-            if not is_me(msg):
+            if not is_me(msg) or (max_to_merge > 0 and count >= max_to_merge):
                 break
             out += msg.text.markdown + sep + " "
-            cout += 1
+            count += 1
             if del_msg and msg.message_id != m_id: # don't delete the one we want to merge into
                 await msg.delete()
         await message.reply_to_message.edit(out)
