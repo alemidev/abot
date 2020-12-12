@@ -163,7 +163,7 @@ async def inline_always(client, inline_query):
                 InlineQueryResultArticle(id=uuid4(),title=f"/fakepoll",
                     description="Create a fake poll",
                     input_message_content=InputTextMessageContent(f"`[inline] → ` @{client.me.username} /fakepoll <text>"))
-    ],
+    ]
 
     for k in CATEGORIES:
         for kk in CATEGORIES[k].HELP_ENTRIES:
