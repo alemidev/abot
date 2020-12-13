@@ -253,7 +253,7 @@ async def cmd_frequency(client, message):
         output = f"`→ ` **{results}** most frequent words __(len > {min_len})__ in last **{number}** messages:\n"
         for i in range(results):
             output += f"`{i+1:02d}]{'-'*(results-i-1)}>` `{count[i][0]}` `({count[i][1]})`\n"
-        await response.edit(output)
+        await response.edit(output, parse_mode="markdown")
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
