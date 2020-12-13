@@ -266,9 +266,9 @@ async def pasta_cmd(client, message):
     intrv = float(message.command["interval"]) if "interval" in message.command else 2
     try:
         with open(message.command["cmd"][0], "rb") as f:
-            for section in f.read().split(sep):
+            for section in f.read().decode('utf-8','ignore').split(sep):
                 for chunk in batchify(section, 4096):
-                    await client.send_message(message.chat.id, chunk.decode('utf-8','ignore'), parse_mode=None)
+                    await client.send_message(message.chat.id, chunk, parse_mode=None)
                     await asyncio.sleep(intrv)
                     if INTERRUPT:
                         INTERRUPT = False
