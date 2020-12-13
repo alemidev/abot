@@ -251,12 +251,13 @@ HELP.add_help("pasta", "drop a copypasta",
                 "give path to a .txt (or any file really) containing long text and bot will drop it in chat. By default, " +
                 "pasta will be split at newlines (`\n`) and sent at a certain interval (2s), but you can customize both. " +
                 "Long messages will still be split in chunks of 4096 characters due to telegram limit. Use flag `-stop` to stop " +
-                "ongoing pasta. Getting a good pasta collection is up to you, make sure to `.r mkdir data/pastas` and " +
-                "`wget` some cool pastas in there!", args="[-stop] [-i <n>] [-s <sep>] <fpath>", public=False)
+                "ongoing pasta. Add flag `-mono` to print pasta monospaced. Getting a good pasta collection is up to you, make sure " +
+                "to `.r mkdir data/pastas` and `wget` some cool pastas in there!",
+                args="[-stop] [-i <n>] [-s <sep>] [-mono] <fpath>", public=False)
 @alemiBot.on_message(is_superuser & filterCommand("pasta", list(alemiBot.prefixes), options={
     "separator" : ["-s", "-sep"],
     "interval" : ["-i", "-intrv"]
-}, flags=["-stop"]))
+}, flags=["-stop", "-mono"]))
 async def pasta_cmd(client, message):
     global INTERRUPT
     if "-stop" in message.command["flags"]:
@@ -264,11 +265,15 @@ async def pasta_cmd(client, message):
         return
     sep = message.command["separator"] if "separator" in message.command else "\n"
     intrv = float(message.command["interval"]) if "interval" in message.command else 2
+    monospace = "-mono" in message.command["flags"]
     try:
         with open(message.command["cmd"][0], "rb") as f:
             for section in f.read().decode('utf-8','ignore').split(sep):
-                for chunk in batchify(section, 4096):
-                    await client.send_message(message.chat.id, chunk, parse_mode=None)
+                for chunk in batchify(section, 4090):
+                    if monospace:
+                        await client.send_message(message.chat.id, "```" + chunk + "```", parse_mode="markdown")
+                    else:
+                        await client.send_message(message.chat.id, chunk, parse_mode=None)
                     await asyncio.sleep(intrv)
                     if INTERRUPT:
                         INTERRUPT = False
