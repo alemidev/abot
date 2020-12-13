@@ -244,7 +244,7 @@ async def cmd_frequency(client, message):
         count = 0
         await client.send_chat_action(message.chat.id, "playing")
         async for msg in client.iter_history(message.chat.id, limit=number):
-            words += [ w for w in re.sub(r"[^0-9a-zA-Z\w\n]+", "", get_text(msg).lower()).split() if len(w) > min_len ]
+            words += [ w for w in re.sub(r"[^0-9a-zA-Z\s\n]+", "", get_text(msg).lower()).split() if len(w) > min_len ]
             count += 1
             if count % 250 == 0:
                 await client.send_chat_action(message.chat.id, "playing")
