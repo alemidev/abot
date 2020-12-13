@@ -270,6 +270,8 @@ async def pasta_cmd(client, message):
         with open(message.command["cmd"][0], "rb") as f:
             for section in f.read().decode('utf-8','ignore').split(sep):
                 for chunk in batchify(section, 4090):
+                    if chunk.strip() == "":
+                        continue
                     if monospace:
                         await client.send_message(message.chat.id, "```" + chunk + "```", parse_mode="markdown")
                     else:
