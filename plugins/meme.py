@@ -259,7 +259,8 @@ HELP.add_help("pasta", "drop a copypasta",
 async def pasta_cmd(client, message):
     global INTERRUPT
     if "-stop" in message.command["flags"]:
-        return INTERRUPT = True
+        INTERRUPT = True
+        return
     sep = message.command["separator"] if "separator" in message.command else "\n"
     intrv = float(message.command["interval"]) if "interval" in message.command else 2
     try:
