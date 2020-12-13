@@ -16,7 +16,7 @@ import speech_recognition as sr
 from pyrogram import filters
 
 from util.permission import is_allowed
-from util.message import edit_or_reply, is_me, tokenize_json
+from util.message import edit_or_reply, is_me, tokenize_json, get_text
 from util.command import filterCommand
 
 import translators as ts
@@ -299,15 +299,28 @@ HELP.add_help(["voice"], "convert text to voice",
                 "used as lang, but another one can be specified with `-l`. You can add `-slow` flag " +
                 "to make the generated speech slower. If command comes from self, will delete original " +
                 "message. TTS result will be converted to `.ogg`. You can skip this step and send as mp3 by " +
-                "adding the `-mp3` flag.", args="[-l <lang>] [-slow] [-mp3] <text>", public=True)
+                "adding the `-mp3` flag. You can add the `-file` flag to make tts of a replied to or attached text file.",
+                args="[-l <lang>] [-slow] [-mp3] <text>", public=True)
 @alemiBot.on_message(is_allowed & filterCommand(["voice"], list(alemiBot.prefixes), options={
     "lang" : ["-l", "-lang"]
-}, flags=["-slow", "-mp3"]))
+}, flags=["-slow", "-mp3", "-file"]))
 async def voice_cmd(client, message):
     text = ""
     opts = {}
+    from_file = "-file" in message.command["flags"]
     if message.reply_to_message is not None:
-        text = message.reply_to_message.text
+        if from_file and message.reply_to_message.media:
+            fpath = await client.download_media(message.reply_to_message)
+            with open(fpath) as f:
+                text = f.read()
+            os.remove(fpath)
+        else:
+            text = get_text(message.reply_to_message)
+    elif from_file and message.media:
+        fpath = await client.download_media(message)
+        with open(fpath) as f:
+            text = f.read()
+        os.remove(fpath)
     elif "arg" in message.command:
         text = re.sub(r"-delme(?: |)(?:[0-9]+|)", "", message.command["arg"])
     else:
