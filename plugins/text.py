@@ -151,13 +151,6 @@ async def holup_replace(client, message):
     logger.info(f" (▀̿Ĺ̯▀̿ ̿) ")
     await message.edit(re.sub(r"[\.\/\!]holup","(▀̿Ĺ̯▀̿ ̿)", message.text.markdown))
 
-@alemiBot.on_message(filters.me & filters.regex(pattern=r"<-|->|=>|<="), group=3)
-async def replace_arrows(client, message):
-    logger.info("arrow!")
-    await message.edit(message.text.markdown.replace("<-", "←")
-                                            .replace("->", "→"))
-
-
 HELP.add_help("figlet", "make a figlet art",
                 "run figlet and make a text art. You can specify a font (`-f`), or request a random one (`-r`). " +
                 "Get list of available fonts with `-list`. You can specify max figlet width (`-w`), default is 30.",
