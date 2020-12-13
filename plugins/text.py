@@ -221,21 +221,30 @@ HELP.add_help(["freq", "frequent"], "find frequent words in messages",
                 "find most used words in last messages. If no number is given, will search only " +
                 "last 100 messages. By default, 10 most frequent words are shown, but number of results " +
                 "can be changed with `-r`. By default, only words of `len > 3` will be considered. " +
-                "A minimum word len can be specified with `-min`.", args="[-r <n>] [-min <n>] [n]", public=True)
+                "A minimum word len can be specified with `-min`. Will search in current group or any specified with `-g`.",
+                args="[-r <n>] [-min <n>] [-g <group>] [n]", public=True)
 @alemiBot.on_message(is_allowed & filterCommand(["freq", "frequent"], list(alemiBot.prefixes), options={
     "results" : ["-r", "-res"],
-    "minlen" : ["-min"]
+    "minlen" : ["-min"],
+    "group" : ["-g", "-group"]
 }))
 async def cmd_frequency(client, message):
     results = int(message.command["results"]) if "results" in message.command else 10
     number = int(message.command["cmd"][0]) if "cmd" in message.command else 100
     min_len = int(message.command["minlen"]) if "minlen" in message.command else 3
+    group = None
+    if "group" in message.command:
+        val = message.command["group"]
+        group = await client.get_chat(int(val) if val.isnumeric() else val)
+    else:
+        group = message.chat
+            
     try:
         logger.info(f"Counting {results} most frequent words in last {number} messages")
         response = await edit_or_reply(message, f"` → ` Counting word occurrences...")
         words = []
         count = 0
-        await client.send_chat_action(message.chat.id, "playing")
+        await client.send_chat_action(group.id, "playing")
         async for msg in client.iter_history(message.chat.id, limit=number):
             words += [ w for w in re.sub(r"[^0-9a-zA-Z\s\n]+", "", get_text(msg).lower()).split() if len(w) > min_len ]
             count += 1
@@ -243,7 +252,7 @@ async def cmd_frequency(client, message):
                 await client.send_chat_action(message.chat.id, "playing")
                 await response.edit(f"` → [{count}/{number}] ` Counting word occurrences...")
         count = Counter(words).most_common()
-        output = f"`→ ` **{results}** most frequent words __(len > {min_len})__ in last **{number}** messages:\n"
+        output = f"`→ {group.title} ` **{results}** most frequent words __(len > {min_len})__ in last **{number}** messages:\n"
         for i in range(results):
             output += f"`{i+1:02d}]{'-'*(results-i-1)}>` `{count[i][0]}` `({count[i][1]})`\n"
         await response.edit(output, parse_mode="markdown")
