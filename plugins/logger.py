@@ -251,6 +251,7 @@ async def lookup_deleted_messages(client, message, COLLECTION, target_group, lim
             lgr.debug("Querying db for possible deleted msg")
             if time.time() - keep_active > 5:
                 await client.send_chat_action(message.chat.id, "playing")
+                keep_active = time.time()
             for doc in candidates: # dank 'for': i only need one
                 if chat_id is not None and ("chat" not in doc or doc["chat"]["id"] != chat_id):
                     continue
