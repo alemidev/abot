@@ -240,7 +240,8 @@ async def lookup_deleted_messages(client, message, COLLECTION, target_group, lim
     LINE = "{time}`[{m_id}]` **{user}** {where} → {system}{text} {media}\n"
     try:
         lgr.debug("Querying db for deletions")
-        await client.send_chat_action(message.chat.id, "upload_document")
+        keep_active = time.time()
+        await client.send_chat_action(message.chat.id, "playing")
         cursor = COLLECTION.find({ "_": "Delete" }).sort("date", -1)
         for deletion in cursor: # TODO make this part not a fucking mess!
             if chat_id is not None and "chat" in deletion \
@@ -248,6 +249,8 @@ async def lookup_deleted_messages(client, message, COLLECTION, target_group, lim
                 continue # don't make a 2nd query, should speed up a ton
             candidates = COLLECTION.find({"_": "Message", "message_id": deletion["message_id"]}).sort("date", -1)
             lgr.debug("Querying db for possible deleted msg")
+            if time.time() - keep_active > 5:
+                await client.send_chat_action(message.chat.id, "playing")
             for doc in candidates: # dank 'for': i only need one
                 if chat_id is not None and ("chat" not in doc or doc["chat"]["id"] != chat_id):
                     continue
@@ -273,6 +276,7 @@ async def lookup_deleted_messages(client, message, COLLECTION, target_group, lim
                 break
             if count >= limit:
                 break
+        await client.send_chat_action(message.chat.id, "upload_document")
         if count > 0:
             if len(out) > 4096:
                 for m in batchify(out, 4090):
