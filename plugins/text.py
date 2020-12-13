@@ -252,7 +252,7 @@ async def cmd_frequency(client, message):
                 await client.send_chat_action(message.chat.id, "playing")
                 await response.edit(f"` → [{count}/{number}] ` Counting word occurrences...")
         count = Counter(words).most_common()
-        output = f"`→ {group.title} ` **{results}** most frequent words __(len > {min_len})__ in last **{number}** messages:\n"
+        output = f"`→ {group.title} `\n` → ` **{results}** most frequent words __(len > {min_len})__ in last **{number}** messages:\n"
         for i in range(results):
             output += f"`{i+1:02d}]{'-'*(results-i-1)}>` `{count[i][0]}` `({count[i][1]})`\n"
         await response.edit(output, parse_mode="markdown")
