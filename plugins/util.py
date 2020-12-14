@@ -42,7 +42,7 @@ HELP.add_help(["convert", "conv"], "convert various units",
                 args="<val> <from> <to>", public=True)
 @alemiBot.on_message(is_allowed & filterCommand(["convert", "conv"], list(alemiBot.prefixes)))
 async def convert_cmd(client, message):
-    if "cmd" not in message.command or len(message.command["cmd"] < 3):
+    if "cmd" not in message.command or len(message.command["cmd"]) < 3:
         return await edit_or_reply(message, "`[!] → ` Not enough arguments")
     try:
         logger.info("Converting units")
@@ -59,7 +59,7 @@ HELP.add_help(["currency", "cconvert", "curr"], "convert across currencies",
                 args="<val> <from> <to>", public=True)
 @alemiBot.on_message(is_allowed & filterCommand(["currency", "cconvert", "curr"], list(alemiBot.prefixes)))
 async def currency_convert_cmd(client, message):
-    if "cmd" not in message.command or len(message.command["cmd"] < 3):
+    if "cmd" not in message.command or len(message.command["cmd"]) < 3:
         return await edit_or_reply(message, "`[!] → ` Not enough arguments")
     try:
         logger.info("Converting currency")
