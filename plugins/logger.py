@@ -135,17 +135,17 @@ async def stats_cmd(client, message):
     await client.set_offline()
 
 HELP.add_help(["query", "q", "log"], "interact with db",
-                "make queries to the underlying database (MongoDB) to request documents. " +
+                "make queries to the underlying database (MongoDB) to request documents. You can just get the number with `-count` flag. " +
                 "Filters, limits and fields can be configured with arguments. If multiple userbots are logging in the same " +
                 "database (but in different collections), you can specify in which collection to query with `-coll`. You can also " +
                 "specify which database to use with `-db` option, but the user which the bot is using to login will need permissions to read.",
-                args="[-coll <name>] [-db <name>] [-l <n>] [-f <{filter}>] <{query}>")
+                args="[-coll <name>] [-db <name>] [-l <n>] [-f <{filter}>] [-count] <{query}>")
 @alemiBot.on_message(is_superuser & filterCommand(["query", "q", "log"], list(alemiBot.prefixes), options={
     "limit" : ["-l", "-limit"],
     "filter" : ["-f", "-filter"],
     "collection" : ["-coll", "-collection"],
     "database" : ["-db", "-database"]
-}, flags=["-cmd"]))
+}, flags=["-cmd", "-count"]))
 async def query_cmd(client, message):
     args = message.command
     try:
@@ -169,12 +169,15 @@ async def query_cmd(client, message):
             elif "filter" in args:
                 q = json.loads(args["cmd"][0])
                 filt = json.loads(args["filter"])
-                cursor = collection.find(q, filt).sort("date", -1).limit(lim)
+                cursor = collection.find(q, filt).sort("date", -1)
             else:
-                cursor = collection.find(json.loads(args["cmd"][0])).sort("date", -1).limit(lim)
-
-            for doc in cursor:
-                buf.append(doc)
+                cursor = collection.find(json.loads(args["cmd"][0])).sort("date", -1)
+            
+            if "-count" in args["flags"]:
+                buf = [ cursor.count() ]
+            else:
+                for doc in cursor.limit(lim):
+                    buf.append(doc)
 
             raw = json.dumps(buf, indent=2, default=str, ensure_ascii=False)
             if len(message.text.markdown) + len(tokenize_json(raw)) > 4090:
