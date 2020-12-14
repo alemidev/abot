@@ -140,7 +140,7 @@ async def merge_cmd(client, message):
         out = ""
         count = 0
         async for msg in client.iter_history(message.chat.id, offset_id=m_id, reverse=True):
-            if msg.message_id == message.message_id or not is_me(msg) \
+            if msg.message_id == message.message_id or not is_me(msg) or msg.media \
             or (max_to_merge > 0 and count >= max_to_merge):
                 break
             out += msg.text.markdown + sep
