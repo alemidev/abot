@@ -27,18 +27,24 @@ INTERRUPT = False
 # TODO make this an util and maybe pass **kwargs
 async def send_media_appropriately(client, message, fname, reply_to, extra_text=""):
     if fname.endswith((".jpg", ".jpeg", ".png")):
+        await client.send_chat_action(message.chat.id, "upload_photo")
         await client.send_photo(message.chat.id, "data/memes/"+fname, reply_to_message_id=reply_to,
                                 caption=f'` → {extra_text} ` **{fname}**')
     elif fname.endswith((".gif", ".mp4", ".webm")):
+        await client.send_chat_action(message.chat.id, "upload_video")
         await client.send_video(message.chat.id, "data/memes/"+fname, reply_to_message_id=reply_to,
                                 caption=f'` → {extra_text} ` **{fname}**')
     elif fname.endswith((".webp", ".tgs")):
+        await client.send_chat_action(message.chat.id, "upload_photo")
         await client.send_sticker(message.chat.id, "data/memes/"+fname, reply_to_message_id=reply_to)
     elif fname.endswith((".mp3", ".ogg", ".wav")):
+        await client.send_chat_action(message.chat.id, "upload_audio")
         await client.send_voice(message.chat.id, "data/memes/"+fname, reply_to_message_id=reply_to)
     else:
+        await client.send_chat_action(message.chat.id, "upload_document")
         await client.send_document(message.chat.id, "data/memes/"+fname, reply_to_message_id=reply_to,
                                         caption=f'` → {extra_text} ` **{fname}**')
+    await client.send_chat_action(message.chat.id, "cancel")
     
 
 HELP.add_help("meme", "get a meme",
@@ -48,7 +54,6 @@ HELP.add_help("meme", "get a meme",
 async def getmeme(client, message):
     args = message.command
     try:
-        await client.send_chat_action(message.chat.id, "upload_photo")
         reply_to = message.message_id
         if is_me(message) and message.reply_to_message is not None:
             reply_to = message.reply_to_message.message_id
@@ -76,7 +81,6 @@ async def getmeme(client, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
-    await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()
 
 HELP.add_help("steal", "steal a meme",
