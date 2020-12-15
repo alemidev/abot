@@ -52,7 +52,7 @@ HELP.add_help("update", "update and restart",
                 "will pull changes from git (`git pull`), install requirements (`pip install -r requirements.txt --upgrade`) " +
                 "and then restart process with an `execv` call. If nothing gets pulled from `git`, update will stop unless " +
                 "the `-force` flag was given.", args="[-force]")
-@alemiBot.on_message(is_superuser & filterCommand("update", list(alemiBot.prefixes), flags=["-force"]))
+@alemiBot.on_message(is_superuser & filterCommand("update", list(alemiBot.prefixes), flags=["-force", "-sub"]))
 async def update(client, message):
     out = message.text.markdown if is_me(message) else f"`→ ` {get_username(message.from_user)} requested update"
     msg = message if is_me(message) else await message.reply(out)
@@ -68,16 +68,24 @@ async def update(client, message):
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT)
         stdout, stderr = await proc.communicate()
+        sub_proc = await asyncio.create_subprocess_exec(
+            "git", "submodule", "update",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT)
+        sub_stdout, sub_stderr = await sub_proc.communicate()
+        sub_count = sub_stdout.count(b"checked out")
         if b"Aborting" in stdout:
             out += " [FAIL]\n"
-            if not "-force" in message.command["flags"]:
+            if "-force" not in message.command["flags"]:
                 return await msg.edit(out)
         elif b"Already up to date" in stdout:
             out += " [N/A]\n"
-            if not "-force" in message.command["flags"]:
+            if sub_count < 1 and "-force" not in message.command["flags"]:
                 return await msg.edit(out)
         else:
             out += " [OK]\n"
+        if sub_count > 0:
+            out += f"` → ` Updated {sub_count} submodule{'s' if sub_count > 1 else ''}\n"
         out += "` → ` Checking libraries"
         await msg.edit(out) 
         proc = await asyncio.create_subprocess_exec(
