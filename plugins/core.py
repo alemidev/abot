@@ -69,7 +69,7 @@ async def update(client, message):
             stderr=asyncio.subprocess.STDOUT)
         stdout, stderr = await proc.communicate()
         sub_proc = await asyncio.create_subprocess_exec(
-            "git", "submodule", "update",
+            "git", "submodule", "update", "--remote",
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT)
         sub_stdout, sub_stderr = await sub_proc.communicate()
