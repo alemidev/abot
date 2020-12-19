@@ -75,17 +75,17 @@ async def update(client, message):
         sub_stdout, sub_stderr = await sub_proc.communicate()
         sub_count = sub_stdout.count(b"checked out")
         if b"Aborting" in stdout:
-            out += " [FAIL]\n"
+            out += " [`FAIL`]\n"
             if "-force" not in message.command["flags"]:
                 return await msg.edit(out)
         elif b"Already up to date" in stdout:
-            out += " [N/A]\n"
+            out += " [`N/A`]\n"
             if sub_count < 1 and "-force" not in message.command["flags"]:
                 return await msg.edit(out)
         else:
-            out += " [OK]\n"
+            out += " [`OK`]\n"
         if sub_count > 0:
-            out += f"` → ` Updated {sub_count} submodule{'s' if sub_count > 1 else ''}\n"
+            out += f"`   → ` Submodule{'s' if sub_count > 1 else ''} [`{sub_count}`]\n"
         out += "` → ` Checking libraries"
         await msg.edit(out) 
         proc = await asyncio.create_subprocess_exec(
@@ -94,9 +94,9 @@ async def update(client, message):
             stderr=asyncio.subprocess.STDOUT)
         stdout, stderr = await proc.communicate()
         if b"ERROR" in stdout:
-            out += " [WARN]"
+            out += " [`WARN`]"
         else:
-            out += f" [{stdout.count(b'Collecting')} new]"
+            out += f" [`{stdout.count(b'Collecting')} new`]"
         out += "\n` → ` Restarting process"
         await msg.edit(out) 
         with open("data/lastmsg.json", "w") as f:

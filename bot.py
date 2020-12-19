@@ -25,7 +25,8 @@ class alemiBot(Client):
             app_version="0.3",)
         self.start_time = datetime.now()
         # Get current commit hash and append to app version
-        res = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True)
+        res = subprocess.run(["git", "rev-parse", "--short", "HEAD"],
+                                stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
         self.app_version += "-" + res.stdout.decode('utf-8').strip()
 
     async def set_offline(self):
@@ -41,7 +42,7 @@ class alemiBot(Client):
                 if m == {}:
                     return
                 message = await self.get_messages(m["chat_id"], m["message_id"])
-                await message.edit(message.text.markdown + " [OK]")
+                await message.edit(message.text.markdown + " [`OK`]")
             with open("data/lastmsg.json", "w") as f:
                 json.dump({}, f)
         except:
