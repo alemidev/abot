@@ -85,9 +85,9 @@ HELP.add_help(["ud", "urban"], "search in urban dict",
                 "get definition from urban dictionary of given query. Number of results to return can " +
                 "be specified with `-r`, will default to only one (top definition).",
                 args="[-r <n>] <query>", public=True)
-@alemiBot.on_message(is_allowed & filterCommand(["ud", "urban"], list(alemiBot.prefixes)), options={
+@alemiBot.on_message(is_allowed & filterCommand(["ud", "urban"], list(alemiBot.prefixes), options={
     "results" : ["-r", "-res"]
-})
+}))
 async def urbandict(client, message):
     if "arg" not in message.command:
         return await edit_or_reply(message, "`[!] → ` No query given")
