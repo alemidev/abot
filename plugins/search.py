@@ -100,9 +100,9 @@ async def urbandict(client, message):
             return await edit_or_reply(message, "`[!] → ` Not found")
         out = ""
         for i in range(min(n, len(res))):
-            out += f"`→ ` --{res[i].word}-- `[+{res[i].upvotes}|{res[i].downvotes}-]\n" + \
-                   f"{res[i].definition}\n__{res[i].example}__\n\n"
-        await edit_or_reply(message, out)
+            out += f"<code>→ </code> <u>{res[i].word}</u> <code>[+{res[i].upvotes}|{res[i].downvotes}-]</code>\n" + \
+                   f"{res[i].definition}\n\n<i>{res[i].example}</i>\n\n"
+        await edit_or_reply(message, out, parse_mode="html")
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
