@@ -10,6 +10,7 @@ import wikipedia
 import italian_dictionary
 from PyDictionary import PyDictionary
 from geopy.geocoders import Nominatim
+from udpy import UrbanClient
 
 import requests
 
@@ -27,23 +28,7 @@ HELP = HelpCategory("SEARCH")
 
 dictionary = PyDictionary()
 geolocator = Nominatim(user_agent="telegram-client")
-
-def ud_define(word):
-    try:
-        r = requests.get("http://api.urbandictionary.com/v0/define?term=" + word.capitalize(), timeout=10)
-        if r.status_code == 200:
-            best = 0
-            match = None
-            for el in r.json()["list"]:
-                if el["thumbs_up"] > best:
-                    best = el["thumbs_up"]
-                    match = el
-            return match
-        else:
-            return None
-    except Exception as e:
-        traceback.print_exc()
-        return None
+UClient = UrbanClient()
 
 HELP.add_help(["diz", "dizionario"], "search in ita dict",
                 "get definition from italian dictionary of given word.",
@@ -97,23 +82,26 @@ async def dic(client, message):
     await client.set_offline()
 
 HELP.add_help(["ud", "urban"], "search in urban dict",
-                "get definition from urban dictionary of given word.",
-                args="<word>", public=True)
-@alemiBot.on_message(is_allowed & filterCommand(["ud", "urban"], list(alemiBot.prefixes)))
+                "get definition from urban dictionary of given query. Number of results to return can " +
+                "be specified with `-r`, will default to only one (top definition).",
+                args="[-r <n>] <query>", public=True)
+@alemiBot.on_message(is_allowed & filterCommand(["ud", "urban"], list(alemiBot.prefixes)), options={
+    "results" : ["-r", "-res"]
+})
 async def urbandict(client, message):
     if "arg" not in message.command:
         return await edit_or_reply(message, "`[!] → ` No query given")
     try:
+        n = int(message.command["results"]) if "results" in message.command else 1
         await client.send_chat_action(message.chat.id, "upload_document")
         logger.info(f"Searching \"{message.command['arg']}\" on urban dictionary")
-        res = ud_define(message.command["arg"])
-        if res is None:
+        res = UClient.get_definition(message.command["arg"])
+        if len(res) < 1:
             return await edit_or_reply(message, "`[!] → ` Not found")
         out = ""
-        out += f"`→ {res['word']} [+{res['thumbs_up']}]: `\n"
-        out += f"{res['definition']}\n\n"
-        out += f"ex: __{res['example']}__\n\n"
-        out += res['permalink']
+        for i in range(min(n, len(res)):
+            out += f"`→ ` --{res[i].word}-- `[+{res[i].upvotes}|{res[i].downvotes}-]\n" + \
+                   f"{res[i].definition}\n__{res[i].example}__\n\n"
         await edit_or_reply(message, out)
     except Exception as e:
         traceback.print_exc()

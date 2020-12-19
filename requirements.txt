@@ -3,6 +3,7 @@ termcolor
 wikipedia
 italian-dictionary
 PyDictionary
+udpy
 translators
 unit-converter
 google_currency
