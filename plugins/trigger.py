@@ -85,7 +85,7 @@ async def search_triggers(client, message):
     if msg_txt == "":
         return
     for key in TRIGGERS:
-        if TRIGGERS[key]["pattern"].search(message.text):
+        if TRIGGERS[key]["pattern"].search(get_text(message)):
             await message.reply(TRIGGERS[key]["reply"])
             await client.set_offline()
             logger.info("T R I G G E R E D")
