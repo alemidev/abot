@@ -99,7 +99,7 @@ async def urbandict(client, message):
         if len(res) < 1:
             return await edit_or_reply(message, "`[!] → ` Not found")
         out = ""
-        for i in range(min(n, len(res)):
+        for i in range(min(n, len(res))):
             out += f"`→ ` --{res[i].word}-- `[+{res[i].upvotes}|{res[i].downvotes}-]\n" + \
                    f"{res[i].definition}\n__{res[i].example}__\n\n"
         await edit_or_reply(message, out)
