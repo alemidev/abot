@@ -53,6 +53,8 @@ def parse_sys_dict(msg):
     return "SYS[ " + " | ".join(events) + " ]"
 
 async def edit_or_reply(message, text, *args, **kwargs):
+    if len(text.strip()) == 0:
+        return message
     if is_me(message) and len(message.text.markdown + text) < 4090:
         if message.scheduled: # lmao ye right import more bloat
             await edit_scheduled(message._client, message, text, *args, **kwargs)
