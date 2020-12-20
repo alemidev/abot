@@ -422,3 +422,19 @@ async def ocr_cmd(client, message):
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()
+
+HELP.add_help(["link"], "expand a reward url",
+                "expand given url using `linkexpander.com`.", 
+                args="<url>", public=True)
+@alemiBot.on_message(is_allowed & filterCommand(["link"], list(alemiBot.prefixes)))
+async def link_expander_cmd(client, message):
+    if "arg" not in message.command:
+        return await edit_or_reply(message, "`[!] → ` No URL given")
+    try:
+        url = message.command["arg"]
+        r = requests.get(f"https://www.linkexpander.com/?url={url}")
+        await edit_or_reply(message, r.text, parse_mode=None)
+    except Exception as e:
+        traceback.print_exc()
+        await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.set_offline()
