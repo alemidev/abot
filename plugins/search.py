@@ -148,13 +148,11 @@ HELP.add_help("lmgtfy", "let me google that for you",
 async def lmgtfy(client, message):
     if "arg" not in message.command:
         return await edit_or_reply(message, "`[!] → ` No query given")
-    opts = { "disable_web_page_preview" : True }
-    if message.reply_to_message is not None:
-        opts["reply_to_message_id"] = message.reply_to_message.message_id
     try:
         arg = message.command["arg"].replace(" ", "+")
         logger.info(f"lmgtfy {arg}")
-        await edit_or_reply(message, f"` → ` http://letmegooglethat.com/?q={arg}", **opts)
+        await edit_or_reply(message, f"` → ` http://letmegooglethat.com/?q={arg}",
+                                            disable_web_page_preview=True)
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
