@@ -273,7 +273,7 @@ async def pasta_cmd(client, message):
     edit_this = await client.send_message(message.chat.id, "` → ` Starting") if "-edit" in message.command["flags"] else None
     try:
         with open(message.command["cmd"][0], "rb") as f:
-            for section in f.read().decode('utf-8','ignore').split(sep):
+            for section in re.split(sep, f.read().decode('utf-8','ignore')):
                 for chunk in batchify(section, 4090):
                     if chunk.strip() == "":
                         continue
