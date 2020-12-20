@@ -290,6 +290,8 @@ async def pasta_cmd(client, message):
                     if INTERRUPT:
                         INTERRUPT = False
                         raise Exception("Interrupted by user")
+        if edit_this:
+            await edit_this.edit("` → ` Done")
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
