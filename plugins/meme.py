@@ -86,9 +86,9 @@ async def getmeme(client, message):
                 while len(memes) < batch:
                     fname = secrets.choice(os.listdir("data/memes"))
                     if fname.endswith((".jpg", ".jpeg", ".png")):
-                        memes.append(InputMediaPhoto(fname))
+                        memes.append(InputMediaPhoto("data/memes" + fname))
                     elif fname.endswith((".gif", ".mp4", ".webm")):
-                        memes.append(InputMediaVideo(fname))
+                        memes.append(InputMediaVideo("data/memes/" + fname))
                 await client.send_media_group(message.chat.id, memes)
             else:
                 fname = secrets.choice(os.listdir("data/memes"))
