@@ -129,8 +129,8 @@ HELP.add_help(["exec", "ex"], "execute python code",
 async def execit(client, message):
     args = re.sub(r"-delme(?: |)(?:[0-9]+|)", "", message.command["raw"])
     fancy_args = args.replace("\n", "\n... ")
-    msg = await edit_or_reply(message, "` → ` Executing")
-    await msg.edit(fancy_args)
+    msg = message if is_me(message) else await message.reply("`[PLACEHOLDER]`")
+    await msg.edit("```" + fancy_args + "```\n` → ` Executing")
     try:
         logger.info(f"Executing \"{args}\"")
         with stdoutWrapper() as fake_stdout:
