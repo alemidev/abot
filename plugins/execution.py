@@ -83,11 +83,10 @@ async def runit(client, message):
 HELP.add_help(["eval", "e"], "eval a python expression",
                 "eval a python expression. No imports can be made nor variables can be " +
                 "assigned. Some common libs are already imported. `eval` cannot have side effects. " +
-                "Anything returned by `eval` will be printed upon successful evaluation. If " +
-                "a coroutine is returned, it will be awaited (needed for executing async funcs defined " +
-                "with .exec). `stdout` will be captured and shown before the returned value. Use the " +
-                "GLOBALS object for persistence. No assignation can be done in `eval`, but getting " +
-                "fields is possible.", args="<expr>")
+                "Returned value will be printed upon successful evaluation. `stdout` won't be captured (use `.ex`). If " +
+                "a coroutine is returned, it will be awaited. Use the GLOBALS object for persistence: no assignation can " +
+                "be done in `eval`, but getting fields is possible. This won't tokenize large outputs per-line, " +
+                "use .ex if you need that.", args="<expr>")
 @alemiBot.on_message(is_superuser & filterCommand(["eval", "e"], list(alemiBot.prefixes)))
 async def evalit(client, message):
     global GLOBALS
@@ -95,21 +94,19 @@ async def evalit(client, message):
     msg = await edit_or_reply(message, "` → ` Evaluating")
     try:
         logger.info(f"Evaluating \"{args}\"")
-        with stdoutWrapper() as fake_stdout:
-            result = eval(args)
-            if inspect.iscoroutine(result):
-                result = await result
-        result = fake_stdout.getvalue() + " → " + str(result)
-        if len(args) + len(result) > 4080:
+        result = eval(args)
+        if inspect.iscoroutine(returned):
+            result = await result
+        if len(args) + len(str(result)) > 4080:
             await msg.edit(f"```>>> {args}\n → Output too long, sending as file```")
-            out = io.BytesIO((f">>> {args}\n" + result).encode('utf-8'))
+            out = io.BytesIO((f">>> {args}\n" + str(result)).encode('utf-8'))
             out.name = "output.txt"
             await client.send_document(message.chat.id, out, parse_mode="markdown")
         else:
-            await msg.edit(tokenize_lines(f">>> {args}\n" + result), parse_mode="markdown")
+            await msg.edit(f"`>>>` `{args}`\n` → ` `" + str(result) + "`", parse_mode="markdown")
     except Exception as e:
         traceback.print_exc()
-        await msg.edit(f"`>>> {args}`\n`[!] → ` " + str(e), parse_mode='markdown')
+        await msg.edit(f"``>>>` `{args}`\n`[!] → ` " + str(e), parse_mode='markdown')
 
 async def aexec(code, client, message): # client and message are passed so they are in scope
     global GLOBALS
@@ -133,6 +130,7 @@ async def execit(client, message):
     args = re.sub(r"-delme(?: |)(?:[0-9]+|)", "", message.command["raw"])
     fancy_args = args.replace("\n", "\n... ")
     msg = await edit_or_reply(message, "` → ` Executing")
+    await msg.edit(fancy_args)
     try:
         logger.info(f"Executing \"{args}\"")
         with stdoutWrapper() as fake_stdout:
