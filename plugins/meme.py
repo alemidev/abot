@@ -50,8 +50,9 @@ async def send_media_appropriately(client, message, fname, reply_to, extra_text=
 
 HELP.add_help("meme", "get a meme",
                 "get a specific meme is a name is given, otherwise a random one. " +
-                "Use argument `-list` to gett all meme names. You can send a bunch of " +
-                "random memes together by specifying how many in the `-b` (batch) option.",
+                "Use argument `-list` to get all meme names. You can send a bunch of " +
+                "random memes together by specifying how many in the `-b` (batch) option " +
+                "(only photos will be sent if a batch is requested). Memes can be any filetype. ",
                 public=True, args="[-list] [-b <n>] [<name>]")
 @alemiBot.on_message(is_allowed & filterCommand("meme", list(alemiBot.prefixes), options={
     "batch" : ["-b"]
@@ -86,9 +87,8 @@ async def getmeme(client, message):
                 while len(memes) < batch:
                     fname = secrets.choice(os.listdir("data/memes"))
                     if fname.endswith((".jpg", ".jpeg", ".png")):
+                        await client.send_chat_action(message.chat.id, "upload_photo")
                         memes.append(InputMediaPhoto("data/memes/" + fname))
-                    elif fname.endswith((".gif", ".mp4", ".webm")):
-                        memes.append(InputMediaVideo("data/memes/" + fname))
                 await client.send_media_group(message.chat.id, memes)
             else:
                 fname = secrets.choice(os.listdir("data/memes"))
