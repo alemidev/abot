@@ -8,6 +8,7 @@ import io
 from PIL import Image, ImageEnhance, ImageOps
 
 from pyrogram import filters
+from pyrogram.types import InputMediaPhoto, InputMediaVideo
 
 from bot import alemiBot
 
@@ -49,10 +50,15 @@ async def send_media_appropriately(client, message, fname, reply_to, extra_text=
 
 HELP.add_help("meme", "get a meme",
                 "get a specific meme is a name is given, otherwise a random one. " +
-                "Use argument `-list` to gett all meme names.", public=True, args="[-list] [<name>]")
-@alemiBot.on_message(is_allowed & filterCommand("meme", list(alemiBot.prefixes), flags=["-list"]))
+                "Use argument `-list` to gett all meme names. You can send a bunch of " +
+                "random memes together by specifying how many in the `-b` (batch) option.",
+                public=True, args="[-list] [-b <n>] [<name>]")
+@alemiBot.on_message(is_allowed & filterCommand("meme", list(alemiBot.prefixes), options={
+    "batch" : ["-b"]
+}, flags=["-list"]))
 async def getmeme(client, message):
     args = message.command
+    batch = max(min(int(args["batch"]), 10), 2) if "batch" in args else 0
     try:
         reply_to = message.message_id
         if is_me(message) and message.reply_to_message is not None:
@@ -75,9 +81,19 @@ async def getmeme(client, message):
             else:
                 await edit_or_reply(message, f"`[!] → ` no meme named {args['cmd'][0]}")
         else: 
-            fname = secrets.choice(os.listdir("data/memes"))
-            logger.info(f"Getting random meme : \"{fname}\"")
-            await send_media_appropriately(client, message, fname, reply_to, extra_text="Random meme : ")
+            if batch > 0:
+                memes = []
+                while len(memes) < batch:
+                    fname = secrets.choice(os.listdir("data/memes"))
+                    if fname.endswith((".jpg", ".jpeg", ".png")):
+                        memes.append(InputMediaPhoto(fname))
+                    elif fname.endswith((".gif", ".mp4", ".webm")):
+                        memes.append(InputMediaVideo(fname))
+                await client.send_media_group(message.chat.id, memes)
+            else:
+                fname = secrets.choice(os.listdir("data/memes"))
+                logger.info(f"Getting random meme : \"{fname}\"")
+                await send_media_appropriately(client, message, fname, reply_to, extra_text="Random meme : ")
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
