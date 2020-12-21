@@ -95,7 +95,7 @@ async def evalit(client, message):
     try:
         logger.info(f"Evaluating \"{args}\"")
         result = eval(args)
-        if inspect.iscoroutine(returned):
+        if inspect.iscoroutine(result):
             result = await result
         if len(args) + len(str(result)) > 4080:
             await msg.edit(f"```>>> {args}\n → Output too long, sending as file```")
