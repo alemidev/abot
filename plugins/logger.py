@@ -135,8 +135,9 @@ async def stats_cmd(client, message):
     await client.set_offline()
 
 HELP.add_help(["query", "q", "log"], "interact with db",
-                "make queries to the underlying database (MongoDB) to request documents. You can just get the number with `-count` flag. " +
-                "Filters, limits and fields can be configured with arguments. If multiple userbots are logging in the same " +
+                "make queries to the underlying database (MongoDB) to request documents. You can just get the number or matches with `-count` flag. " +
+                "The query and the filter must be a valid JSON dictionaries without spaces; if you need spaces, wrap them in `'`. You can specify a " +
+                "limit for results (`-l`), if not given, will default to 10. If multiple userbots are logging in the same " +
                 "database (but in different collections), you can specify in which collection to query with `-coll`. You can also " +
                 "specify which database to use with `-db` option, but the user which the bot is using to login will need permissions to read.",
                 args="[-coll <name>] [-db <name>] [-l <n>] [-f <{filter}>] [-count] <{query}>")
@@ -192,7 +193,9 @@ async def query_cmd(client, message):
         await edit_or_reply(message, "`[!] → ` " + str(e))
 
 HELP.add_help(["hist", "history"], "get edit history of a message",
-                "request edit history of a message. You can specify an id or reply to a message.",
+                "request edit history of a message. You can specify a message id or reply to a message. " +
+                "By giving the `-t` flag, edit timestamps will be shown. You can check history of messages in " +
+                "different groups by giving the group id (or name) in the `-g` option.",
                 public=True, args="[-t] [-g <g>] [<id>]")
 @alemiBot.on_message(is_allowed & filterCommand(["history", "hist"], list(alemiBot.prefixes), options={
     "group" : ["-g"]
@@ -209,7 +212,10 @@ async def hist_cmd(client, message):
     if m_id is None:
         return
     if "group" in args:
-        c_id = int(args["group"])
+        if args["group"].isnumeric():
+            c_id = int(args["group"])
+        else:
+            c_id = (await client.get_chat(args["group"])).id
     try:
         await client.send_chat_action(message.chat.id, "upload_document")
         cursor = EVENTS.find( {"_": "Message", "message_id": m_id, "chat.id": c_id},
