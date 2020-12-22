@@ -106,7 +106,7 @@ async def evalit(client, message):
             await msg.edit(f"`>>>` `{args}`\n` → ` `" + str(result) + "`", parse_mode="markdown")
     except Exception as e:
         traceback.print_exc()
-        await msg.edit(f"``>>>` `{args}`\n`[!] → ` " + str(e), parse_mode='markdown')
+        await msg.edit(f"`>>>` `{args}`\n`[!] → ` " + str(e), parse_mode='markdown')
 
 async def aexec(code, client, message): # client and message are passed so they are in scope
     global GLOBALS
