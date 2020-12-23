@@ -77,7 +77,7 @@ async def censor_cmd(client, message):
                 for u in users_to_censor:
                     if u.id in censoring["FREE"]:
                         censoring["FREE"].remove(u.id)
-                        out += f"` → ` {get_username(u)} is no longer immune immune\n"
+                        out += f"` → ` {get_username(u)} is no longer immune\n"
                         changed = True
             else:
                 for u in users_to_censor:
