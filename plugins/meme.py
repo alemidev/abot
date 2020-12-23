@@ -4,6 +4,7 @@ import random
 import os
 import traceback
 import io
+import re
 
 from PIL import Image, ImageEnhance, ImageOps
 
