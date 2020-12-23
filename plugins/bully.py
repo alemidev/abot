@@ -43,7 +43,7 @@ HELP.add_help(["censor", "c"], "immediately delete messages",
             "Users made immune (`free` cmd) will not be affected by mass censoring, use flag `-i` to revoke immunity from someone. "+
             "Use flag `-list` to get censored users in current chat. Messages from self will never be censored. " +
             "More than one target can be specified. To free someone from censorship, use `.free` command.",
-            args="[-list] [-i] [-mass] <targets>")
+            args="[-list] [-mass] [-i] <targets>")
 @alemiBot.on_message(is_superuser & filterCommand(["censor", "c"], list(alemiBot.prefixes), flags=["-list", "-i", "-mass"]))
 async def censor_cmd(client, message):
     global censoring
@@ -101,7 +101,7 @@ HELP.add_help(["free", "f", "stop"], "stop censoring someone",
             "Stop censoring someone in current chat. Use flag `-mass` to stop mass censorship current chat. " +
             "You can add `-i` to make target immune to mass censoring. More than one target can be specified (separate with spaces). " +
             "Add `-list` flag to list immune users (censor immunity is global but doesn't bypass specific censorship)",
-            args="[-mass] [-list] [-i] <targets>")
+            args="[-list] [-mass] [-i] <targets>")
 @alemiBot.on_message(is_superuser & filterCommand(["free", "f", "stop"], list(alemiBot.prefixes), flags=["-list", "-i", "-mass"]))
 async def free_cmd(client, message):
     global censoring
