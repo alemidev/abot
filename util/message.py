@@ -59,7 +59,7 @@ async def edit_or_reply(message, text, *args, **kwargs):
         if message.scheduled: # lmao ye right import more bloat
             await edit_scheduled(message._client, message, text, *args, **kwargs)
         else:
-            await message.edit(message.text.markdown + "\n" + text, *args, **kwargs)
+            await message.edit(get_text(message) + "\n" + text, *args, **kwargs)
         return message
     else:
         ret = None
