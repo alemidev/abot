@@ -82,8 +82,10 @@ HELP.add_help("solve", "attempt to solve equation",
                 "equation. You can pass systems too!", args="<expr>", public=True)
 @alemiBot.on_message(is_allowed & filterCommand("solve", list(alemiBot.prefixes)))
 async def solve_cmd(client, message):
+    if "arg" not in message.command:
+        return await edit_or_reply(message, "`[!] → ` No arg given")
     try:
-        expr = " ".join(message.command[1:])
+        expr = message.command["arg"]
         logger.info(f"Solving \'{expr}\'")
         in_expr = parse_expr(expr).simplify()
         res = solve(in_expr)
