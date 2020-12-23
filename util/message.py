@@ -9,7 +9,7 @@ def is_me(message):
 
 def get_text(message):
     if message.text is not None:
-        return message.text
+        return message.text.markdown
     else:
         if message.caption is not None:
             return message.caption
@@ -55,7 +55,7 @@ def parse_sys_dict(msg):
 async def edit_or_reply(message, text, *args, **kwargs):
     if len(text.strip()) == 0:
         return message
-    if is_me(message) and len(message.text.markdown + text) < 4090:
+    if is_me(message) and len(get_text(message) + text) < 4090:
         if message.scheduled: # lmao ye right import more bloat
             await edit_scheduled(message._client, message, text, *args, **kwargs)
         else:
