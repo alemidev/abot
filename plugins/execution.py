@@ -81,6 +81,8 @@ async def runit(client, message):
             await client.send_document(message.chat.id, out)
         else:
             await msg.edit(tokenize_lines(f"$ {args}\n\n" + output, mode='html'), parse_mode='html')
+    except asyncio.exceptions.TimeoutError:
+        await msg.edit(f"`$ {args}`\n`[!] → ` Timed out")
     except Exception as e:
         traceback.print_exc()
         await msg.edit(f"`$ {args}`\n`[!] → ` " + str(e))
