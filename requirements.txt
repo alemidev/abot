@@ -1,4 +1,4 @@
-pyrogram==1.0.7
+pyrogram
 termcolor
 wikipedia
 italian-dictionary
