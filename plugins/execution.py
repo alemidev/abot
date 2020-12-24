@@ -55,11 +55,16 @@ HELP = HelpCategory("EXECUTION")
 
 HELP.add_help(["run", "r"], "run command on server",
                 "runs a command on server. Shell will be from user running bot. " +
-                "Every command starts in bot root folder.", args="<cmd>")
-@alemiBot.on_message(is_superuser & filterCommand(["run", "r"], list(alemiBot.prefixes)))
+                "Every command starts in bot root folder. There is a timeout of 10 seconds " +
+                "to any command issued, this can be changed with the `-t` option. You should " +
+                "properly wrap your arguments with `\"`, they will be ignored by cmd parser.", args="[-t <n>] <cmd>")
+@alemiBot.on_message(is_superuser & filterCommand(["run", "r"], list(alemiBot.prefixes), options={
+    "timeout" : ["-t", "-time"]
+}))
 async def runit(client, message):
     args = re.sub(r"-delme(?: |)(?:[0-9]+|)", "", message.command["raw"])
     msg = await edit_or_reply(message, "` → ` Running")
+    timeout = float(message.command["timeout"]) if "timeout" in message.command else 10.0
     try:
         logger.info(f"Running command \"{args}\"")
         proc = await asyncio.create_subprocess_shell(
@@ -67,7 +72,7 @@ async def runit(client, message):
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT)
 
-        stdout, stderr = await proc.communicate()
+        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout)
         output = cleartermcolor(stdout.decode())
         if len(args) + len(output) > 4080:
             await msg.edit(f"```$ {args}\n → Output too long, sending as file```")
