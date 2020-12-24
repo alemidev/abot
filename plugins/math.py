@@ -79,8 +79,9 @@ async def graph(client, message):
 
 HELP.add_help("solve", "attempt to solve equation",
                 "this command will run sympy `solve` and attempt to find roots of the " +
-                "equation. You can pass systems too!", args="<expr>", public=True)
-@alemiBot.on_message(is_allowed & filterCommand("solve", list(alemiBot.prefixes)))
+                "equation. You can pass systems too! Add flag `-simpl` to simplify your input " +
+                "(won't work with systems)", args="[-simpl] <expr>", public=True)
+@alemiBot.on_message(is_allowed & filterCommand("solve", list(alemiBot.prefixes), flags=["-simpl"]))
 async def solve_cmd(client, message):
     if "arg" not in message.command:
         return await edit_or_reply(message, "`[!] → ` No arg given")
