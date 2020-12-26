@@ -31,6 +31,8 @@ def filterCommand(commands: str or List[str], prefixes: str or List[str] = "/",
     command_re = re.compile(r"([\"'])(.*?)(?<!\\)\1|(\S+)")
 
     async def func(flt, client, message: Message):
+        if message.scheduled: # allow to trigger commands!
+            return False
         text = message.text or message.caption
         message.command = None
 

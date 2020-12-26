@@ -23,7 +23,7 @@ HELP = HelpCategory("MANAGEMENT")
 HELP.add_help("delme", "immediately delete message",
                 "add `-delme` at the end of a message to have it deleted after a time. " +
                 "If no time is given, message will be immediately deleted", args="[<time>]")
-@alemiBot.on_message(filters.me & filters.regex(pattern=
+@alemiBot.on_message(~filters.scheduled & filters.me & filters.regex(pattern=
     r"(?:.*|)(?:-delme)(?: |)(?P<time>[0-9]+|)$"
 ), group=5)
 async def deleteme(client, message):
