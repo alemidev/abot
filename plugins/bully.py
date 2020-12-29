@@ -172,6 +172,28 @@ async def bully(client, message):
         logger.info("Get bullied noob")
     await client.set_offline()
 
+HELP.add_help(["everyone"], "will mention everyone in the chat",
+            "for every user in current chat, it will mention him. Message will be edited " +
+            "to add further mentions to not spam chat. When done mentioning, message will become `@all`. " +
+            "This is super lame, don't abuse.")
+@alemiBot.on_message(is_superuser & filterCommand("everyone", list(alemiBot.prefixes)))
+async def mass_mention(client, message):
+    try:
+        msg = await edit_or_reply(message, "` → ` Looking up members")
+        n = 0
+        text = ""
+        async for member in message.chat.iter_members():
+            if len(text + member.mention) >= 4096 or len(n) >= 100: # I think you can mention max 100 ppl per message?
+                await msg.edit(text)
+                n = 0
+                text = ""
+            text += member.mention + " "
+            n += 1
+        await msg.edit("@all")
+    except Exception as e:
+        traceback.print_exc()
+        await edit_or_reply(message, "`[!] → ` " + str(e))
+
 HELP.add_help(["spam", "flood"], "pretty self explainatory",
             "will send many (`-n`) messages in this chat at a specific (`-t`) interval. " +
             "If no number is given, will default to 3. If no interval is specified, " +
