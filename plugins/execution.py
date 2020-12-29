@@ -66,7 +66,7 @@ async def runit(client, message):
     msg = await edit_or_reply(message, "` → ` Running")
     timeout = float(message.command["timeout"]) if "timeout" in message.command else 10.0
     try:
-        logger.info(f"Running command \"{args}\"")
+        logger.info(f"Executing shell command \"{args}\"")
         proc = await asyncio.create_subprocess_shell(
             args,
             stdout=asyncio.subprocess.PIPE,
@@ -139,7 +139,7 @@ async def execit(client, message):
     msg = message if is_me(message) else await message.reply("`[PLACEHOLDER]`")
     await msg.edit("```" + fancy_args + "```\n` → ` Executing")
     try:
-        logger.info(f"Executing \"{args}\"")
+        logger.info(f"Executing python expr \"{args}\"")
         with stdoutWrapper() as fake_stdout:
             await aexec(args, client, message)
         result = fake_stdout.getvalue()
