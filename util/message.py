@@ -70,7 +70,7 @@ async def edit_or_reply(message, text, *args, **kwargs):
 def tokenize_json(text):
     res = re.subn(
         r'("[^\"]+"|[0-9.\-]+)',
-        '``\g<1>``', text)
+        '``\g<1>``', text.strip())
     if res[1] * 2 > 100: # we generate 2 entities for every replace we do (kinda)
         return tokenize_lines(text) # try to tokenize per line at least
     return "`" + res[0] + "`"
@@ -78,7 +78,7 @@ def tokenize_json(text):
 def tokenize_lines(text, mode='markdown'):
     BEFORE = "```" if mode == "markdown" else "<code>"
     AFTER = "```" if mode == "markdown" else "</code>"
-    res =  re.subn(r'^(.+)$', BEFORE+'\g<1>'+AFTER, text)
+    res =  re.subn(r'(.+)', BEFORE+'\g<1>'+AFTER, text.strip())
     if res[1] * 2 > 100: # we generate 2 entities for every replace we do (kinda)
         return BEFORE + text + AFTER
-    return res[0] + "\n" + BEFORE + AFTER # adding an empty line as code is a shit fix to a dumb and unexplainable bug
+    return res[0]
