@@ -191,7 +191,7 @@ async def mass_mention(client, message):
             n += 1
         if len(text) > 0:
             await msg.edit(text)
-        await msg.edit("@all")
+        await msg.edit("`@all`")
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
