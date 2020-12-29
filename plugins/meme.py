@@ -73,9 +73,10 @@ async def getmeme(client, message):
             out += ", ".join(memes)
             out += "]"
             await edit_or_reply(message, out)
-        elif "cmd" in args:
-            memes = [ s for s in os.listdir("data/memes")      # I can't decide if this
-                        if s.lower().startswith(args["cmd"][0])] #  is nice or horrible
+        elif "cmd" in args and args["cmd"][0] != "-delme":
+            name = args["cmd"][0]
+            memes = [ s for s in os.listdir("data/memes")
+                        if s.lower().startswith(name) ]
             if len(memes) > 0:
                 fname = memes[0]
                 logger.info(f"Getting specific meme : \"{fname}\"")
