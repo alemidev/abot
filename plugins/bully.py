@@ -187,7 +187,7 @@ async def mass_mention(client, message):
                 await msg.edit(text)
                 n = 0
                 text = ""
-            text += member.mention + " "
+            text += member.user.mention + " "
             n += 1
         await msg.edit("@all")
     except Exception as e:
