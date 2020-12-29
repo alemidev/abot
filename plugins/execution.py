@@ -75,17 +75,17 @@ async def runit(client, message):
         stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout)
         output = cleartermcolor(stdout.decode())
         if len(args) + len(output) > 4080:
-            await msg.edit(f"```$ {args}\n → Output too long, sending as file```")
+            await msg.edit(f"`$` `{args}`\n` → Output too long, sending as file`")
             out = io.BytesIO((f"$ {args}\n" + output).encode('utf-8'))
             out.name = "output.txt"
             await client.send_document(message.chat.id, out)
         else:
             await msg.edit(tokenize_lines(f"$ {args}\n\n" + output, mode='html'), parse_mode='html')
     except asyncio.exceptions.TimeoutError:
-        await msg.edit(f"`$ {args}`\n`[!] → ` Timed out")
+        await msg.edit(f"`$` `{args}`\n`[!] → ` Timed out")
     except Exception as e:
         traceback.print_exc()
-        await msg.edit(f"`$ {args}`\n`[!] → ` " + str(e))
+        await msg.edit(f"`$` `{args}`\n`[!] → ` " + str(e))
 
 HELP.add_help(["eval", "e"], "eval a python expression",
                 "eval a python expression. No imports can be made nor variables can be " +
@@ -144,7 +144,7 @@ async def execit(client, message):
             await aexec(args, client, message)
         result = fake_stdout.getvalue()
         if len(args) + len(result) > 4080:
-            await msg.edit(f"```>>> {fancy_args}\n → Output too long, sending as file```")
+            await msg.edit(f"`>>>` `{fancy_args}`\n` → Output too long, sending as file`")
             out = io.BytesIO((f">>> {fancy_args}\n" + result).encode('utf-8'))
             out.name = "output.txt"
             await client.send_document(message.chat.id, out, parse_mode='markdown')
