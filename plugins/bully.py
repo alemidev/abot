@@ -177,7 +177,7 @@ async def bully(client, message):
 
 INTERRUPT_STEALER = False
 
-async def attack_username(client, chat, username, interval, limit):
+async def attack_username(client, message, chat, username, interval, limit):
     global INTERRUPT_STEALER
     attempts = 0
     while not INTERRUPT_STEALER and time.time() < limit:
@@ -185,12 +185,15 @@ async def attack_username(client, chat, username, interval, limit):
             await client.set_chat_title(chat.id, f"[{attempts}] getting {username}")
             attempts += 1
             await client.update_chat_username(chat.id, username)
-            await chat.send_message(f"` → ` Successfully stolen --@{username}-- in **{attempts}** attempts")
-            break
+            await message.edit(f"` → ` Successfully stolen --@{username}-- in **{attempts}** attempts")
+            INTERRUPT_STEALER = False
+            return
         except BadRequest as e:
             pass # ignore
         await asyncio.sleep(interval)
     INTERRUPT_STEALER = False
+    await message.edit(f"`[!] → ` Failed to steal --@{username}-- (made **{attempts}** attempts)")
+    await client.delete_channel(chat.id)
 
 HELP.add_help(["username"], "tries to steal an username",
             "Will create an empty channel and then attempt to rename it to given username until it succeeds or " +
@@ -212,8 +215,8 @@ async def steal_username_cmd(client, message):
         chan = await client.create_channel(f"getting {uname}", "This channel was automatically created to occupy an username")
         time_limit = time.time() + parse_timedelta(message.command["limit"] if "limit" in message.command else "1h").total_seconds()
         interval = float(message.command["interval"]) if "interval" in message.command else 5
-        asyncio.get_event_loop().create_task(attack_username(client, chan, uname, interval, time_limit))
         await edit_or_reply(message, "` → ` Started...")
+        asyncio.get_event_loop().create_task(attack_username(client, message, chan, uname, interval, time_limit))
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
