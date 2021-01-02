@@ -184,7 +184,7 @@ async def attack_username(client, message, chat, username, interval, limit):
         try:
             attempts += 1
             await client.get_users(username)
-            await message.edit("` → ` Attempting to steal --@{username}-- (**{attempts}** attempts)"
+            await message.edit("` → ` Attempting to steal --@{username}-- (**{attempts}** attempts)")
             await asyncio.sleep(interval)
         except BadRequest as e: # Username not occupied!
             await client.update_chat_username(chat.id, username)
