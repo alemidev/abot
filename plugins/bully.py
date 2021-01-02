@@ -185,7 +185,7 @@ async def attack_username(client, message, chat, username, interval, limit):
         try:
             attempts += 1
             await client.send(ResolveUsername(username=username)) # this should bypass cache and will get me floodwaited very reliably (:
-            await message.edit("` → ` Attempting to steal --@{username}-- (**{attempts}** attempts)")
+            await message.edit(f"` → ` Attempting to steal --@{username}-- (**{attempts}** attempts)")
             await asyncio.sleep(interval)
         except BadRequest as e: # Username not occupied!
             await client.update_chat_username(chat.id, username)
@@ -214,6 +214,8 @@ async def steal_username_cmd(client, message):
         if "cmd" not in message.command:
             return await edit_or_reply(message, "`[!] → ` No username given")
         uname = message.command["cmd"][0]
+        if uname.startswith("@"):
+            uname = uname[1:]
         chan = await client.create_channel(f"getting {uname}", "This channel was automatically created to occupy an username")
         time_limit = time.time() + parse_timedelta(message.command["limit"] if "limit" in message.command else "1h").total_seconds()
         interval = float(message.command["interval"]) if "interval" in message.command else 30
