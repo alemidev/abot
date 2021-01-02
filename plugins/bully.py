@@ -7,6 +7,7 @@ import time
 
 from pyrogram import filters
 from pyrogram.errors import BadRequest
+from pyrogram.raw.functions.contacts import ResolveUsername
 
 from bot import alemiBot
 
@@ -183,7 +184,7 @@ async def attack_username(client, message, chat, username, interval, limit):
     while not INTERRUPT_STEALER and time.time() < limit:
         try:
             attempts += 1
-            await client.get_users(username)
+            await client.send(ResolveUsername(username=username)) # this should bypass cache and will get me floodwaited very reliably (:
             await message.edit("` → ` Attempting to steal --@{username}-- (**{attempts}** attempts)")
             await asyncio.sleep(interval)
         except BadRequest as e: # Username not occupied!
@@ -197,8 +198,9 @@ async def attack_username(client, message, chat, username, interval, limit):
 
 HELP.add_help(["username"], "tries to steal an username",
             "Will create an empty channel and then attempt to rename it to given username until it succeeds or " +
-            "max time is reached. Attempts interval can be specified (`-i`), defaults to 5 seconds. By default " +
-            "it will give up after 1h of attempts. Manually stop attempts with `-stop`.", args="[-stop] [-i <n>] [-lim <time>] <username>")
+            "max time is reached. Attempts interval can be specified (`-i`), defaults to 30 seconds. By default " +
+            "it will give up after 1h of attempts. Manually stop attempts with `-stop`. This is very aggressive and " +
+            "will cause FloodWaits super easily if abused, be wary!", args="[-stop] [-i <n>] [-lim <time>] <username>")
 @alemiBot.on_message(is_superuser & filterCommand("username", list(alemiBot.prefixes), options={
     "interval" : ["-i", "-int"],
     "limit" : ["-lim", "-limit"]
@@ -214,7 +216,7 @@ async def steal_username_cmd(client, message):
         uname = message.command["cmd"][0]
         chan = await client.create_channel(f"getting {uname}", "This channel was automatically created to occupy an username")
         time_limit = time.time() + parse_timedelta(message.command["limit"] if "limit" in message.command else "1h").total_seconds()
-        interval = float(message.command["interval"]) if "interval" in message.command else 5
+        interval = float(message.command["interval"]) if "interval" in message.command else 30
         await edit_or_reply(message, "` → ` Created channel")
         asyncio.get_event_loop().create_task(attack_username(client, message, chan, uname, interval, time_limit))
     except Exception as e:
