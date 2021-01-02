@@ -3,8 +3,10 @@ import traceback
 import logging
 import re
 import json
+import time
 
 from pyrogram import filters
+from pyrogram.errors import BadRequest
 
 from bot import alemiBot
 
@@ -12,6 +14,7 @@ from util.permission import is_allowed, is_superuser
 from util.message import is_me, edit_or_reply
 from util.user import get_username
 from util.command import filterCommand
+from util.time import parse_timedelta
 
 from plugins.help import HelpCategory
 
@@ -35,8 +38,6 @@ except FileNotFoundError:
 except:
     traceback.print_exc()
     # ignore
-
-INTERRUPT = False
 
 HELP.add_help(["censor", "c"], "immediately delete messages",
             "Start censoring someone in current chat. Use flag `-mass` to toggle mass censorship in current chat. " +
@@ -96,6 +97,7 @@ async def censor_cmd(client, message):
     if changed:
         with open("data/censoring.json", "w") as f:
             json.dump(censoring, f)
+    await client.set_offline()
 
 HELP.add_help(["free", "f", "stop"], "stop censoring someone",
             "Stop censoring someone in current chat. Use flag `-mass` to stop mass censorship current chat. " +
@@ -151,6 +153,7 @@ async def free_cmd(client, message):
     if changed:
         with open("data/censoring.json", "w") as f:
             json.dump(censoring, f)
+    await client.set_offline()
 
 @alemiBot.on_message(group=9)
 async def bully(client, message):
@@ -170,6 +173,50 @@ async def bully(client, message):
             return # Don't censor innocents!
         await message.delete()
         logger.info("Get bullied noob")
+    await client.set_offline()
+
+INTERRUPT_STEALER = False
+
+async def attack_username(client, chat, username, interval, limit):
+    global INTERRUPT_STEALER
+    attempts = 0
+    while not INTERRUPT_STEALER and time.time() < limit:
+        try:
+            await client.set_chat_title(chat.id, f"[{attempts}] getting {username}")
+            attempts += 1
+            await client.update_chat_username(chat.id, username)
+            await chat.send_message(f"` → ` Successfully stolen --@{username}-- in **{attempts}** attempts")
+            break
+        except BadRequest as e:
+            pass # ignore
+        await asyncio.sleep(interval)
+    INTERRUPT_STEALER = False
+
+HELP.add_help(["username"], "tries to steal an username",
+            "Will create an empty channel and then attempt to rename it to given username until it succeeds or " +
+            "max time is reached. Attempts interval can be specified (`-i`), defaults to 5 seconds. By default " +
+            "it will give up after 1h of attempts. Manually stop attempts with `-stop`.", args="[-stop] [-i <n>] [-lim <time>] <username>")
+@alemiBot.on_message(is_superuser & filterCommand("username", list(alemiBot.prefixes), options={
+    "interval" : ["-i", "-int"],
+    "limit" : ["-lim", "-limit"]
+}, flags=["-stop"]))
+async def steal_username_cmd(client, message):
+    global INTERRUPT_STEALER
+    if "-stop" in message.command["flags"]:
+        INTERRUPT_STEALER = True
+        return await edit_or_reply(message, "` → ` Interrupted")
+    try:
+        if "cmd" not in message.command:
+            return await edit_or_reply(message, "`[!] → ` No username given")
+        uname = message.command["cmd"][0]
+        chan = await client.create_channel(f"getting {uname}", "This channel was automatically created to occupy an username")
+        time_limit = time.time() + parse_timedelta(message.command["limit"] if "limit" in message.command else "1h").total_seconds()
+        interval = float(message.command["interval"]) if "interval" in message.command else 5
+        asyncio.get_event_loop().create_task(attack_username(client, chan, uname, interval, time_limit))
+        await edit_or_reply(message, "` → ` Started...")
+    except Exception as e:
+        traceback.print_exc()
+        await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()
 
 HELP.add_help(["everyone"], "will mention everyone in the chat",
@@ -195,6 +242,9 @@ async def mass_mention(client, message):
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.set_offline()
+
+INTERRUPT_SPAM = False
 
 HELP.add_help(["spam", "flood"], "pretty self explainatory",
             "will send many (`-n`) messages in this chat at a specific (`-t`) interval. " +
@@ -208,10 +258,10 @@ HELP.add_help(["spam", "flood"], "pretty self explainatory",
     "time" : ["-t"],
 }, flags=["-cancel"]))
 async def spam(client, message):
-    global INTERRUPT
+    global INTERRUPT_SPAM
     args = message.command
     if "-cancel" in args["flags"]:
-        INTERRUPT = True
+        INTERRUPT_SPAM = True
         return
     wait = 0
     number = 3
@@ -237,11 +287,12 @@ async def spam(client, message):
             await asyncio.sleep(wait)
             if delme:
                 await msg.delete()
-            if INTERRUPT:
-                INTERRUPT = False
+            if INTERRUPT_SPAM:
+                INTERRUPT_SPAM = False
                 await edit_or_reply(message, f"` → ` Canceled after {i + 1} events")
                 break
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.set_offline()
 
