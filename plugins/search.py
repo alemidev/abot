@@ -1,6 +1,7 @@
 import re
 import asyncio
 import traceback
+from urllib import parse
 
 from pyrogram import filters
 
@@ -149,10 +150,10 @@ async def lmgtfy(client, message):
     if "arg" not in message.command:
         return await edit_or_reply(message, "`[!] → ` No query given")
     try:
-        arg = message.command["arg"].replace(" ", "+")
+        arg = parse.quote_plus(message.command["arg"])
         logger.info(f"lmgtfy {arg}")
         await edit_or_reply(message, f"` → ` http://letmegooglethat.com/?q={arg}",
-                                            disable_web_page_preview=True)
+                                            disable_web_page_preview=True, parse_mode=None)
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
