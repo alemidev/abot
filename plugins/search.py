@@ -7,7 +7,7 @@ from pyrogram import filters
 
 from bot import alemiBot
 
-import wikipedia
+import wikipediaapi
 import italian_dictionary
 from PyDictionary import PyDictionary
 from geopy.geocoders import Nominatim
@@ -119,23 +119,15 @@ HELP.add_help("wiki", "search on wikipedia",
 async def wiki(client, message):
     if "arg" not in message.command:
         return await edit_or_reply(message, "`[!] → ` No query given")
+    lang = message.command["lang"] if "lang" in message.command else "en"
     try:
         await client.send_chat_action(message.chat.id, "upload_document")
-        wikipedia.set_lang(message.command["lang"] if "lang" in message.command else "en")
+        Wikipedia = wikipediaapi.Wikipedia(lang)
         logger.info(f"Searching \"{message.command['arg']}\" on wikipedia")
-        page = wikipedia.page(message.command["arg"])
-        out = f"` → {page.title}`\n"
-        out += page.content[:750]
-        out += f"... {page.url}"
-        await edit_or_reply(message, out)
-        # if len(page.images) > 0:
-        #     try:
-        #         await event.message.reply(out, link_preview=False,
-        #             file=page.images[0])
-        #     except Exception as e:
-        #         await event.message.reply(out)
-        # else:
-        #     await event.message.reply(out, link_preview=False)
+        page = Wikipedia.page(message.command["arg"])
+        if not page.exists():
+            return await edit_or_reply(message, "`[!] → ` No results")
+        await edit_or_reply(message, f"` → {page.title}`\n{page.summary}\n` → ` {page.fullurl}")
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
@@ -152,8 +144,8 @@ async def lmgtfy(client, message):
     try:
         arg = parse.quote_plus(message.command["arg"])
         logger.info(f"lmgtfy {arg}")
-        await edit_or_reply(message, f"` → ` http://letmegooglethat.com/?q={arg}",
-                                            disable_web_page_preview=True, parse_mode=None)
+        await edit_or_reply(message, f"<code> → </code> http://letmegooglethat.com/?q={arg}",
+                                            disable_web_page_preview=True, parse_mode="html")
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))

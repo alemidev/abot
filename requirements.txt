@@ -1,6 +1,6 @@
 pyrogram
 termcolor
-wikipedia
+wikipedia-api
 italian-dictionary
 PyDictionary
 udpy
