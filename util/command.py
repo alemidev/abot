@@ -70,16 +70,16 @@ def filterCommand(commands: str or List[str], prefixes: str or List[str] = "/",
                 while i < len(match_list):
                     if match_list[i] in flt.flags:
                         token = match_list.pop(i)
-                        raw_buf = raw_buf.replace(token, "")
+                        raw_buf = raw_buf.replace(token, "", 1)
                         message.command["flags"].append(token)
                         continue
                     op = False
                     for k in flt.options:
                         if match_list[i] in flt.options[k]:
                             op = True
-                            raw_buf = raw_buf.replace(match_list.pop(i), "") # most importantly, pop one token!
+                            raw_buf = raw_buf.replace(match_list.pop(i), "", 1) # most importantly, pop one token!
                             message.command[k] = match_list.pop(i)
-                            raw_buf = raw_buf.replace(message.command[k], "")
+                            raw_buf = raw_buf.replace(message.command[k], "", 1)
                             break
                     if not op:
                         i +=1
