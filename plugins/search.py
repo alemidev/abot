@@ -112,14 +112,17 @@ async def urbandict(client, message):
 
 HELP.add_help("wiki", "search on wikipedia",
                 "search on wikipedia, attaching initial text and a link. Language will default to " +
-                "english if not specified with `-l`.", args="[-l <lang>] <query>", public=True)
+                "english if not specified with `-l`. By default, only first 1000 characters will be printed, " +
+                "a different amount of characters to print can be specified with `-max`.", args="[-l <lang>] [-max <n>] <query>", public=True)
 @alemiBot.on_message(is_allowed & filterCommand("wiki", list(alemiBot.prefixes), options={
-    "lang" : ["-l", "-lang"]
+    "lang" : ["-l", "-lang"],
+    "limit" : ["-max"]
 }))
 async def wiki(client, message):
     if "arg" not in message.command:
         return await edit_or_reply(message, "`[!] → ` No query given")
     lang = message.command["lang"] if "lang" in message.command else "en"
+    limit = int(message.command["limit"]) if "limit" in message.command else 1000
     try:
         await client.send_chat_action(message.chat.id, "upload_document")
         Wikipedia = wikipediaapi.Wikipedia(lang)
@@ -127,7 +130,8 @@ async def wiki(client, message):
         page = Wikipedia.page(message.command["arg"])
         if not page.exists():
             return await edit_or_reply(message, "`[!] → ` No results")
-        await edit_or_reply(message, f"` → {page.title}`\n{page.summary}\n` → ` {page.fullurl}")
+        text = page.text[:limit] if len(page.summary) < limit else page.summary[:limit]
+        await edit_or_reply(message, f"` → {page.title}`\n{text} ...\n` → ` {page.fullurl}")
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
