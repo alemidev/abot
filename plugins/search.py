@@ -130,8 +130,10 @@ async def wiki(client, message):
         page = Wikipedia.page(message.command["arg"])
         if not page.exists():
             return await edit_or_reply(message, "`[!] → ` No results")
-        text = page.text[:limit] if len(page.summary) < limit else page.summary[:limit]
-        await edit_or_reply(message, f"` → {page.title}`\n{text} ...\n` → ` {page.fullurl}")
+        text = page.text if len(page.summary) < limit else page.summary
+        if len(text) > limit:
+            text = text[:limit] + " ..."
+        await edit_or_reply(message, f"` → {page.title}`\n{text}\n` → ` {page.fullurl}")
     except Exception as e:
         traceback.print_exc()
         await edit_or_reply(message, "`[!] → ` " + str(e))
