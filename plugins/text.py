@@ -64,9 +64,9 @@ async def slowtype(client, message):
 
 HELP.add_help(["zalgo"], "h̴͔̣̰̲̣̫̲͉̞͍͖̩͖̭͓̬̼ͫ̈͒̊͟͟͠e̵̙͓̼̻̳̝͍̯͇͕̳̝͂̌͐ͫ̍ͬͨ͑̕ ̷̴̢̛̝̙̼̣̔̎̃ͨ͆̾ͣͦ̑c̵̥̼͖̲͓̖͕̭ͦ̽ͮͮ̇ͭͥ͠o̷̷͔̝̮̩͍͉͚͌̿ͥ̔ͧ̉͛ͭ͊̀͜ͅm̵̸̡̰̭͓̩̥͚͍͎̹͖̠̩͙̯̱͙͈͍͉͂ͩ̄̅͗͞e̢̛͖̪̞̐̒̈̓̒́͒̈́̀ͅṡ̡̢̟͖̩̝̣͙̣͔̑́̓̿̊̑̍̉̓͘͢",
                 "Will completely fuck up the text with 'zalgo' patterns. You can increase noise " +
-                "with the `-n` flag, otherwise will default to 1. You can increase overrall damage with `-d`. " +
-                "The max number of extra characters per letter can be specified with `-max`, with default 10.",
-                args="[-n <n>] [-d <n>] [-max <n>] <text>", public=True)
+                "with the `-n` flag, otherwise will default to 1. You can increase overrall damage with `-d` " +
+                "(should be a float from 0 to 1, default to 0). The max number of extra characters per " +
+                "letter can be specified with `-max`, with default 10.", args="[-n <n>] [-d <n>] [-max <n>] <text>", public=True)
 @alemiBot.on_message(is_allowed & filterCommand(["zalgo"], list(alemiBot.prefixes), options={
     "noise" : ["-n", "-noise"],
     "damage" : ["-d", "-damage"],
@@ -79,9 +79,10 @@ async def zalgo_cmd(client, message):
         return 
     try:
         noise = int(message.command["noise"]) if "noise" in message.command else 1
-        damage = float(message.command["damage"]) if "damage" in message.command else 0
+        damage = max(min(float(message.command["damage"]), 1.0), 0.0) if "damage" in message.command else 0
+        max_accents = int(message.command["max"]) if "max" in message.command else 10
         z = zalgo.zalgo()
-        z.maxAccentsPerLetter = int(message.command["max"]) if "max" in message.command else 10
+        z.maxAccentsPerLetter = max_accents
         z.numAccentsUp = ( 1+ (damage*noise), 3 * noise )
         z.numAccentsDown = ( 1+ (damage*noise), 3 * noise )
         z.numAccentsMiddle = ( 1+ (damage*noise), 2 * noise )
