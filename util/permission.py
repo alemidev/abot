@@ -34,7 +34,7 @@ async def superuser_filter(_, __, m): # basically filters.me plus lookup in a li
 is_superuser = create(superuser_filter)
 
 def list_allowed():
-    return list(int(k) for k in ALLOWED.keys() if key.isnumeric())
+    return list(int(k) for k in ALLOWED.keys() if k.isnumeric())
 
 def allow(uid, val=True):
     if str(uid) in ALLOWED and ALLOWED[str(uid)] == val:
