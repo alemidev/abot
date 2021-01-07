@@ -189,7 +189,7 @@ async def manage_allowed_cmd(client, message):
         out = ""
         action_allow = message.command["base"] == "allow"
         for u in users_to_manage:
-            u_name = get_username(u)
+            u_name = u.mention
             if action_allow:
                 if allow(u.id, val=u_name):
                     out += f"` → ` Allowed **{u_name}**\n"
@@ -225,7 +225,7 @@ async def trusted_list(client, message):
         else:
             users = await client.get_users([ int(u) for u in user_ids ]) # this thing gives a PeerIdInvalid exc???
         for u in users:
-            text += f"{get_username(u)}, "
+            text += f"{u.mention}, "
         text += "`]`"
         await edit_or_reply(message, f"` → Allowed Users : `\n{text}\n{issues}") 
     except Exception as e:
