@@ -7,6 +7,7 @@ import sys
 import json
 import subprocess
 import logging
+from logging.handlers import RotatingFileHandler
 from datetime import datetime
 from pyrogram import Client, idle
 from configparser import ConfigParser
@@ -64,8 +65,7 @@ if __name__ == "__main__":
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
     # create file handler which logs even debug messages
-    fh = logging.handlers.RotatingFileHandler('data/debug.log',
-                                maxBytes=1048576, backupCount=5) # 1MB files
+    fh = RotatingFileHandler('data/debug.log', maxBytes=1048576, backupCount=5) # 1MB files
     fh.setLevel(logging.INFO)
     # create console handler with a higher log level
     ch = logging.StreamHandler()
