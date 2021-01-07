@@ -64,7 +64,7 @@ if __name__ == "__main__":
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
     # create file handler which logs even debug messages
-    fh = logging.FileHandler('data/debug.log')
+    fh = logging.RotatingFileHandler('data/debug.log', maxBytes=1048576, backupCount=5) # 1MB files
     fh.setLevel(logging.INFO)
     # create console handler with a higher log level
     ch = logging.StreamHandler()
