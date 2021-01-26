@@ -227,9 +227,9 @@ async def steal_username_cmd(client, message):
     await client.set_offline()
 
 
-async def fake_typing(client, tgt, cycle_n, action, message):
+async def fake_typing(client, tgt, cycle_n, sleep_t, action, message):
     for _ in range(cycle_n):
-        await asyncio.sleep(4) # Do steps of 4 to compensate eventual lag
+        await asyncio.sleep(sleep_t)
         await client.send_chat_action(tgt, action)
     try:
         await edit_or_reply(message, "` → ` Done")
@@ -238,7 +238,8 @@ async def fake_typing(client, tgt, cycle_n, action, message):
 
 HELP.add_help(["typing"], "will show as typing on chat",
             "makes you show as typing on a certain chat. You can specify an username or a chat/user id. If none is " +
-            "given, it will work in current chat. The amount of time can be given as a packed string like this : " +
+            "given, it will work in current chat. It works by sending a chat action every 4 seconds (they last 5), but a custom " +
+            "interval can be specified with `-i`. The amount of time can be given as a packed string like this : " +
             "`8y3d4h15m3s` (years, days, hours, minutes, seconds), any individual token can be given in any position " +
             "and all are optional, it can just be `30s` or `5m`. If you want to include spaces, wrap the 'time' string in `\"`. " +
             "A different chat action from 'typing' can be specified with `-a`. Available chat actions are: `typing`, `upload_photo`, " +
@@ -246,13 +247,15 @@ HELP.add_help(["typing"], "will show as typing on chat",
             "`upload_video_note`, `choose_contact`, `playing`, `speaking`, `cancel`.", args="[-t <target>] [-a <action>] <time>")
 @alemiBot.on_message(is_superuser & filterCommand("typing", list(alemiBot.prefixes), options={
     "target" : ["-t"],
+    "interval" : ["-i"],
     "action" : ["-a", "-action"]
 }))
 async def typing_cmd(client, message):
     try:
         if "cmd" not in message.command:
             return await edit_or_reply(message, "`[!] → ` No amount of time given")
-        number_of_cycles = int(parse_timedelta(message.command["cmd"][0]).total_seconds() / 4)# Do steps of 4 to compensate eventual lag
+        interval = int(message.command["interval"]) if "interval" in message.command else 4
+        cycles = int(parse_timedelta(message.command["cmd"][0]).total_seconds() / interval)
         tgt = message.chat.id
         action = message.command["action"] if "action" in message.command else "typing"
         if "target" in message.command:
@@ -262,7 +265,7 @@ async def typing_cmd(client, message):
             elif tgt.isnumeric():
                 tgt = int(tgt)
         await client.send_chat_action(tgt, action)
-        asyncio.get_event_loop().create_task(fake_typing(client, tgt, number_of_cycles, action, message))
+        asyncio.get_event_loop().create_task(fake_typing(client, tgt, cycles, interval, action, message))
         await edit_or_reply(message, f"` → ` {action} ...")
     except Exception as e:
         traceback.print_exc()
