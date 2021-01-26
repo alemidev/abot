@@ -239,12 +239,12 @@ async def fake_typing(client, tgt, cycle_n, sleep_t, action, message):
 HELP.add_help(["typing"], "will show as typing on chat",
             "makes you show as typing on a certain chat. You can specify an username or a chat/user id. If none is " +
             "given, it will work in current chat. It works by sending a chat action every 4 seconds (they last 5), but a custom " +
-            "interval can be specified with `-i`. The amount of time can be given as a packed string like this : " +
+            "interval can be specified with `-i`. You can specify for how long chat actions should be sent with a packed string like this : " +
             "`8y3d4h15m3s` (years, days, hours, minutes, seconds), any individual token can be given in any position " +
             "and all are optional, it can just be `30s` or `5m`. If you want to include spaces, wrap the 'time' string in `\"`. " +
             "A different chat action from 'typing' can be specified with `-a`. Available chat actions are: `typing`, `upload_photo`, " +
             "`record_video`, `upload_video`, `record_audio`, `upload_audio`, `upload_document`, `find_location`, `record_video_note`, " +
-            "`upload_video_note`, `choose_contact`, `playing`, `speaking`, `cancel`.", args="[-t <target>] [-a <action>] <time>")
+            "`upload_video_note`, `choose_contact`, `playing`, `speaking`, `cancel`.", args="[-t <target>] [-a <action>] [-i <n>] <time>")
 @alemiBot.on_message(is_superuser & filterCommand("typing", list(alemiBot.prefixes), options={
     "target" : ["-t"],
     "interval" : ["-i"],
