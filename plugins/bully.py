@@ -246,7 +246,7 @@ async def typing_cmd(client, message):
     try:
         if "cmd" not in message.command:
             return await edit_or_reply(message, "`[!] → ` No amount of time given")
-        number_of_cycles = parse_timedelta(message.command["cmd"][0]).total_seconds() // 4 # Do steps of 4 to compensate eventual lag
+        number_of_cycles = int(parse_timedelta(message.command["cmd"][0]).total_seconds() / 4)# Do steps of 4 to compensate eventual lag
         tgt = message.chat.id
         if "target" in message.command:
             tgt = message.command["target"]
