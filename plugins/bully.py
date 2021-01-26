@@ -226,6 +226,41 @@ async def steal_username_cmd(client, message):
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()
 
+
+async def fake_typing(client, tgt, cycle_n, message):
+    for _ in range(cycle_n):
+        await client.send_chat_action(tgt, "typing")
+        await asyncio.sleep(4) # Do steps of 4 to compensate eventual lag
+    await edit_or_reply(message, "`` → ` Done")
+
+HELP.add_help(["typing"], "will show as typing on chat",
+            "makes you show as typing on a certain chat. You can specify an username or a chat/user id. If none is " +
+            "given, it will work in current chat. The amount of time can be given as a packed string like this : " +
+            "`8y3d4h15m3s` (years, days, hours, minutes, seconds), any individual token can be given in any position " +
+            "and all are optional, it can just be `30s` or `5m`. If you want to include spaces, wrap the 'time' string in `\"`.",
+            args="[-t <target>] <time>]")
+@alemiBot.on_message(is_superuser & filterCommand("typing", list(alemiBot.prefixes), options={
+    "target" : ["-t"]
+}))
+async def typing_cmd(client, message):
+    try:
+        if "cmd" not in message.command:
+            return await edit_or_reply(message, "`[!] → ` No amount of time given")
+        number_of_cycles = parse_timedelta(message.command["cmd"][0]).total_seconds() // 4 # Do steps of 4 to compensate eventual lag
+        tgt = message.chat.id
+        if "target" in message.command:
+            tgt = message.command["target"]
+            if tgt.startswith("@"):
+                tgt = (await client.get_chat(tgt)).id
+            elif tgt.isnumeric():
+                tgt = int(tgt)
+        asyncio.get_event_loop().create_task(fake_typing(client, tgt, number_of_cycles, message))
+        await edit_or_reply(message, "` → ` typing ...")
+    except Exception as e:
+        traceback.print_exc()
+        await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.set_offline()
+    
 HELP.add_help(["everyone"], "will mention everyone in the chat",
             "for every user in current chat, it will mention him. Message will be edited " +
             "to add further mentions to not spam chat. When done mentioning, message will become `@all`. " +
