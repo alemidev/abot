@@ -240,7 +240,7 @@ HELP.add_help(["typing"], "will show as typing on chat",
             "and all are optional, it can just be `30s` or `5m`. If you want to include spaces, wrap the 'time' string in `\"`. " +
             "A different chat action from 'typing' can be specified with `-a`. Available chat actions are: `typing`, `upload_photo`, " +
             "`record_video`, `upload_video`, `record_audio`, `upload_audio`, `upload_document`, `find_location`, `record_video_note`, " +
-            "`upload_video_note`, `choose_contact`, `playing`, `speaking`, `cancel`.", args="[-t <target>] [-a <action>] <time>]")
+            "`upload_video_note`, `choose_contact`, `playing`, `speaking`, `cancel`.", args="[-t <target>] [-a <action>] <time>")
 @alemiBot.on_message(is_superuser & filterCommand("typing", list(alemiBot.prefixes), options={
     "target" : ["-t"],
     "action" : ["-a", "-action"]
