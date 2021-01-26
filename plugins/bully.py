@@ -231,7 +231,7 @@ async def fake_typing(client, tgt, cycle_n, message):
     for _ in range(cycle_n):
         await client.send_chat_action(tgt, "typing")
         await asyncio.sleep(4) # Do steps of 4 to compensate eventual lag
-    await edit_or_reply(message, "`` → ` Done")
+    await edit_or_reply(message, "` → ` Done")
 
 HELP.add_help(["typing"], "will show as typing on chat",
             "makes you show as typing on a certain chat. You can specify an username or a chat/user id. If none is " +
@@ -246,7 +246,7 @@ async def typing_cmd(client, message):
     try:
         if "cmd" not in message.command:
             return await edit_or_reply(message, "`[!] → ` No amount of time given")
-        number_of_cycles = parse_timedelta(message.command["cmd"][0]).total_seconds() // 4 # Do steps of 4 to compensate eventual lag
+        number_of_cycles = int(parse_timedelta(message.command["cmd"][0]).total_seconds() / 4) # Do steps of 4 to compensate eventual lag
         tgt = message.chat.id
         if "target" in message.command:
             tgt = message.command["target"]
