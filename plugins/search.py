@@ -1,6 +1,5 @@
 import re
 import asyncio
-import traceback
 from urllib import parse
 
 from pyrogram import filters
@@ -50,7 +49,7 @@ async def diz(client, message):
         out += "\n\n".join(res['definizione'])
         await edit_or_reply(message, out)
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .diz command")
         await edit_or_reply(message, "`[!] → ` " + str(e) if str(e) != "" else "Not found")
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()
@@ -77,7 +76,7 @@ async def dic(client, message):
             out += "\n\n"
         await edit_or_reply(message, out)
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .dic command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()
@@ -105,7 +104,7 @@ async def urbandict(client, message):
                    f"{res[i].definition}\n\n<i>{res[i].example}</i>\n\n"
         await edit_or_reply(message, out, parse_mode="html")
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .ud command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()
@@ -135,7 +134,7 @@ async def wiki(client, message):
             text = text[:limit] + " ..."
         await edit_or_reply(message, f"` → {page.title}`\n{text}\n` → ` {page.fullurl}")
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .wiki command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()
@@ -153,7 +152,7 @@ async def lmgtfy(client, message):
         await edit_or_reply(message, f"<code> → </code> http://letmegooglethat.com/?q={arg}",
                                             disable_web_page_preview=True, parse_mode="html")
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .lmgtfy command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()
 
@@ -192,7 +191,7 @@ async def location_cmd(client, message):
         else:
             await client.send_location(message.chat.id, latitude, longitude)
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .loc command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()
 
@@ -231,7 +230,7 @@ async def weather_cmd(client, message):
         #                                                 hum=r["main"]["humidity"], press=r["main"]["pressure"],
         #                                                 wspd=r["wind"]["speed"], vis=r["visibility"], cld=r["clouds"]["all"]))
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .weather command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()

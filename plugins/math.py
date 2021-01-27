@@ -1,6 +1,5 @@
 import math, cmath
 import asyncio
-import traceback
 
 from pyrogram import filters
 
@@ -44,7 +43,7 @@ async def expr(client, message):
         await client.send_photo(message.chat.id, "expr.png", reply_to_message_id=message.message_id,
                                         caption=f"` → {expr} `")
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .expr command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()
@@ -73,7 +72,7 @@ async def graph(client, message):
         await client.send_photo(message.chat.id, "graph.png", reply_to_message_id=message.message_id,
                                         caption=f"` → {eq} `")
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .plot command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()
@@ -94,6 +93,6 @@ async def solve_cmd(client, message):
         out = f"` → {str(in_expr)}`\n```" + str(res) + "```"
         await edit_or_reply(message, out)
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .solve command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()

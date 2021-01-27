@@ -1,4 +1,3 @@
-import traceback
 from uuid import uuid4
 
 from pyrogram import filters
@@ -61,8 +60,7 @@ async def callback_spoiler(client, callback_query):
                                 callback_data=f"FP|wrong|{poll_id}")
                             ]]))
         except: # Message deleted? In FloodWait? Don't wait anyway it will cause inconsistency
-            traceback.print_exc()
-            pass
+            lgr.exception("Could not update poll count")
         return
     if callback_query.data in SPOILERS and "cantopen" in SPOILERS[callback_query.data] \
     and SPOILERS[callback_query.data]["cantopen"] == callback_query.from_user.id:

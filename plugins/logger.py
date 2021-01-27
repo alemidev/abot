@@ -4,7 +4,6 @@ import json
 import logging
 import io
 import os
-import traceback
 
 from pymongo import MongoClient
 from datetime import datetime
@@ -189,7 +188,7 @@ async def query_cmd(client, message):
             else:
                 await edit_or_reply(message, "` → `" + tokenize_json(raw))
     except Exception as e:
-        traceback.print_exc()
+        lgr.exception("Error in .query command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
 
 HELP.add_help(["hist", "history"], "get edit history of a message",
@@ -234,7 +233,7 @@ async def hist_cmd(client, message):
                 out += f"` → ` N/A\n"
         await edit_or_reply(message, out)
     except Exception as e:
-        traceback.print_exc()
+        lgr.exception("Error in .hist command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()
@@ -296,7 +295,7 @@ async def lookup_deleted_messages(client, message, COLLECTION, target_group, lim
         else:
             await response.edit(response.text + "**N/A**")
     except Exception as e:
-        traceback.print_exc()
+        lgr.exception("Issue while peeking into database")
         await response.edit(response.text + "\n`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline() 

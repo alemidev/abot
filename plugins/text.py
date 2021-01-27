@@ -1,7 +1,6 @@
 import asyncio
 import secrets
 import re
-import traceback
 from collections import Counter
 
 from pyrogram import filters
@@ -58,7 +57,7 @@ async def slowtype(client, message):
             await msg.edit(out, parse_mode=None)
             await asyncio.sleep(interval) # does this "start" the coroutine early?
     except:
-        traceback.print_exc()
+        logger.exception("Error in .slow command")
         pass # msg was deleted probably
     await client.send_chat_action(message.chat.id, "cancel")
 
@@ -96,7 +95,7 @@ async def zalgo_cmd(client, message):
                 await client.send_message(message.chat.id, batch)
             first = False
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .zalgo command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()
 
@@ -187,7 +186,7 @@ async def figlettext(client, message):
         result = pyfiglet.figlet_format(args["arg"], font=font, width=width)
         await edit_or_reply(message, "<code> →\n" + result + "</code>", parse_mode="html")
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .figlet command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()
 
@@ -214,7 +213,7 @@ async def fortune(client, message):
         output = cleartermcolor(stdout.decode())
         await edit_or_reply(message, "``` → " + output + "```")
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .fortune command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()
 
@@ -258,7 +257,7 @@ async def cmd_frequency(client, message):
             output += f"`{i+1:02d}]{'-'*(results-i-1)}>` `{count[i][0]}` `({count[i][1]})`\n"
         await response.edit(output, parse_mode="markdown")
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .freq command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()

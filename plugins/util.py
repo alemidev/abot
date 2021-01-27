@@ -5,7 +5,6 @@ import os
 import io
 import json
 import time
-import traceback
 import requests
 
 from collections import Counter
@@ -49,7 +48,7 @@ async def convert_cmd(client, message):
         res = converts(message.command["cmd"][0] + " " + message.command["cmd"][1], message.command["cmd"][2])
         await edit_or_reply(message, f"` → ` {res} {message.command['cmd'][2]}")
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .convert command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()
 
@@ -67,7 +66,7 @@ async def currency_convert_cmd(client, message):
         res = json.loads(convert(message.command["cmd"][1], message.command["cmd"][2], float(message.command["cmd"][0])))
         await edit_or_reply(message, f"` → ` {res['amount']} {res['to']}")
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .currency command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()
@@ -175,7 +174,7 @@ async def rand_cmd(client, message):
             out += f"` → ` [ " + " ".join(str(r) for r in res) + " ]"
         await edit_or_reply(message, out)
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .rand command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()
 
@@ -214,7 +213,7 @@ async def translate_cmd(client, message):
             out = "` → ` " + ts.bing(q, **tr_options)
         await edit_or_reply(message, out)
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .translate command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()
@@ -259,7 +258,7 @@ async def qrcode_cmd(client, message):
         qr_io.seek(0)
         await client.send_photo(message.chat.id, qr_io, reply_to_message_id=message.message_id)
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .qr command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()
@@ -289,7 +288,7 @@ async def color_cmd(client, message):
         color_io.seek(0)
         await client.send_photo(message.chat.id, color_io, reply_to_message_id=message.message_id)
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .color command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()
@@ -340,7 +339,7 @@ async def voice_cmd(client, message):
             AudioSegment.from_mp3("data/tts.mp3").export("data/tts.ogg", format="ogg", codec="libopus")
             await client.send_voice(message.chat.id, "data/tts.ogg", **opts)
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .voice command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()
@@ -375,7 +374,7 @@ async def transcribe_cmd(client, message):
                             key=alemiBot.config.get("scribe", "key", fallback=None))
         await edit_or_reply(msg, out)
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .scribe command")
         await edit_or_reply(msg, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()
@@ -418,7 +417,7 @@ async def ocr_cmd(client, message):
         else:
             return await edit_or_reply(message, "`[!] → ` No media given")
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .ocr command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.send_chat_action(message.chat.id, "cancel")
     await client.set_offline()
@@ -435,6 +434,6 @@ async def link_expander_cmd(client, message):
         r = requests.get(f"https://www.linkexpander.com/?url={url}")
         await edit_or_reply(message, r.text, parse_mode=None)
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .link command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()

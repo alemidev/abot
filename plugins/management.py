@@ -1,5 +1,4 @@
 import asyncio
-import traceback
 import time
 import re
 
@@ -115,7 +114,7 @@ async def purge(client, message):
                 break
         await edit_or_reply(message, "` → ` Done")
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .purge command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()
 
@@ -151,7 +150,7 @@ async def merge_cmd(client, message):
         await message.reply_to_message.edit(out)
         await edit_or_reply(message, f"` → ` Merged {count} messages")
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .merge command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()
 
@@ -201,7 +200,7 @@ async def manage_allowed_cmd(client, message):
         else:
             await edit_or_reply(message, "` → ` No changes")
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in permissions command")
         await edit_or_reply(message, f"`[!] → ` __{str(e)}__")
 
 HELP.add_help(["trusted", "plist", "permlist"], "list allowed users",
@@ -229,5 +228,5 @@ async def trusted_list(client, message):
         text += "`]`"
         await edit_or_reply(message, f"` → Allowed Users : `\n{text}\n{issues}") 
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .trusted command")
         await edit_or_reply(message, f"`[!] → ` __{str(e)}__")

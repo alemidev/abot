@@ -1,4 +1,3 @@
-import traceback
 import json
 import re
 
@@ -26,7 +25,7 @@ except FileNotFoundError:
     with open("data/triggers.json", "w") as f:
         json.dump({}, f)
 except:
-    traceback.print_exc()
+    logger.exception("Could not load triggers from file")
 
 def serialize():
     global TRIGGERS

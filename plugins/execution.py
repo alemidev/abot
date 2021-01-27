@@ -1,7 +1,6 @@
 import asyncio
 import io
 import re
-import traceback
 import logging
 import sys
 import inspect
@@ -85,7 +84,7 @@ async def runit(client, message):
     except asyncio.exceptions.TimeoutError:
         await msg.edit(f"`$` `{args}`\n`[!] → ` Timed out")
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .run command")
         await msg.edit(f"`$` `{args}`\n`[!] → ` " + str(e))
 
 HELP.add_help(["eval", "e"], "eval a python expression",
@@ -113,7 +112,7 @@ async def evalit(client, message):
         else:
             await msg.edit(f"`>>>` `{args}`\n` → ` `" + str(result) + "`", parse_mode="markdown")
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .eval command")
         await msg.edit(f"`>>>` `{args}`\n`[!] → ` " + str(e), parse_mode='markdown')
 
 async def aexec(code, client, message): # client and message are passed so they are in scope
@@ -152,5 +151,5 @@ async def execit(client, message):
         else:
             await msg.edit(tokenize_lines(f">>> {fancy_args}\n\n" + result), parse_mode='markdown')
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .exec command")
         await msg.edit(f"`>>> {args}`\n`[!] → ` " + str(e), parse_mode='markdown')

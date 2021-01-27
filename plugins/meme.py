@@ -2,7 +2,6 @@ import asyncio
 import secrets
 import random
 import os
-import traceback
 import io
 import re
 
@@ -97,7 +96,7 @@ async def getmeme(client, message):
                 logger.info(f"Getting random meme : \"{fname}\"")
                 await send_media_appropriately(client, message, fname, reply_to, extra_text="Random meme : ")
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .meme command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()
 
@@ -126,7 +125,7 @@ async def steal(client, message):
             os.rename(fpath, "data/memes/" + newname)
             await edit_or_reply(message, f'` → ` saved meme as {newname}')
         except Exception as e:
-            traceback.print_exc()
+            logger.exception("Error in .steal command")
             await edit_or_reply(message, "`[!] → ` " + str(e))
     else:
         await edit_or_reply(message, "`[!] → ` you need to attach or reply to a file, dummy")
@@ -203,7 +202,7 @@ async def deepfry(client, message):
                 await msg.edit(message.text.markdown +
                     "\n` → ` Downloading [OK]\n` → ` Frying [OK]\n` → ` Uploading [OK]")
         except Exception as e:
-            traceback.print_exc()
+            logger.exception("Error in .fry command")
             await msg.edit(get_text(message) + "\n`[!] → ` " + str(e))
         await client.send_chat_action(message.chat.id, "cancel")
     else:
@@ -263,7 +262,7 @@ async def ascii_cmd(client, message):
                 await client.send_document(message.chat.id, out, reply_to_message_id=message.message_id,
                                             caption=f"` → Made ASCII art `")
         except Exception as e:
-            traceback.print_exc()
+            logger.exception("Error in .ascii command")
             await edit_or_reply(message, "`[!] → ` " + str(e))
     else:
         await edit_or_reply(message, "`[!] → ` you need to attach or reply to a file, dummy")
@@ -311,5 +310,5 @@ async def pasta_cmd(client, message):
         if edit_this:
             await edit_this.edit("` → ` Done")
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .pasta command")
         await edit_or_reply(message, "`[!] → ` " + str(e))

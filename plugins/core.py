@@ -3,7 +3,6 @@ from datetime import datetime
 import time
 import logging
 import io
-import traceback
 import json
 
 from bot import alemiBot
@@ -104,7 +103,7 @@ async def update(client, message):
                         "chat_id": msg.chat.id}, f)
         asyncio.get_event_loop().create_task(client.restart())
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error while updating")
         out += " [FAIL]\n`[!] → ` " + str(e)
         await msg.edit(out) 
 
@@ -129,7 +128,7 @@ async def where_cmd(client, message):
             out.name = f"chat-{message.chat.id}.json"
             await client.send_document(message.chat.id, out)
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .where command")
         await edit_or_reply(message,"`[!] → ` " + str(e))
     await client.set_offline()
 
@@ -159,7 +158,7 @@ async def who_cmd(client, message):
             out.name = f"user-{peer.id}.json"
             await client.send_document(message.chat.id, out)
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .who command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()
 
@@ -191,6 +190,6 @@ async def what_cmd(client, message):
             out.name = f"msg-{msg.message_id}.json"
             await client.send_document(message.chat.id, out)
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .what command")
         await edit_or_reply(message,"`[!] → ` " + str(e))
     await client.set_offline()

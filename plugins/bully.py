@@ -1,5 +1,4 @@
 import asyncio
-import traceback
 import logging
 import re
 import json
@@ -37,7 +36,7 @@ except FileNotFoundError:
     with open("data/censoring.json", "w") as f:
         json.dump(censoring, f)
 except:
-    traceback.print_exc()
+    logger.exception("Failed to load ongoing censor data")
     # ignore
 
 HELP.add_help(["censor", "c"], "immediately delete messages",
@@ -93,7 +92,7 @@ async def censor_cmd(client, message):
         else:
             await edit_or_reply(message, "` → ` Nothing to display")
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .censor command")
         await edit_or_reply(message, out + "\n`[!] → ` " + str(e))
     if changed:
         with open("data/censoring.json", "w") as f:
@@ -149,7 +148,7 @@ async def free_cmd(client, message):
         else:
             await edit_or_reply(message, "` → ` Nothing to display")
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .free command")
         await edit_or_reply(message, out + "\n`[!] → ` " + str(e))
     if changed:
         with open("data/censoring.json", "w") as f:
@@ -222,10 +221,9 @@ async def steal_username_cmd(client, message):
         await edit_or_reply(message, "` → ` Created channel")
         asyncio.get_event_loop().create_task(attack_username(client, message, chan, uname, interval, time_limit))
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .steal command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()
-
 
 async def fake_typing(client, tgt, cycle_n, sleep_t, action, message):
     for _ in range(cycle_n):
@@ -268,7 +266,7 @@ async def typing_cmd(client, message):
         asyncio.get_event_loop().create_task(fake_typing(client, tgt, cycles, interval, action, message))
         await edit_or_reply(message, f"` → ` {action} ...")
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .typing command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()
     
@@ -293,7 +291,7 @@ async def mass_mention(client, message):
             await msg.edit(text)
         await msg.edit("`@all`")
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in mass mention command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()
 
@@ -345,7 +343,7 @@ async def spam(client, message):
                 await edit_or_reply(message, f"` → ` Canceled after {i + 1} events")
                 break
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error in .spam command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()
 
