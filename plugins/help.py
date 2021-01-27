@@ -61,6 +61,7 @@ async def help_cmd(client, message):
             elif arg in ALIASES and ALIASES[arg] in cat.HELP_ENTRIES:
                 e = cat.HELP_ENTRIES[ALIASES[arg]]
                 return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode="markdown")
+        return await edit_or_reply(message, f"`[!] → ` No command named `{arg}`")
     await edit_or_reply(message, f"`ᚨᛚᛖᛗᛁᛒᛟᛏ v{client.app_version}`\n" +
                         "`→ .help [cmd] ` get cmd help or cmd list\n" +
                         get_all_short_text() +
