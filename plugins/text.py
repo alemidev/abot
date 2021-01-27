@@ -9,6 +9,8 @@ from util import batchify
 from util.parse import cleartermcolor
 from util.permission import is_allowed, is_superuser
 from util.message import edit_or_reply, is_me, get_text
+from util.chat import get_channel
+from util.user import get_username
 from util.command import filterCommand
 
 from bot import alemiBot
@@ -257,7 +259,8 @@ async def cmd_frequency(client, message):
                 await client.send_chat_action(message.chat.id, "playing")
                 await response.edit(f"` → [{count}/{number}] ` Counting word occurrences...")
         count = Counter(words).most_common()
-        output = f"`→ {group.title} `\n` → ` **{results}** most frequent words __(len > {min_len})__ in last **{number}** messages:\n"
+        from_who = f"(from **{get_username(user)}**)" if user else ""
+        output = f"`→ {get_channel(group)} {from_who}`\n` → ` **{results}** most frequent words __(len > {min_len})__ in last **{number}** messages:\n"
         for i in range(results):
             output += f"`{i+1:02d}]{'-'*(results-i-1)}>` `{count[i][0]}` `({count[i][1]})`\n"
         await response.edit(output, parse_mode="markdown")
