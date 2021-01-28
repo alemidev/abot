@@ -2,6 +2,9 @@
 *.session-journal
 output
 
+tags
+cscope.*
+
 config.json
 perms.json
 
