@@ -20,6 +20,7 @@ import json
 from bot import alemiBot
 
 from pyrogram import filters
+from pyrogram.types import MessageEntity
 
 from util.command import filterCommand
 from util.parse import cleartermcolor
@@ -80,12 +81,15 @@ async def runit(client, message):
             out.name = "output.txt"
             await client.send_document(message.chat.id, out)
         else:
-            await msg.edit(tokenize_lines(f"$ {args}\n\n" + output, mode='html'), parse_mode='html')
+            output = f"$ {args}\n\n" + output
+            s_index = len(args) + 3
+            await msg.edit(output, entities=[ MessageEntity(type="code", offset=0, length=s_index),
+                                              MessageEntity(type="pre", offset=s_index, length=len(output) - s_index - 1, language="bash") ])
     except asyncio.exceptions.TimeoutError:
         await msg.edit(f"`$` `{args}`\n`[!] → ` Timed out")
     except Exception as e:
         logger.exception("Error in .run command")
-        await msg.edit(f"`$` `{args}`\n`[!] → ` " + str(e))
+        await msg.edit(f"`$ {args}`\n`[!] → ` " + str(e))
 
 HELP.add_help(["eval", "e"], "eval a python expression",
                 "eval a python expression. No imports can be made nor variables can be " +
@@ -110,7 +114,10 @@ async def evalit(client, message):
             out.name = "output.txt"
             await client.send_document(message.chat.id, out, parse_mode="markdown")
         else:
-            await msg.edit(f"`>>>` `{args}`\n` → ` `" + str(result) + "`", parse_mode="markdown")
+            output = f">>> {args}\n" + str(result)
+            s_index = len(args) + 5
+            await msg.edit(output, entities=[ MessageEntity(type="code", offset=0, length=s_index),
+                                              MessageEntity(type="code", offset=s_index, length=len(output) - s_index - 1) ])
     except Exception as e:
         logger.exception("Error in .eval command")
         await msg.edit(f"`>>>` `{args}`\n`[!] → ` " + str(e), parse_mode='markdown')
@@ -150,6 +157,10 @@ async def execit(client, message):
             await client.send_document(message.chat.id, out, parse_mode='markdown')
         else:
             await msg.edit(tokenize_lines(f">>> {fancy_args}\n\n" + result), parse_mode='markdown')
+            output = f">>> {fancy_args}\n\n" + result
+            s_index = len(args) + 5
+            await msg.edit(output, entities=[ MessageEntity(type="pre", offset=0, length=s_index, language="python"),
+                                              MessageEntity(type="pre", offset=s_index, length=len(output) - s_index - 1, language="python") ])
     except Exception as e:
         logger.exception("Error in .exec command")
         await msg.edit(f"`>>> {args}`\n`[!] → ` " + str(e), parse_mode='markdown')
