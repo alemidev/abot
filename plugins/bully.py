@@ -43,8 +43,8 @@ HELP.add_help(["censor", "c"], "immediately delete messages",
             "Start censoring someone in current chat. Use flag `-mass` to toggle mass censorship in current chat. " +
             "Users made immune (`free` cmd) will not be affected by mass censoring, use flag `-i` to revoke immunity from someone. "+
             "Use flag `-list` to get censored users in current chat. Messages from self will never be censored. " +
-            "More than one target can be specified. To free someone from censorship, use `.free` command.",
-            args="[-list] [-mass] [-i] <targets>")
+            "More than one target can be specified. To free someone from censorship, use `.free` command. Instead of specifying targets, " +
+            "you can reply to someone.", args="[-list] [-mass] [-i] <targets>")
 @alemiBot.on_message(is_superuser & filterCommand(["censor", "c"], list(alemiBot.prefixes), flags=["-list", "-i", "-mass"]))
 async def censor_cmd(client, message):
     global censoring
@@ -65,15 +65,22 @@ async def censor_cmd(client, message):
                 censoring["MASS"].append(message.chat.id)
                 out += "` → ` Mass censoring\n"
                 changed = True
-        elif "cmd" in args:
+        elif "cmd" in args or message.reply_to_message:
             logger.info("Censoring users")
             users_to_censor = []
-            for target in args["cmd"]:
-                usr = await client.get_users(target)
-                if usr is None:
-                    out += f"`[!] → ` {target} not found\n"
-                else:
-                    users_to_censor.append(usr)
+            if message.reply_to_message:
+                users_to_censor.append(message.reply_to_message.from_user)
+            if "cmd" in args:
+                for target in args["cmd"]:
+                    if target == "-delme":
+                        continue
+                    if target.isnumeric():
+                        target = int(target)
+                    usr = await client.get_users(target)
+                    if usr is None:
+                        out += f"`[!] → ` {target} not found\n"
+                    else:
+                        users_to_censor.append(usr)
             if "-i" in args["flags"]:
                 for u in users_to_censor:
                     if u.id in censoring["FREE"]:
@@ -102,8 +109,8 @@ async def censor_cmd(client, message):
 HELP.add_help(["free", "f", "stop"], "stop censoring someone",
             "Stop censoring someone in current chat. Use flag `-mass` to stop mass censorship current chat. " +
             "You can add `-i` to make target immune to mass censoring. More than one target can be specified (separate with spaces). " +
-            "Add `-list` flag to list immune users (censor immunity is global but doesn't bypass specific censorship)",
-            args="[-list] [-mass] [-i] <targets>")
+            "Add `-list` flag to list immune users (censor immunity is global but doesn't bypass specific censorship). Instead of specifying " +
+            "targets, you can reply to someone.", args="[-list] [-mass] [-i] <targets>")
 @alemiBot.on_message(is_superuser & filterCommand(["free", "f", "stop"], list(alemiBot.prefixes), flags=["-list", "-i", "-mass"]))
 async def free_cmd(client, message):
     global censoring
@@ -123,15 +130,22 @@ async def free_cmd(client, message):
             censoring["MASS"].remove(message.chat.id)
             out += "` → ` Restored freedom of speech\n"
             changed = True
-        elif "cmd" in args:
+        elif "cmd" in args or message.reply_to_message:
             logger.info("Freeing censored users")
             users_to_free = []
-            for target in args["cmd"]:
-                usr = await client.get_users(target)
-                if usr is None:
-                    out += f"`[!] → ` {target} not found\n"
-                else:
-                    users_to_free.append(usr)
+            if message.reply_to_message:
+                users_to_free.append(message.reply_to_message.from_user)
+            if "cmd" in args:
+                for target in args["cmd"]:
+                    if target == "-delme":
+                        continue
+                    if target.isnumeric():
+                        target = int(target)
+                    usr = await client.get_users(target)
+                    if usr is None:
+                        out += f"`[!] → ` {target} not found\n"
+                    else:
+                        users_to_free.append(usr)
             if "-i" in args["flags"]:
                 for u in users_to_free:
                     censoring["FREE"].append(u.id)
