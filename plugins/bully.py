@@ -303,7 +303,6 @@ async def mass_mention(client, message):
             n += 1
         if len(text) > 0:
             await msg.edit(text)
-        await msg.edit("`@all`")
     except Exception as e:
         logger.exception("Error in mass mention command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
