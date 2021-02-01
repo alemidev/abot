@@ -285,8 +285,7 @@ async def typing_cmd(client, message):
     await client.set_offline()
     
 HELP.add_help(["everyone"], "will mention everyone in the chat",
-            "for every user in current chat, it will mention him. Message will be edited " +
-            "to add further mentions to not spam chat. When done mentioning, message will become `@all`. " +
+            "will mention every member in current chat. A new message will be sent for the mentions." +
             "This is super lame, don't abuse.")
 @alemiBot.on_message(is_superuser & filterCommand("everyone", list(alemiBot.prefixes)))
 async def mass_mention(client, message):
