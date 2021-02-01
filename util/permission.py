@@ -24,7 +24,7 @@ def check_allowed(_, __, message):
     if message.from_user.is_self:
         return True
     return str(message.from_user.id) in ALLOWED \
-            or str(message.from_user.id) in SUPERUSER
+            or message.from_user.id in SUPERUSER
 
 is_allowed = filters.create(check_allowed)
 
