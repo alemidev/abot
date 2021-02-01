@@ -159,7 +159,7 @@ async def execit(client, message):
             await msg.edit(tokenize_lines(f">>> {fancy_args}\n\n" + result), parse_mode='markdown')
             output = f">>> {fancy_args}\n\n" + result
             s_index = len(fancy_args) + 5
-            await msg.edit(output, entities=[ MessageEntity(type="pre", offset=0, length=s_index, language="python"),
+            await msg.edit(output, entities=[ MessageEntity(type="pre", offset=0, length=s_index - 1, language="python"),
                                               MessageEntity(type="pre", offset=s_index, length=len(output) - s_index - 1, language="python") ])
     except Exception as e:
         logger.exception("Error in .exec command")
