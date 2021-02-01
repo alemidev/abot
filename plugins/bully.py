@@ -299,7 +299,10 @@ async def mass_mention(client, message):
                 await msg.edit(text)
                 n = 0
                 text = ""
-            text += member.user.mention + " "
+            if member.user.username:
+                text += "@" + member.user.username + " "
+            else:
+                text += member.user.mention + " "
             n += 1
         if len(text) > 0:
             await msg.edit(text)
