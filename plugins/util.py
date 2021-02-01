@@ -402,7 +402,7 @@ async def ocr_cmd(client, message):
             msg = message.reply_to_message
         if msg.media:
             await client.send_chat_action(message.chat.id, "upload_photo")
-            fpath = await client.download_media(msg, file_name="data/")
+            fpath = await client.download_media(msg, file_name="data/ocr")
             with open(fpath, 'rb') as f:
                 r = requests.post('https://api.ocr.space/parse/image', files={fpath: f}, data=payload)
             if "-json" in message.command["flags"]:
