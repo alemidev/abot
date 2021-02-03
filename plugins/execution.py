@@ -116,8 +116,8 @@ async def evalit(client, message):
         else:
             output = f">>> {args}\n" + str(result)
             s_index = len(args) + 5
-            await msg.edit(output, entities=[ MessageEntity(type="code", offset=0, length=s_index),
-                                              MessageEntity(type="code", offset=s_index, length=len(output) - s_index - 1) ])
+            await msg.edit(output, entities=[ MessageEntity(type="code", offset=0, length=s_index - 1),
+                                              MessageEntity(type="code", offset=s_index, length=len(output) - s_index) ])
     except Exception as e:
         logger.exception("Error in .eval command")
         await msg.edit(f"`>>>` `{args}`\n`[!] → ` " + str(e), parse_mode='markdown')
