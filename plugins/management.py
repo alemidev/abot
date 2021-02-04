@@ -171,7 +171,7 @@ def make_media_group(files):
 HELP.add_help(["album"], "join multiple media into one message",
                 "send a new album containing last media you sent. If no number is specified, only consecutive media " +
                 "will be grouped. Original messages will be deleted, but this can be prevented with the `-nodel` flag. " +
-                "Reply to a message to start grouping from that message (excluded). Add the `-all` flag to group messages from anyone.",
+                "Reply to a message to start grouping from that message. Add the `-all` flag to group messages from anyone.",
                 args="[-nodel] [-all] [n]", public=False)
 @alemiBot.on_message(is_superuser & filterCommand(["album"], list(alemiBot.prefixes), flags=["-nodel", "-all"]))
 async def album_cmd(client, message):
@@ -190,6 +190,10 @@ async def album_cmd(client, message):
         count = 0
         out += "` → ` Searching media"
         await edit_or_reply(message, out)
+        if message.reply_to_message and message.media:
+            files.append(await client.download_media(message.edit_or_reply))
+            msgs.append(message.reply_to_message)
+            count += 1
         async for msg in client.iter_history(message.chat.id, **opts):
             if max_to_merge < 0 and not from_all and not is_me(msg):
                 break
