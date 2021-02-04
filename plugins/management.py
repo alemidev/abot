@@ -179,7 +179,7 @@ async def album_cmd(client, message):
     try:
         logger.info(f"Making album")
         del_msg = "-nodel" not in message.command["flags"]
-        from_all = "-all" not in message.command["flags"]
+        from_all = "-all" in message.command["flags"]
         max_to_merge = int(message.command["cmd"][0]) \
                 if "cmd" in message.command and message.command["cmd"][0].isnumeric() else -1
         opts = {}
