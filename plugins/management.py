@@ -216,8 +216,9 @@ async def album_cmd(client, message):
         await edit_or_reply(message, out)
         for f in files:
             os.remove(f)
-        for m in msgs:
-            await m.delete()
+        if del_msg:
+            for m in msgs:
+                await m.delete()
         out += " [`OK`]\n` → ` Done"
         await edit_or_reply(message, out)
     except Exception as e:
