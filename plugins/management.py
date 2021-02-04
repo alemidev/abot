@@ -209,16 +209,16 @@ async def album_cmd(client, message):
             if count > 10: # max 10 items anyway
                 break
         media = make_media_group(files)
-        out += " `[OK]`\n` → ` Uploading album"
+        out += " [`OK`]\n` → ` Uploading album"
         await edit_or_reply(message, out)
         await client.send_media_group(message.chat.id, media)
-        out += " `[OK]`\n` → ` Cleaning up"
+        out += " [`OK`]\n` → ` Cleaning up"
         await edit_or_reply(message, out)
         for f in files:
             os.remove(f)
         for m in msgs:
             await m.delete()
-        out += " `[OK]`\n` → ` Done"
+        out += " [`OK`]\n` → ` Done"
         await edit_or_reply(message, out)
     except Exception as e:
         logger.exception("Error in .merge command")
