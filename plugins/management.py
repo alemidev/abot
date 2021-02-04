@@ -206,7 +206,7 @@ async def album_cmd(client, message):
                     pass # ignore, go forward
             if max_to_merge > 0 and count >= max_to_merge:
                 break
-            if count > 10: # max 10 items anyway
+            if count >= 10: # max 10 items anyway
                 break
         media = make_media_group(files)
         out += " [`OK`]\n` → ` Uploading album"
