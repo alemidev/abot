@@ -1,8 +1,10 @@
 import asyncio
 import time
 import re
+import logging
 
 from pyrogram import filters
+from pyrogram.types import InputMediaAnimation, InputMediaDocument, InputMediaAudio, InputMediaVideo, InputMediaPhoto
 
 from bot import alemiBot
 
@@ -14,7 +16,6 @@ from util.command import filterCommand
 from util.time import parse_timedelta
 from plugins.help import HelpCategory
 
-import logging
 logger = logging.getLogger(__name__)
 
 HELP = HelpCategory("MANAGEMENT")
@@ -149,6 +150,49 @@ async def merge_cmd(client, message):
                 await msg.delete()
         await message.reply_to_message.edit(out)
         await edit_or_reply(message, f"` → ` Merged {count} messages")
+    except Exception as e:
+        logger.exception("Error in .merge command")
+        await edit_or_reply(message, "`[!] → ` " + str(e))
+    await client.set_offline()
+
+
+def make_input_media(fname):
+    if fname.endswith((".jpg", ".jpeg", ".png")):
+        return InputMediaPhoto(fname)
+    elif fname.endswith((".gif", ".mp4", ".webm")):
+        return InputMediaVideo(fname)
+    elif fname.endswith((".webp", ".tgs")):
+        return InputMediaAnimation(fname)
+    elif fname.endswith((".mp3", ".ogg", ".wav")):
+        return InputMediaAudio(fname)
+    else:
+        return InputMediaDocument(fname)
+
+HELP.add_help(["album"], "join multiple media into one message",
+                "send a new album containing last media you sent. If no number is specified, only consecutive media " +
+                "will be grouped. Original messages will be deleted, but this can be prevented with the `-nodel` flag.",
+                args="[-nodel] [n]", public=False)
+@alemiBot.on_message(is_superuser & filterCommand(["album"], list(alemiBot.prefixes), options={
+    "separator" : ["-s"],
+    "max" : ["-max"]
+}, flags=["-nodel"]))
+async def album_cmd(client, message):
+    try:
+        logger.info(f"Merging media")
+        del_msg = "-nodel" not in message.command["flags"]
+        max_to_merge = int(message.command["cmd"][0]) if "cmd" in message.command else -1
+        files = []
+        count = 0
+        async for msg in client.iter_history(message.chat.id):
+            if max_to_merge < 0 and not is_me(msg):
+                break
+            if is_me(msg) and message.media:
+                files.append(await client.download_media(msg))
+                if del_msg:
+                    await msg.delete()
+                count += 1
+        media = [ make_input_media(f) for f in files ]
+        await client.send_media_group(message.chat.id, media)
     except Exception as e:
         logger.exception("Error in .merge command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
