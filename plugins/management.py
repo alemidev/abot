@@ -1,6 +1,7 @@
 import asyncio
 import time
 import re
+import os
 import logging
 
 from pyrogram import filters
@@ -155,44 +156,62 @@ async def merge_cmd(client, message):
         await edit_or_reply(message, "`[!] → ` " + str(e))
     await client.set_offline()
 
-
-def make_input_media(fname):
-    if fname.endswith((".jpg", ".jpeg", ".png")):
-        return InputMediaPhoto(fname)
-    elif fname.endswith((".gif", ".mp4", ".webm")):
-        return InputMediaVideo(fname)
-    elif fname.endswith((".webp", ".tgs")):
-        return InputMediaAnimation(fname)
-    elif fname.endswith((".mp3", ".ogg", ".wav")):
-        return InputMediaAudio(fname)
+def make_media_group(files):
+    if all(fname.endswith((".jpg", ".jpeg", ".png")) for fname in files):
+        return [ InputMediaPhoto(fname) for fname in files ]
+    elif all(fname.endswith((".gif", ".mp4", ".webm")) for fname in files):
+        return [ InputMediaVideo(fname) for fname in files ]
+    elif all(fname.endswith((".webp", ".tgs")) for fname in files):
+        return [ InputMediaAnimation(fname) for fname in files ]
+    elif all(fname.endswith((".mp3", ".ogg", ".wav")) for fname in files):
+        return [ InputMediaAudio(fname) for fname in files ]
     else:
-        return InputMediaDocument(fname)
+        return [ InputMediaDocument(fname) for fname in files ]
 
 HELP.add_help(["album"], "join multiple media into one message",
                 "send a new album containing last media you sent. If no number is specified, only consecutive media " +
-                "will be grouped. Original messages will be deleted, but this can be prevented with the `-nodel` flag.",
-                args="[-nodel] [n]", public=False)
-@alemiBot.on_message(is_superuser & filterCommand(["album"], list(alemiBot.prefixes), options={
-    "separator" : ["-s"],
-    "max" : ["-max"]
-}, flags=["-nodel"]))
+                "will be grouped. Original messages will be deleted, but this can be prevented with the `-nodel` flag. " +
+                "Reply to a message to start grouping from that message. Add the `-all` flag to group messages from anyone.",
+                args="[-nodel] [-all] [n]", public=False)
+@alemiBot.on_message(is_superuser & filterCommand(["album"], list(alemiBot.prefixes), flags=["-nodel", "-all"]))
 async def album_cmd(client, message):
     try:
-        logger.info(f"Merging media")
+        logger.info(f"Making album")
         del_msg = "-nodel" not in message.command["flags"]
-        max_to_merge = int(message.command["cmd"][0]) if "cmd" in message.command else -1
+        from_all = "-all" not in message.command["flags"]
+        max_to_merge = int(message.command["cmd"][0]) \
+                if "cmd" in message.command and message.command["cmd"][0].isnumeric() else -1
+        opts = {}
+        if message.reply_to_message:
+            opts["offset_id"] = message.reply_to_message.message_id
         files = []
+        msgs = []
         count = 0
-        async for msg in client.iter_history(message.chat.id):
-            if max_to_merge < 0 and not is_me(msg):
+        out = "` → ` Searching media"
+        await edit_or_reply(message, out)
+        async for msg in client.iter_history(message.chat.id, **opts):
+            if max_to_merge < 0 and not from_all and not is_me(msg):
                 break
-            if is_me(msg) and message.media:
+            if (from_all or is_me(msg)) and msg.media:
                 files.append(await client.download_media(msg))
-                if del_msg:
-                    await msg.delete()
+                msgs.append(msg)
                 count += 1
-        media = [ make_input_media(f) for f in files ]
+            if max_to_merge > 0 and count > max_to_merge:
+                break
+            if count > 10: # max 10 items anyway
+                break
+        media = make_media_group(files)
+        out += " `[OK]`\n` → ` Uploading album"
+        await edit_or_reply(message, out)
         await client.send_media_group(message.chat.id, media)
+        out += " `[OK]`\n` → ` Cleaning up"
+        await edit_or_reply(message, out)
+        for f in files:
+            os.remove(f)
+        for m in msgs:
+            await m.delete()
+        out += " `[OK]`\n` → ` Done"
+        await edit_or_reply(message, out)
     except Exception as e:
         logger.exception("Error in .merge command")
         await edit_or_reply(message, "`[!] → ` " + str(e))
