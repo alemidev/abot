@@ -175,6 +175,7 @@ HELP.add_help(["album"], "join multiple media into one message",
                 args="[-nodel] [-all] [n]", public=False)
 @alemiBot.on_message(is_superuser & filterCommand(["album"], list(alemiBot.prefixes), flags=["-nodel", "-all"]))
 async def album_cmd(client, message):
+    out = ""
     try:
         logger.info(f"Making album")
         del_msg = "-nodel" not in message.command["flags"]
@@ -187,7 +188,7 @@ async def album_cmd(client, message):
         files = []
         msgs = []
         count = 0
-        out = "` → ` Searching media"
+        out += "` → ` Searching media"
         await edit_or_reply(message, out)
         async for msg in client.iter_history(message.chat.id, **opts):
             if max_to_merge < 0 and not from_all and not is_me(msg):
@@ -196,7 +197,7 @@ async def album_cmd(client, message):
                 files.append(await client.download_media(msg))
                 msgs.append(msg)
                 count += 1
-            if max_to_merge > 0 and count > max_to_merge:
+            if max_to_merge > 0 and count >= max_to_merge:
                 break
             if count > 10: # max 10 items anyway
                 break
@@ -214,7 +215,7 @@ async def album_cmd(client, message):
         await edit_or_reply(message, out)
     except Exception as e:
         logger.exception("Error in .merge command")
-        await edit_or_reply(message, "`[!] → ` " + str(e))
+        await edit_or_reply(message, out + "\n`[!] → ` " + str(e))
     await client.set_offline()
 
 HELP.add_help(["allow", "disallow", "revoke"], "allow/disallow to use bot",
