@@ -17,6 +17,5 @@ data/debug*
 data/perms.json
 data/triggers.json
 data/censoring.json
-plugins/
 !data/memes/250gb.jpg
 !data/scraped_media/empty
