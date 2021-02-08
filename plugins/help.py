@@ -1,3 +1,5 @@
+from typing import Callable
+
 from bot import alemiBot
 
 from pyrogram import filters
@@ -32,10 +34,15 @@ class HelpCategory:
         self.HELP_ENTRIES = {}
         CATEGORIES[self.title] = self
 
-    # TODO maybe redo as decorator
-    def add_help(self, title, shorttext, longtext, public=False, args=""):
+    def register_entry(self, title, shorttext, longtext, public=False, args=""):
         h = HelpEntry(title, shorttext, longtext, public=public, args=args)
         self.HELP_ENTRIES[h.title] = h
+
+    def add(self, title, shorttext, public=False, args=""):
+        def decorator(func: Callable) -> Callable:
+            longtext = func.__doc__
+            self.register_entry(title, shorttext, longtext, public, args)
+        return decorator
 
 def get_all_short_text():
     out = ""
@@ -65,6 +72,5 @@ async def help_cmd(client, message):
     await edit_or_reply(message, f"`ᚨᛚᛖᛗᛁᛒᛟᛏ v{client.app_version}`\n" +
                         "`→ .help [cmd] ` get cmd help or cmd list\n" +
                         get_all_short_text() +
-                        f"__Commands with * are available to trusted users__\n" +
-                        "\nhttps://github.com/alemigliardi/alemibot", parse_mode="markdown")
+                        f"__Commands with * are available to trusted users__", parse_mode="markdown")
     await client.set_offline()
