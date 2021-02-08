@@ -34,14 +34,14 @@ class HelpCategory:
         self.HELP_ENTRIES = {}
         CATEGORIES[self.title] = self
 
-    def register_entry(self, title, shorttext, longtext, public=False, args=""):
+    def add_help(self, title, shorttext, longtext, public=False, args=""):
         h = HelpEntry(title, shorttext, longtext, public=public, args=args)
         self.HELP_ENTRIES[h.title] = h
 
     def add(self, title, shorttext, public=False, args=""):
         def decorator(func: Callable) -> Callable:
             longtext = func.__doc__
-            self.register_entry(title, shorttext, longtext, public, args)
+            self.add_help(title, shorttext, longtext, public, args)
         return decorator
 
 def get_all_short_text():
