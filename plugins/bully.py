@@ -5,7 +5,7 @@ import json
 import time
 
 from pyrogram import filters
-from pyrogram.errors import BadRequest
+from pyrogram.errors import BadRequest, FloodWait
 from pyrogram.raw.functions.contacts import ResolveUsername
 
 from bot import alemiBot
@@ -201,10 +201,17 @@ async def attack_username(client, message, chat, username, interval, limit):
             await message.edit(f"` → ` Attempting to steal --@{username}-- (**{attempts}** attempts)")
             await asyncio.sleep(interval)
         except BadRequest as e: # Username not occupied!
-            await client.update_chat_username(chat.id, username)
-            await message.edit(f"` → ` Successfully stolen --@{username}-- in **{attempts}** attempts")
-            INTERRUPT_STEALER = False
-            return
+            try:
+                await client.update_chat_username(chat.id, username)
+                await message.edit(f"` → ` Successfully stolen --@{username}-- in **{attempts}** attempts")
+                INTERRUPT_STEALER = False
+                return
+            except FloodWait as e:
+                await message.edit(f"` → ` Attempting to steal --@{username}-- (**{attempts}** attempts) [FLOOD: sleeping {e.x}s]")
+                await asyncio.sleep(e.x)
+        except FloodWait as e:
+            await message.edit(f"` → ` Attempting to steal --@{username}-- (**{attempts}** attempts) [FLOOD: sleeping {e.x}s]")
+            await asyncio.sleep(e.x)
     INTERRUPT_STEALER = False
     await message.edit(f"`[!] → ` Failed to steal --@{username}-- (made **{attempts}** attempts)")
     await client.delete_channel(chat.id)
