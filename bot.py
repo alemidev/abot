@@ -49,9 +49,10 @@ class alemiBot(Client):
         except:
             pass # ignore
         
-    async def stop(self):
-        await super().stop()
+    async def stop(self, block=True):
+        c = await super().stop(block)
         logging.warning("Bot stopped\n")
+        return c
     
     async def restart(self):
         await self.stop()
