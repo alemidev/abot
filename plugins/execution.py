@@ -74,17 +74,21 @@ async def runit(client, message):
             stderr=asyncio.subprocess.STDOUT)
 
         stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout)
-        output = cleartermcolor(stdout.decode())
-        if len(args) + len(output) > 4080:
+        result = cleartermcolor(stdout.decode())
+        if len(args) + len(result) > 4080:
             await msg.edit(f"`$` `{args}`\n` → Output too long, sending as file`")
-            out = io.BytesIO((f"$ {args}\n" + output).encode('utf-8'))
+            out = io.BytesIO((f"$ {args}\n" + result).encode('utf-8'))
             out.name = "output.txt"
             await client.send_document(message.chat.id, out)
         else:
-            output = f"$ {args}\n\n" + output
+            output = f"$ {args}"
             s_index = len(args) + 2
-            await msg.edit(output, entities=[ MessageEntity(type="code", offset=0, length=s_index),
-                                              MessageEntity(type="pre", offset=s_index+2, length=len(output) - s_index - 2, language="bash") ])
+            entities = [ MessageEntity(type="code", offset=0, length=s_index) ]
+            if len(result) > 0:
+                output += "\n\n" + result
+                entities.append(MessageEntity(type="pre", offset=s_index + 2, length=len(result), language="bash"))
+            await msg.edit(output, entities=entities)
+                                              
     except asyncio.exceptions.TimeoutError:
         await msg.edit(f"`$` `{args}`\n`[!] → ` Timed out")
     except Exception as e:
@@ -108,16 +112,20 @@ async def evalit(client, message):
         result = eval(args)
         if inspect.iscoroutine(result):
             result = await result
-        if len(args) + len(str(result)) > 4080:
+        result = str(result)
+        if len(args) + len(result) > 4080:
             await msg.edit(f"```>>> {args}\n → Output too long, sending as file```")
-            out = io.BytesIO((f">>> {args}\n" + str(result)).encode('utf-8'))
+            out = io.BytesIO((f">>> {args}\n" + result).encode('utf-8'))
             out.name = "output.txt"
             await client.send_document(message.chat.id, out, parse_mode="markdown")
         else:
-            output = f">>> {args}\n" + str(result)
+            output = f">>> {args}"
             s_index = len(args) + 4
-            await msg.edit(output, entities=[ MessageEntity(type="code", offset=0, length=s_index),
-                                              MessageEntity(type="code", offset=s_index + 1, length=len(output) - s_index - 1) ])
+            entities = [ MessageEntity(type="code", offset=0, length=s_index) ]
+            if len(result) > 0:
+                output += "\n" + result
+                entities.append(MessageEntity(type="code", offset=s_index + 1, length=len(result)))
+            await msg.edit(output, entities=entities)
     except Exception as e:
         logger.exception("Error in .eval command")
         await msg.edit(f"`>>>` `{args}`\n`[!] → ` " + str(e), parse_mode='markdown')
@@ -156,11 +164,13 @@ async def execit(client, message):
             out.name = "output.txt"
             await client.send_document(message.chat.id, out, parse_mode='markdown')
         else:
-            await msg.edit(tokenize_lines(f">>> {fancy_args}\n\n" + result), parse_mode='markdown')
-            output = f">>> {fancy_args}\n\n" + result
+            output = f">>> {fancy_args}"
             s_index = len(fancy_args) + 4
-            await msg.edit(output, entities=[ MessageEntity(type="pre", offset=0, length=s_index, language="python"),
-                                              MessageEntity(type="pre", offset=s_index + 1, length=len(output) - s_index - 1, language="python") ])
+            entities = [ MessageEntity(type="pre", offset=0, length=s_index, language="python") ]
+            if len(result) > 0:
+                output += "\n\n" + result
+                entities.append(MessageEntity(type="pre", offset=s_index + 2, length=len(result), language="python"))
+            await msg.edit(output, entities=entities)
     except Exception as e:
         logger.exception("Error in .exec command")
         await msg.edit(f"`>>> {args}`\n`[!] → ` " + str(e), parse_mode='markdown')
