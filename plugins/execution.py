@@ -82,11 +82,10 @@ async def runit(client, message):
             await client.send_document(message.chat.id, out)
         else:
             output = f"$ {args}"
-            s_index = len(args) + 2
-            entities = [ MessageEntity(type="code", offset=0, length=s_index) ]
+            entities = [ MessageEntity(type="code", offset=0, length=len(output)) ]
             if len(result.strip()) > 0:
+                entities.append(MessageEntity(type="pre", offset=len(output) + 2, length=len(result), language="bash"))
                 output += "\n\n" + result
-                entities.append(MessageEntity(type="pre", offset=s_index + 2, length=len(result), language="bash"))
             await msg.edit(output, entities=entities)
                                               
     except asyncio.exceptions.TimeoutError:
@@ -120,11 +119,10 @@ async def evalit(client, message):
             await client.send_document(message.chat.id, out, parse_mode="markdown")
         else:
             output = f">>> {args}"
-            s_index = len(args) + 4
-            entities = [ MessageEntity(type="code", offset=0, length=s_index) ]
+            entities = [ MessageEntity(type="code", offset=0, length=len(output)) ]
             if len(result.strip()) > 0:
+                entities.append(MessageEntity(type="code", offset=len(output) + 1, length=len(result)))
                 output += "\n" + result
-                entities.append(MessageEntity(type="code", offset=s_index + 1, length=len(result)))
             await msg.edit(output, entities=entities)
     except Exception as e:
         logger.exception("Error in .eval command")
@@ -165,11 +163,10 @@ async def execit(client, message):
             await client.send_document(message.chat.id, out, parse_mode='markdown')
         else:
             output = f">>> {fancy_args}"
-            s_index = len(fancy_args) + 4
-            entities = [ MessageEntity(type="pre", offset=0, length=s_index, language="python") ]
+            entities = [ MessageEntity(type="pre", offset=0, length=len(output), language="python") ]
             if len(result.strip()) > 0:
+                entities.append(MessageEntity(type="pre", offset=len(output) + 2, length=len(result), language="python"))
                 output += "\n\n" + result
-                entities.append(MessageEntity(type="pre", offset=s_index + 2, length=len(result), language="python"))
             await msg.edit(output, entities=entities)
     except Exception as e:
         logger.exception("Error in .exec command")
