@@ -56,7 +56,7 @@ HELP = HelpCategory("EXECUTION")
 
 HELP.add_help(["run", "r"], "run command on server",
                 "runs a command on server. Shell will be from user running bot. " +
-                "Every command starts in bot root folder. There is a timeout of 10 seconds " +
+                "Every command starts in bot root folder. There is a timeout of 60 seconds " +
                 "to any command issued, this can be changed with the `-t` option. You should " +
                 "properly wrap your arguments with `\"`, they will be ignored by cmd parser.", args="[-t <n>] <cmd>")
 @alemiBot.on_message(is_superuser & filterCommand(["run", "r"], list(alemiBot.prefixes), options={
@@ -65,7 +65,7 @@ HELP.add_help(["run", "r"], "run command on server",
 async def runit(client, message):
     args = re.sub(r"-delme(?: |)(?:[0-9]+|)", "", message.command["raw"])
     msg = await edit_or_reply(message, "` → ` Running")
-    timeout = float(message.command["timeout"]) if "timeout" in message.command else 10.0
+    timeout = float(message.command["timeout"]) if "timeout" in message.command else 60.0
     try:
         logger.info(f"Executing shell command \"{args}\"")
         proc = await asyncio.create_subprocess_shell(
@@ -82,9 +82,9 @@ async def runit(client, message):
             await client.send_document(message.chat.id, out)
         else:
             output = f"$ {args}\n\n" + output
-            s_index = len(args) + 3
+            s_index = len(args) + 2
             await msg.edit(output, entities=[ MessageEntity(type="code", offset=0, length=s_index),
-                                              MessageEntity(type="pre", offset=s_index, length=len(output) - s_index - 1, language="bash") ])
+                                              MessageEntity(type="pre", offset=s_index+2, length=len(output) - s_index - 2, language="bash") ])
     except asyncio.exceptions.TimeoutError:
         await msg.edit(f"`$` `{args}`\n`[!] → ` Timed out")
     except Exception as e:
@@ -115,9 +115,9 @@ async def evalit(client, message):
             await client.send_document(message.chat.id, out, parse_mode="markdown")
         else:
             output = f">>> {args}\n" + str(result)
-            s_index = len(args) + 5
-            await msg.edit(output, entities=[ MessageEntity(type="code", offset=0, length=s_index - 1),
-                                              MessageEntity(type="code", offset=s_index, length=len(output) - s_index) ])
+            s_index = len(args) + 4
+            await msg.edit(output, entities=[ MessageEntity(type="code", offset=0, length=s_index),
+                                              MessageEntity(type="code", offset=s_index + 1, length=len(output) - s_index - 1) ])
     except Exception as e:
         logger.exception("Error in .eval command")
         await msg.edit(f"`>>>` `{args}`\n`[!] → ` " + str(e), parse_mode='markdown')
@@ -158,9 +158,9 @@ async def execit(client, message):
         else:
             await msg.edit(tokenize_lines(f">>> {fancy_args}\n\n" + result), parse_mode='markdown')
             output = f">>> {fancy_args}\n\n" + result
-            s_index = len(fancy_args) + 5
-            await msg.edit(output, entities=[ MessageEntity(type="pre", offset=0, length=s_index - 1, language="python"),
-                                              MessageEntity(type="pre", offset=s_index, length=len(output) - s_index - 1, language="python") ])
+            s_index = len(fancy_args) + 4
+            await msg.edit(output, entities=[ MessageEntity(type="pre", offset=0, length=s_index, language="python"),
+                                              MessageEntity(type="pre", offset=s_index + 1, length=len(output) - s_index - 1, language="python") ])
     except Exception as e:
         logger.exception("Error in .exec command")
         await msg.edit(f"`>>> {args}`\n`[!] → ` " + str(e), parse_mode='markdown')
