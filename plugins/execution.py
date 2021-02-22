@@ -84,7 +84,7 @@ async def runit(client, message):
             output = f"$ {args}"
             entities = [ MessageEntity(type="code", offset=0, length=len(output)) ]
             if len(result.strip()) > 0:
-                entities.append(MessageEntity(type="pre", offset=len(output) + 2, length=len(result), language="bash"))
+                entities.append(MessageEntity(type="pre", offset=len(output), length=len(result) + 1, language="bash"))
                 output += "\n\n" + result
             await msg.edit(output, entities=entities)
                                               
@@ -121,7 +121,7 @@ async def evalit(client, message):
             output = f">>> {args}"
             entities = [ MessageEntity(type="code", offset=0, length=len(output)) ]
             if len(result.strip()) > 0:
-                entities.append(MessageEntity(type="code", offset=len(output) + 1, length=len(result)))
+                entities.append(MessageEntity(type="code", offset=len(output), length=len(result)))
                 output += "\n" + result
             await msg.edit(output, entities=entities)
     except Exception as e:
@@ -165,7 +165,7 @@ async def execit(client, message):
             output = f">>> {fancy_args}"
             entities = [ MessageEntity(type="pre", offset=0, length=len(output), language="python") ]
             if len(result.strip()) > 0:
-                entities.append(MessageEntity(type="pre", offset=len(output) + 2, length=len(result), language="python"))
+                entities.append(MessageEntity(type="pre", offset=len(output), length=len(result) + 1, language="python"))
                 output += "\n\n" + result
             await msg.edit(output, entities=entities)
     except Exception as e:
