@@ -84,7 +84,7 @@ async def runit(client, message):
             output = f"$ {args}"
             s_index = len(args) + 2
             entities = [ MessageEntity(type="code", offset=0, length=s_index) ]
-            if len(result) > 0:
+            if len(result.strip()) > 0:
                 output += "\n\n" + result
                 entities.append(MessageEntity(type="pre", offset=s_index + 2, length=len(result), language="bash"))
             await msg.edit(output, entities=entities)
@@ -122,7 +122,7 @@ async def evalit(client, message):
             output = f">>> {args}"
             s_index = len(args) + 4
             entities = [ MessageEntity(type="code", offset=0, length=s_index) ]
-            if len(result) > 0:
+            if len(result.strip()) > 0:
                 output += "\n" + result
                 entities.append(MessageEntity(type="code", offset=s_index + 1, length=len(result)))
             await msg.edit(output, entities=entities)
@@ -167,7 +167,7 @@ async def execit(client, message):
             output = f">>> {fancy_args}"
             s_index = len(fancy_args) + 4
             entities = [ MessageEntity(type="pre", offset=0, length=s_index, language="python") ]
-            if len(result) > 0:
+            if len(result.strip()) > 0:
                 output += "\n\n" + result
                 entities.append(MessageEntity(type="pre", offset=s_index + 2, length=len(result), language="python"))
             await msg.edit(output, entities=entities)
