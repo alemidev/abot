@@ -183,13 +183,13 @@ async def deepfry(client, message):
             if "count" in args:
                 count = int(args["count"])
             fpath = await client.download_media(target, file_name="tofry")
-            msg.edit(message.text.markdown + "\n` → ` Downloading [OK]\n` → ` Frying...")
+            msg.edit(message.text + "\n` → ` Downloading [OK]\n` → ` Frying...")
             image = Image.open(fpath)
     
             for _ in range(count):
                 image = await fry_image(image)
             if message.from_user is not None and message.from_user.is_self:
-                await msg.edit(message.text.markdown +
+                await msg.edit(message.text +
                     "\n` → ` Downloading [OK]\n` → ` Frying [OK]\n` → ` Uploading...")
     
             fried_io = io.BytesIO()
@@ -199,7 +199,7 @@ async def deepfry(client, message):
             await client.send_photo(message.chat.id, fried_io, reply_to_message_id=message.message_id,
                                         caption=f"` → Fried {count} time{'s' if count > 1 else ''}`")
             if message.from_user is not None and message.from_user.is_self:
-                await msg.edit(message.text.markdown +
+                await msg.edit(message.text +
                     "\n` → ` Downloading [OK]\n` → ` Frying [OK]\n` → ` Uploading [OK]")
         except Exception as e:
             logger.exception("Error in .fry command")
