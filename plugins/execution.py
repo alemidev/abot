@@ -74,7 +74,7 @@ async def runit(client, message):
             stderr=asyncio.subprocess.STDOUT)
 
         stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout)
-        result = cleartermcolor(stdout.decode()).strip()
+        result = cleartermcolor(stdout.decode()).rstrip()
         if len(args) + len(result) > 4080:
             await msg.edit(f"`$` `{args}`\n` → Output too long, sending as file`")
             out = io.BytesIO((f"$ {args}\n" + result).encode('utf-8'))
@@ -111,7 +111,7 @@ async def evalit(client, message):
         result = eval(args)
         if inspect.iscoroutine(result):
             result = await result
-        result = str(result).strip()
+        result = str(result).rstrip()
         if len(args) + len(result) > 4080:
             await msg.edit(f"```>>> {args}\n → Output too long, sending as file```")
             out = io.BytesIO((f">>> {args}\n" + result).encode('utf-8'))
@@ -155,7 +155,7 @@ async def execit(client, message):
         logger.info(f"Executing python expr \"{args}\"")
         with stdoutWrapper() as fake_stdout:
             await aexec(args, client, message)
-        result = fake_stdout.getvalue().strip()
+        result = fake_stdout.getvalue().rstrip()
         if len(args) + len(result) > 4080:
             await msg.edit(f"`>>>` `{fancy_args}`\n` → Output too long, sending as file`")
             out = io.BytesIO((f">>> {fancy_args}\n" + result).encode('utf-8'))
