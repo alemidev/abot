@@ -84,7 +84,7 @@ async def runit(client, message):
             output = f"$ {args}"
             entities = [ MessageEntity(type="code", offset=0, length=len(output)) ]
             if len(result.strip()) > 0:
-                entities.append(MessageEntity(type="pre", offset=len(output), length=len(result) + 1, language="bash"))
+                entities.append(MessageEntity(type="pre", offset=len(output) + 2, length=len(result), language="bash"))
                 output += "\n\n" + result
             await msg.edit(output, entities=entities)
                                               
@@ -165,7 +165,7 @@ async def execit(client, message):
             output = f">>> {fancy_args}"
             entities = [ MessageEntity(type="pre", offset=0, length=len(output), language="python") ]
             if len(result.strip()) > 0:
-                entities.append(MessageEntity(type="pre", offset=len(output), length=len(result) + 1, language="python"))
+                entities.append(MessageEntity(type="pre", offset=len(output) + 2, length=len(result), language="python"))
                 output += "\n\n" + result
             await msg.edit(output, entities=entities)
     except Exception as e:
