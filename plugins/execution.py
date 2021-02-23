@@ -74,7 +74,7 @@ async def runit(client, message):
             stderr=asyncio.subprocess.STDOUT)
 
         stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout)
-        result = cleartermcolor(stdout.decode())
+        result = cleartermcolor(stdout.decode()).strip()
         if len(args) + len(result) > 4080:
             await msg.edit(f"`$` `{args}`\n` → Output too long, sending as file`")
             out = io.BytesIO((f"$ {args}\n" + result).encode('utf-8'))
@@ -83,9 +83,9 @@ async def runit(client, message):
         else:
             output = f"$ {args}"
             entities = [ MessageEntity(type="code", offset=0, length=len(output)) ]
-            if len(result.strip()) > 0:
-                entities.append(MessageEntity(type="pre", offset=len(output), length=len(result) + 1, language="bash"))
-                output += "\n\n" + result
+            if len(result) > 0:
+                entities.append(MessageEntity(type="pre", offset=len(output), length=len(result), language="bash"))
+                output += "\n" + result
             await msg.edit(output, entities=entities)
                                               
     except asyncio.exceptions.TimeoutError:
@@ -111,7 +111,7 @@ async def evalit(client, message):
         result = eval(args)
         if inspect.iscoroutine(result):
             result = await result
-        result = str(result)
+        result = str(result).strip()
         if len(args) + len(result) > 4080:
             await msg.edit(f"```>>> {args}\n → Output too long, sending as file```")
             out = io.BytesIO((f">>> {args}\n" + result).encode('utf-8'))
@@ -120,8 +120,8 @@ async def evalit(client, message):
         else:
             output = f">>> {args}"
             entities = [ MessageEntity(type="code", offset=0, length=len(output)) ]
-            if len(result.strip()) > 0:
-                entities.append(MessageEntity(type="code", offset=len(output), length=len(result)))
+            if len(result) > 0:
+                entities.append(MessageEntity(type="code", offset=len(output), length=len(result) + 1))
                 output += "\n" + result
             await msg.edit(output, entities=entities)
     except Exception as e:
@@ -155,7 +155,7 @@ async def execit(client, message):
         logger.info(f"Executing python expr \"{args}\"")
         with stdoutWrapper() as fake_stdout:
             await aexec(args, client, message)
-        result = fake_stdout.getvalue()
+        result = fake_stdout.getvalue().strip()
         if len(args) + len(result) > 4080:
             await msg.edit(f"`>>>` `{fancy_args}`\n` → Output too long, sending as file`")
             out = io.BytesIO((f">>> {fancy_args}\n" + result).encode('utf-8'))
@@ -164,9 +164,9 @@ async def execit(client, message):
         else:
             output = f">>> {fancy_args}"
             entities = [ MessageEntity(type="pre", offset=0, length=len(output), language="python") ]
-            if len(result.strip()) > 0:
-                entities.append(MessageEntity(type="pre", offset=len(output), length=len(result) + 1, language="python"))
-                output += "\n\n" + result
+            if len(result) > 0:
+                entities.append(MessageEntity(type="pre", offset=len(output), length=len(result), language="python"))
+                output += "\n" + result
             await msg.edit(output, entities=entities)
     except Exception as e:
         logger.exception("Error in .exec command")
