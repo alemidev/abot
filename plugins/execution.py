@@ -84,8 +84,8 @@ async def runit(client, message):
             output = f"$ {args}"
             entities = [ MessageEntity(type="code", offset=0, length=len(output)) ]
             if len(result) > 0:
-                entities.append(MessageEntity(type="pre", offset=len(output) + 1, length=len(result), language="bash"))
-                output += "\n" + result
+                entities.append(MessageEntity(type="pre", offset=len(output) + 2, length=len(result), language="bash"))
+                output += "\n\n" + result
             await msg.edit(output, entities=entities)
                                               
     except asyncio.exceptions.TimeoutError:
@@ -165,8 +165,8 @@ async def execit(client, message):
             output = f">>> {fancy_args}"
             entities = [ MessageEntity(type="pre", offset=0, length=len(output), language="python") ]
             if len(result) > 0:
-                entities.append(MessageEntity(type="pre", offset=len(output) + 1, length=len(result), language="python"))
-                output += "\n" + result
+                entities.append(MessageEntity(type="pre", offset=len(output) + 2, length=len(result), language="python"))
+                output += "\n\n" + result
             await msg.edit(output, entities=entities)
     except Exception as e:
         logger.exception("Error in .exec command")
