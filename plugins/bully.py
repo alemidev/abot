@@ -253,8 +253,14 @@ async def steal_username_cmd(client, message):
 		await edit_or_reply(message, "`[!] → ` " + str(e))
 	await client.set_offline()
 
+TYPING_INTERRUPT = False
+
 async def fake_typing(client, tgt, cycle_n, sleep_t, action, message):
+	global TYPING_INTERRUPT
 	for _ in range(cycle_n):
+		if TYPING_INTERRUPT:
+			TYPING_INTERRUPT = False
+			break
 		await asyncio.sleep(sleep_t)
 		await client.send_chat_action(tgt, action)
 	try:
@@ -270,14 +276,19 @@ HELP.add_help(["typing"], "will show as typing on chat",
 			"and all are optional, it can just be `30s` or `5m`. If you want to include spaces, wrap the 'time' string in `\"`. " +
 			"A different chat action from 'typing' can be specified with `-a`. Available chat actions are: `typing`, `upload_photo`, " +
 			"`record_video`, `upload_video`, `record_audio`, `upload_audio`, `upload_document`, `find_location`, `record_video_note`, " +
-			"`upload_video_note`, `choose_contact`, `playing`, `speaking`, `cancel`.", args="[-t <target>] [-a <action>] [-i <n>] <time>")
+			"`upload_video_note`, `choose_contact`, `playing`, `speaking`, `cancel`. You can terminate ongoing typing with `-stop`, but if " +
+			"more than one is running, a random one will be stopped.", args="[-stop] [-t <target>] [-a <action>] [-i <n>] <time>")
 @alemiBot.on_message(is_superuser & filterCommand("typing", list(alemiBot.prefixes), options={
 	"target" : ["-t"],
 	"interval" : ["-i"],
 	"action" : ["-a", "-action"]
-}))
+}, flags=["-stop"]))
 async def typing_cmd(client, message):
+	global TYPING_INTERRUPT
 	try:
+		if "-stop" in message.command["flags"]:
+			TYPING_INTERRUPT = True
+			return await edit_or_reply(message, "` → ` Stopping")
 		if "cmd" not in message.command:
 			return await edit_or_reply(message, "`[!] → ` No amount of time given")
 		interval = int(message.command["interval"]) if "interval" in message.command else 4
