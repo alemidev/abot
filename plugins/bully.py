@@ -242,7 +242,7 @@ async def steal_username_cmd(client, message):
 	global INTERRUPT_STEALER
 	if "-stop" in message.command["flags"]:
 		INTERRUPT_STEALER = True
-		return await edit_or_reply(message, "` → ` Interrupted")
+		return await edit_or_reply(message, "` → ` Stopping")
 	try:
 		if "cmd" not in message.command:
 			return await edit_or_reply(message, "`[!] → ` No username given")
@@ -349,17 +349,17 @@ HELP.add_help(["spam", "flood"], "pretty self explainatory",
 			"messages will be sent as soon as possible. You can reply to a message and " +
 			"all spammed msgs will reply to that one too. If you add `-delme`, messages will be " +
 			"immediately deleted. To stop an ongoing spam, you can do `.spam -cancel`.",
-			args="[-cancel] [-n <n>] [-t <t>] <text>")
+			args="[-stop] [-n <n>] [-t <t>] <text>")
 @alemiBot.on_message(is_superuser & filterCommand("spam", list(alemiBot.prefixes), options={
 	"number" : ["-n"],
 	"time" : ["-t"],
-}, flags=["-cancel"]))
+}, flags=["-stop"]))
 async def spam(client, message):
 	global INTERRUPT_SPAM
 	args = message.command
-	if "-cancel" in args["flags"]:
+	if "-stop" in args["flags"]:
 		INTERRUPT_SPAM = True
-		return
+		return await edit_or_reply(message, "` → ` Stopping")
 	wait = 0
 	number = 3
 	text = "."
