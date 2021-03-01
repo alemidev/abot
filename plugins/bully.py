@@ -25,7 +25,7 @@ HELP = HelpCategory("BULLY")
 censoring = {"MASS": [],
 			 "FREE": [],
 			 "SPEC" : {} }
-try: # TODO THIS IS BAD MAYBE DON'T USE JSON FFS NICE CODE BRUUH
+try: # TODO not use json, because int keys become strings and I need to recast them on load manually
 	with open("data/censoring.json") as f:
 		buf = json.load(f)
 		for k in buf["SPEC"]:
@@ -194,33 +194,40 @@ INTERRUPT_STEALER = False
 async def attack_username(client, message, chat, username, interval, limit):
 	global INTERRUPT_STEALER
 	attempts = 0
-	while not INTERRUPT_STEALER and time.time() < limit:
+	while not INTERRUPT_STEALER and time.time() < limit: # TODO maybe redo this and make it not exception based, damn
 		try:
 			attempts += 1
 			await client.send(ResolveUsername(username=username)) # this should bypass cache and will get me floodwaited very reliably (:
-			await message.edit(f"` → ` Attempting to steal --@{username}-- (**{attempts}** attempts)")
+			await message.edit(f"` → ` Attempting to claim --@{username}-- (**{attempts}** attempts)")
 			await asyncio.sleep(interval)
 		except BadRequest as e: # Username not occupied!
 			try:
-				await client.update_chat_username(chat.id, username)
-				await message.edit(f"` → ` Successfully stolen --@{username}-- in **{attempts}** attempts")
+				await client.update_chat_username(chat.id, username) # trying this every time would get me even more floodwaited
+				await message.edit(f"` → ` Successfully claimed --@{username}-- in **{attempts}** attempts")
 				INTERRUPT_STEALER = False
 				return
 			except FloodWait as e:
-				await message.edit(f"` → ` Attempting to steal --@{username}-- (**{attempts}** attempts) [FLOOD: sleeping {e.x}s]")
+				await message.edit(f"` → ` Attempting to claim --@{username}-- (**{attempts}** attempts) [RENAME FLOOD: sleeping {e.x}s]")
 				await asyncio.sleep(e.x)
 		except FloodWait as e:
-			await message.edit(f"` → ` Attempting to steal --@{username}-- (**{attempts}** attempts) [FLOOD: sleeping {e.x}s]")
+			await message.edit(f"` → ` Attempting to claim --@{username}-- (**{attempts}** attempts) [LOOKUP FLOOD: sleeping {e.x}s]")
 			await asyncio.sleep(e.x)
+		except Exception as e: # Username is invalid or user owns too many channels
+			logger.exception("Error in .username command")
+			await message.edit(f"` → ` Failed claiming --@{username}--\n`[!] → ` " + str(e))
+			await client.delete_channel(chat.id)
+			INTERRUPT_STEALER = False
+			return
 	INTERRUPT_STEALER = False
-	await message.edit(f"`[!] → ` Failed to steal --@{username}-- (made **{attempts}** attempts)")
+	await message.edit(f"`[!] → ` Failed claiming --@{username}-- (made **{attempts}** attempts)")
 	await client.delete_channel(chat.id)
 
-HELP.add_help(["username"], "tries to steal an username",
+HELP.add_help(["username"], "tries to claim an username",
 			"Will create an empty channel and then attempt to rename it to given username until it succeeds or " +
-			"max time is reached. Attempts interval can be specified (`-i`), defaults to 30 seconds. By default " +
-			"it will give up after 1h of attempts. Manually stop attempts with `-stop`. This is very aggressive and " +
-			"will cause FloodWaits super easily if abused, be wary!", args="[-stop] [-i <n>] [-lim <time>] <username>")
+			"max time is reached. Attempts interval can be specified (`-i`), defaults to 60 seconds. By default " +
+			"it will give up after 5 minutes of attempts, set a time limit with `-lim`. Manually stop attempts with `-stop`. " +
+			"This is very aggressive and will cause FloodWaits super easily if abused, be wary!",
+			args="[-stop] [-i <n>] [-lim <time>] <username>")
 @alemiBot.on_message(is_superuser & filterCommand("username", list(alemiBot.prefixes), options={
 	"interval" : ["-i", "-int"],
 	"limit" : ["-lim", "-limit"]
@@ -237,12 +244,12 @@ async def steal_username_cmd(client, message):
 		if uname.startswith("@"):
 			uname = uname[1:]
 		chan = await client.create_channel(f"getting {uname}", "This channel was automatically created to occupy an username")
-		time_limit = time.time() + parse_timedelta(message.command["limit"] if "limit" in message.command else "1h").total_seconds()
-		interval = float(message.command["interval"]) if "interval" in message.command else 30
+		time_limit = time.time() + parse_timedelta(message.command["limit"] if "limit" in message.command else "5min").total_seconds()
+		interval = float(message.command["interval"]) if "interval" in message.command else 60
 		await edit_or_reply(message, "` → ` Created channel")
 		asyncio.get_event_loop().create_task(attack_username(client, message, chan, uname, interval, time_limit))
 	except Exception as e:
-		logger.exception("Error in .steal command")
+		logger.exception("Error in .username command")
 		await edit_or_reply(message, "`[!] → ` " + str(e))
 	await client.set_offline()
 
