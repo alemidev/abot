@@ -209,6 +209,12 @@ async def attack_username(client, message, chat, username, interval, limit):
 			except FloodWait as e:
 				await message.edit(f"` → ` Attempting to claim --@{username}-- (**{attempts}** attempts) [RENAME FLOOD: sleeping {e.x}s]")
 				await asyncio.sleep(e.x)
+			except Exception as e: # Username is invalid or user owns too many channels
+				logger.exception("Error in .username command")
+				await message.edit(f"` → ` Failed claiming --@{username}--\n`[!] → ` " + str(e))
+				await client.delete_channel(chat.id)
+				INTERRUPT_STEALER = False
+				return
 		except FloodWait as e:
 			await message.edit(f"` → ` Attempting to claim --@{username}-- (**{attempts}** attempts) [LOOKUP FLOOD: sleeping {e.x}s]")
 			await asyncio.sleep(e.x)
