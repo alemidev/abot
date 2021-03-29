@@ -84,7 +84,7 @@ async def update(client, message):
 		else:
 			out += " [`OK`]\n"
 		if sub_count > 0:
-			out += f"`	→ ` Submodule{'s' if sub_count > 1 else ''} [`{sub_count}`]\n"
+			out += f"`  → ` Submodule{'s' if sub_count > 1 else ''} [`{sub_count}`]\n"
 		out += "` → ` Checking libraries"
 		await msg.edit(out) 
 		proc = await asyncio.create_subprocess_exec(
