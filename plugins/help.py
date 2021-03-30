@@ -44,20 +44,21 @@ class HelpCategory:
 			self.add_help(title, shorttext, longtext, public, args)
 		return decorator
 
-def get_all_short_text():
+def get_all_short_text(pref):
 	out = ""
 	for k in CATEGORIES:
 		out += f"`━━┫ {k}`\n"
 		cat = CATEGORIES[k]
 		for cmd in cat.HELP_ENTRIES:
 			entry = cat.HELP_ENTRIES[cmd]
-			out += f"`→ .{entry.title} ` {entry.shorttext}\n"
+			out += f"`→ {pref}{entry.title} ` {entry.shorttext}\n"
 	return out
 
 # The help command
 @alemiBot.on_message(is_allowed & filterCommand(["help", "h"], list(alemiBot.prefixes)))
 async def help_cmd(client, message):
 	logger.info("Help!")
+	pref = alemiBot.prefixes[0]
 	if "cmd" in message.command:
 		arg = message.command["cmd"][0]
 		for k in CATEGORIES:
@@ -70,7 +71,7 @@ async def help_cmd(client, message):
 				return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode="markdown")
 		return await edit_or_reply(message, f"`[!] → ` No command named `{arg}`")
 	await edit_or_reply(message, f"`ᚨᛚᛖᛗᛁᛒᛟᛏ v{client.app_version}`\n" +
-						"`→ .help [cmd] ` get cmd help or cmd list\n" +
-						get_all_short_text() +
+						f"`→ {pref}help [cmd] ` get cmd help or cmd list\n" +
+						get_all_short_text(pref) +
 						f"__Commands with * are available to trusted users__", parse_mode="markdown")
 	await client.set_offline()
