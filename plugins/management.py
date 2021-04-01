@@ -6,6 +6,7 @@ import logging
 
 from pyrogram import filters
 from pyrogram.types import InputMediaAnimation, InputMediaDocument, InputMediaAudio, InputMediaVideo, InputMediaPhoto
+from pyrogram.errors import PeerIdInvalid
 
 from bot import alemiBot
 
@@ -260,13 +261,12 @@ async def manage_allowed_cmd(client, message):
 		out = ""
 		action_allow = message.command["base"] == "allow"
 		for u in users_to_manage:
-			u_name = u.mention
 			if action_allow:
-				if allow(u.id, val=u_name):
-					out += f"` → ` Allowed **{u_name}**\n"
+				if allow(u.id, val=get_username(u)):
+					out += f"` → ` Allowed **{get_username(u, mention=True)}**\n"
 			else:
-				if disallow(u.id, val=u_name):
-					out += f"` → ` Disallowed **{u_name}**\n"
+				if disallow(u.id, val=get_username(u)):
+					out += f"` → ` Disallowed **{get_username(u, mention=True)}**\n"
 		if out != "":
 			await edit_or_reply(message, out)
 		else:
@@ -276,27 +276,28 @@ async def manage_allowed_cmd(client, message):
 		await edit_or_reply(message, f"`[!] → ` __{str(e)}__")
 
 HELP.add_help(["trusted", "plist", "permlist"], "list allowed users",
-				"note that users without a username may give issues. Use `-s` to get " +
-				"the users individually if a batch request fails with 'InvalidPeerId'.", args="[-s]")
+				"this will be pretty leaky, don't do it around untrusted people! It will attempt " +
+				"to get all trusted users in one batch, but if at least one user is not searchable (no " +
+				"username and ubot hasn't interacted with it yet), it will lookup users one by one, and " +
+				"append ids not searchable at the end.")
 # broken af lmaooo TODO
-@alemiBot.on_message(is_superuser & filterCommand(["trusted", "plist", "permlist"], list(alemiBot.prefixes), flags=["-s"]))
+@alemiBot.on_message(is_superuser & filterCommand(["trusted", "plist", "permlist"], list(alemiBot.prefixes)))
 async def trusted_list(client, message):
 	try:
-		user_ids = list_allowed()
 		text = "`[` "
 		issues = ""
 		users = []
 		logger.info("Listing allowed users")
-		if "-s" in message.command["flags"]:
-			for uid in list_allowed():
+		try:
+			users = await client.get_users([ u for u in list_allowed() ]) # raises PeerIdInvalid exc if even one of the ids has not been interacted with
+		except PeerIdInvalid:
+			for uid in list_allowed():									
 				try:
 					users.append(await client.get_users(uid))
-				except:
+				except PeerIdInvalid:
 					issues += f"~~[{uid}]~~ "
-		else:
-			users = await client.get_users([ int(u) for u in user_ids ]) # this thing gives a PeerIdInvalid exc???
 		for u in users:
-			text += f"{u.mention}, "
+			text += get_username(u, mention=True) + ", "
 		text += "`]`"
 		await edit_or_reply(message, f"` → Allowed Users : `\n{text}\n{issues}") 
 	except Exception as e:
