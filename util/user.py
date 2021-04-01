@@ -1,8 +1,10 @@
-def get_username(user):
+def get_username(user, mention=False):
 	if user is None:
 		return "UNKNOWN"
 	elif user.username is None:
-		if user.last_name is None:
+		if mention:
+			return user.mention
+		elif user.last_name is None:
 			return user.first_name
 		else:
 			return user.first_name + ' ' + user.last_name

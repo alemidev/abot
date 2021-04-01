@@ -325,14 +325,12 @@ async def mass_mention(client, message):
 		n = 0
 		text = ""
 		async for member in message.chat.iter_members():
-			if len(text + member.user.mention) >= 4096 or n >= 100: # I think you can mention max 100 ppl per message?
+			uname = get_username(member.user, mention=True)
+			if len(text + uname) >= 4096 or n >= 100: # I think you can mention max 100 ppl per message?
 				await msg.edit(text)
 				n = 0
 				text = ""
-			if member.user.username:
-				text += "@" + member.user.username + " "
-			else:
-				text += member.user.mention + " "
+			text += uname + " "
 			n += 1
 		if len(text) > 0:
 			await msg.reply(text)
