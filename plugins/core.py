@@ -15,7 +15,7 @@ from util.permission import is_allowed, is_superuser
 from util.command import filterCommand
 from util.message import edit_or_reply, is_me
 from util.user import get_username
-from util.help import HelpCategory, HelpEntry, CATEGORIES, get_all_short_text
+from util.help import HelpCategory, HelpEntry, CATEGORIES, ALIASES, get_all_short_text
 from util.text import cleartermcolor
 
 logger = logging.getLogger(__name__)
@@ -74,12 +74,12 @@ async def update(client, message):
 			"git", "pull",
 			stdout=asyncio.subprocess.PIPE,
 			stderr=asyncio.subprocess.STDOUT)
-		stdout, stderr = await proc.communicate()
+		stdout, _stderr = await proc.communicate()
 		sub_proc = await asyncio.create_subprocess_exec(
 			"git", "submodule", "update", "--remote",
 			stdout=asyncio.subprocess.PIPE,
 			stderr=asyncio.subprocess.STDOUT)
-		sub_stdout, sub_stderr = await sub_proc.communicate()
+		sub_stdout, _sub_stderr = await sub_proc.communicate()
 		sub_count = sub_stdout.count(b"checked out")
 		if b"Aborting" in stdout:
 			out += " [`FAIL`]\n"
@@ -99,7 +99,7 @@ async def update(client, message):
 			"pip", "install", "-r", "requirements.txt", "--upgrade",
 			stdout=asyncio.subprocess.PIPE,
 			stderr=asyncio.subprocess.STDOUT)
-		stdout, stderr = await proc.communicate()
+		stdout, _stderr = await proc.communicate()
 		if b"ERROR" in stdout:
 			out += " [`WARN`]"
 		else:
@@ -145,7 +145,7 @@ async def plugin_add(client, message):
 	  stdout=asyncio.subprocess.PIPE,
 	  stderr=asyncio.subprocess.STDOUT)
 
-	stdout, sterr = await proc.communicate()
+	stdout, _sterr = await proc.communicate()
 	res = cleartermcolor(stdout.decode())
 	if "ERROR: Repository not found" in res:
 		await msg.edit(output + f"\n`[!] → ` No plugin `{plugin}` could be found")
@@ -173,7 +173,8 @@ async def plugin_remove(client, message):
 	  stdout=asyncio.subprocess.PIPE,
 	  stderr=asyncio.subprocess.STDOUT)
 
-	stdout, stderr = await proc.communicate()
+	stdout, _stderr = await proc.communicate()
+	logger.warn(stdout.decode())
 	# TODO check stdout for errors!
 	await edit_or_reply(message, f"` → ` {plugin} removed")
 
