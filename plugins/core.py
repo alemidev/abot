@@ -1,27 +1,52 @@
 import asyncio
-from datetime import datetime
 import time
 import logging
 import io
+import re
 import json
+from datetime import datetime
 
 from bot import alemiBot
 
 from pyrogram import filters
 
+from util.decorators import report_error, set_offline
 from util.permission import is_allowed, is_superuser
 from util.command import filterCommand
 from util.message import edit_or_reply, is_me
 from util.user import get_username
-from plugins.help import HelpCategory
+from util.help import HelpCategory, HelpEntry, CATEGORIES, get_all_short_text
+from util.text import cleartermcolor
 
 logger = logging.getLogger(__name__)
 
 HELP = HelpCategory("CORE")
 
+HELP.add_help(["help"], "get help on cmd or list all cmds", "", args="[cmd]", public=True)
+@alemiBot.on_message(is_allowed & filterCommand(["help", "h"], list(alemiBot.prefixes)))
+@set_offline
+async def help_cmd(client, message):
+	logger.info("Help!")
+	pref = alemiBot.prefixes[0]
+	if "cmd" in message.command:
+		arg = message.command["cmd"][0]
+		for k in CATEGORIES:
+			cat = CATEGORIES[k]
+			if arg in cat.HELP_ENTRIES:
+				e = cat.HELP_ENTRIES[arg]
+				return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode="markdown")
+			elif arg in ALIASES and ALIASES[arg] in cat.HELP_ENTRIES:
+				e = cat.HELP_ENTRIES[ALIASES[arg]]
+				return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode="markdown")
+		return await edit_or_reply(message, f"`[!] → ` No command named `{arg}`")
+	await edit_or_reply(message, f"`ᚨᛚᛖᛗᛁᛒᛟᛏ v{client.app_version}`\n" +
+						get_all_short_text(pref) +
+						f"__Commands with * are available to trusted users__", parse_mode="markdown")
+
 HELP.add_help(["asd", "ping"], "a sunny day!",
 				"The ping command.", public=True)
 @alemiBot.on_message(is_allowed & filterCommand(["asd", "ping"], list(alemiBot.prefixes)))
+@set_offline
 async def ping(client, message):
 	logger.info("Pong")
 	before = time.time()
@@ -29,23 +54,6 @@ async def ping(client, message):
 	after = time.time()
 	latency = (after - before) * 1000
 	await msg.edit(f"` → ` a sunny day `({latency:.0f}ms)`")
-
-HELP.add_help(["joined", "jd"], "count active chats",
-				"get number of all dialogs : groups, supergroups, channels, dms, bots")
-@alemiBot.on_message(is_superuser & filterCommand(["joined", "jd"], list(alemiBot.prefixes)))
-async def joined_cmd(client, message):
-	logger.info("Listing active dialogs")
-	msg = await edit_or_reply(message, "` → ` Counting...")
-	res = {}
-	async for dialog in client.iter_dialogs():
-		if dialog.chat.type in res:
-			res[dialog.chat.type] += 1
-		else:
-			res[dialog.chat.type] = 1
-	out = "`→ ` --Active chats-- \n"
-	for k in res:
-		out += f"` → {k} ` {res[k]}\n"
-	await msg.edit(out)
 
 HELP.add_help("update", "update and restart",
 				"will pull changes from git (`git pull`), install requirements (`pip install -r requirements.txt --upgrade`) " +
@@ -107,89 +115,84 @@ async def update(client, message):
 		out += " [FAIL]\n`[!] → ` " + str(e)
 		await msg.edit(out) 
 
-HELP.add_help("where", "get info about chat",
-				"Get complete information about a chat and send it as json. If no chat name " +
-				"or id is specified, current chat will be used. Add `-no` at the end if you just want the " +
-				"id : no file will be attached.", args="[<target>] [-no]", public=True)
-@alemiBot.on_message(is_allowed & filterCommand("where", list(alemiBot.prefixes), flags=["-no"]))
-async def where_cmd(client, message):
-	try:
-		tgt = message.chat
-		if "cmd" in message.command:
-			arg = message.command["cmd"][0]
-			if arg.isnumeric():
-				tgt = await client.get_chat(int(arg))
-			else:
-				tgt = await client.get_chat(arg)
-		logger.info(f"Getting info of chat")
-		await edit_or_reply(message, f"` → ` Getting data of chat `{tgt.id}`")
-		if not "-no" in message.command["flags"]:
-			out = io.BytesIO((str(tgt)).encode('utf-8'))
-			out.name = f"chat-{message.chat.id}.json"
-			await client.send_document(message.chat.id, out)
-	except Exception as e:
-		logger.exception("Error in .where command")
-		await edit_or_reply(message,"`[!] → ` " + str(e))
-	await client.set_offline()
+HELP.add_help(["install", "plugin_add"], "install a plugin",
+			  "install a plugin. alemiBot plugins are git repos, cloned " +
+			  "into the `plugins` folder as git submodules. You can specify which extension to " +
+			  "install by giving `user/repo`. For example, `alemigliardi/statistics`. You can specify " +
+			  "which branch to clone with `-b` option. You can also specify a custom folder to clone into with `-d` option.",
+			  args="[-b branch] [-d directory] <link-repo>")
+@alemiBot.on_message(is_superuser & filterCommand(["install", "plugin_add"], list(alemiBot.prefixes), options={
+	"dir": ["-d"],
+	"branch": ["-b"]
+}))
+@report_error(logger)
+@set_offline
+async def plugin_add(client, message):
+	if "cmd" not in message.command:
+		return await edit_or_reply(message, "`[!] → ` No input")
+	plugin = message.command["cmd"][0]
+	branch = message.command["branch"] if "branch" in message.command else "main"
+	folder = message.command["dir"] if "dir" in message.command else plugin.split("/")[1]
+	link = f"git@github.com:{plugin}.git"
 
-HELP.add_help("who", "get info about user",
-				"Get complete information about user and attach as json. If replying to a message, author will be used. " +
-				"An id or @ can be specified. If neither is applicable, self will be used. Append `-no` if you just want the id.",
-				public=True, args="[<target>] [-no]")
-@alemiBot.on_message(is_allowed & filterCommand("who", list(alemiBot.prefixes), flags=["-no"]))
-async def who_cmd(client, message):
-	try:
-		peer = None
-		if "cmd" in message.command:
-			arg = message.command["cmd"][0]
-			if arg.isnumeric():
-				peer = await client.get_users(int(arg))
-			else:
-				peer = await client.get_users(arg)
-		elif message.reply_to_message is not None \
-		and message.reply_to_message.from_user is not None:
-			peer = message.reply_to_message.from_user
-		else:
-			peer = await client.get_me()
-		logger.info("Getting info of user")
-		await edit_or_reply(message, f"` → ` Getting data of user `{peer.id}`")
-		if not "-no" in message.command["flags"]:
-			out = io.BytesIO((str(peer)).encode('utf-8'))
-			out.name = f"user-{peer.id}.json"
-			await client.send_document(message.chat.id, out)
-	except Exception as e:
-		logger.exception("Error in .who command")
-		await edit_or_reply(message, "`[!] → ` " + str(e))
-	await client.set_offline()
+	msg = await edit_or_reply(message, f"` → ` Adding plugin `{plugin}`")
 
-HELP.add_help("what", "get info about message",
-				"Get complete information about a message and attach as json. If replying, replied message will be used. "+
-				"id and chat can be passed as arguments. If no chat is specified with `-g`, " +
-				"message will be searched in current chat. Append `-no` if you just want the id.",
-				args="[<target>] [-g <chatId>] [-no]", public=True)
-@alemiBot.on_message(is_allowed & filterCommand("what", list(alemiBot.prefixes), options={
-	"group" : ["-g", "-group"]
-}, flags=["-no"]))
-async def what_cmd(client, message):
-	msg = message
-	try:
-		if message.reply_to_message is not None:
-			msg = await client.get_messages(message.chat.id, message.reply_to_message.message_id)
-		elif "cmd" in message.command and message.command["cmd"][0].isnumeric():
-			chat_id = message.chat.id
-			if "group" in message.command:
-				if message.command["group"].isnumeric():
-					chat_id = int(message.command["group"])
-				else:
-					chat_id = (await client.get_chat(message.command["group"])).id
-			msg = await client.get_messages(chat_id, int(message.command["cmd"][0]))
-		logger.info("Getting info of msg")
-		await edit_or_reply(message, f"` → ` Getting data of msg `{msg.message_id}`")
-		if not "-no" in message.command["flags"]:
-			out = io.BytesIO((str(msg)).encode('utf-8'))
-			out.name = f"msg-{msg.message_id}.json"
-			await client.send_document(message.chat.id, out)
-	except Exception as e:
-		logger.exception("Error in .what command")
-		await edit_or_reply(message,"`[!] → ` " + str(e))
-	await client.set_offline()
+	output = message.text + f"\n` → ` Adding plugin `{plugin}`"
+
+	logger.info(f"Adding plugin \"{plugin}\"")
+	proc = await asyncio.create_subprocess_shell(
+	  f"git submodule add -b {branch} {link} plugins/{folder}",
+	  stdout=asyncio.subprocess.PIPE,
+	  stderr=asyncio.subprocess.STDOUT)
+
+	stdout, sterr = await proc.communicate()
+	res = cleartermcolor(stdout.decode())
+	if "ERROR: Repository not found" in res:
+		await msg.edit(output + f"\n`[!] → ` No plugin `{plugin}` could be found")
+	else:
+		await msg.edit(output + "` → ` Installed correctly")
+
+HELP.add_help(["uninstall", "plugin_remove"], "uninstall a plugin",
+				"remove an installed plugin. alemiBot plugins are git repos, cloned " +
+			  "into the `plugins` folder as git submodulesThis will call `git submodule deinit -f`, " +
+				"then remove the related folder in `.git/modules` and last remove " +
+				"plugin folder and all its content.", args="<plugin>")
+@alemiBot.on_message(is_superuser & filterCommand(["uninstall", "plugin_remove"], list(alemiBot.prefixes)))
+@report_error(logger)
+@set_offline
+async def plugin_remove(client, message):
+	if "cmd" not in message.command:
+		return await edit_or_reply(message, "`[!] → ` No input")
+	plugin = message.command["cmd"][0]
+	if "/" in plugin: # If user passes <user>/<repo> here too, get just repo name
+		plugin = plugin.split("/")[1]
+	
+	logger.info(f"Removing plugin \"{plugin}\"")
+	proc = await asyncio.create_subprocess_shell(
+	  f"git submodule deinit -f {plugin} && rm -rf .git/modules/{plugin} && git rm -f plugins/{plugin}",
+	  stdout=asyncio.subprocess.PIPE,
+	  stderr=asyncio.subprocess.STDOUT)
+
+	stdout, stderr = await proc.communicate()
+	# TODO check stdout for errors!
+	await edit_or_reply(message, f"` → ` {plugin} removed")
+
+HELP.add_help(["plugins", "plugin", "plugin_list"], "list all the installed plugin",
+				"list installed plugins. Will basically read the `.gitmodules` file")
+@alemiBot.on_message(is_superuser & filterCommand(["plugins", "plugin", "plugin_list"], list(alemiBot.prefixes)))
+@report_error(logger)
+@set_offline
+async def plugin_list(client, message):
+	with open(".gitmodules") as f:
+		modules = f.read()
+
+	matches = re.findall(r"url = git@github.com:(?P<p>.*).git", modules)
+
+	text = ""
+	for match in matches:
+		text += f"` → ` `{match}`\n"
+
+	if len(text) > 0:
+		await edit_or_reply(message, text)
+	else:
+		await edit_or_reply(message, "`[!] → ` No plugins installed")

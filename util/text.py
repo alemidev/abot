@@ -1,4 +1,14 @@
 import shutil
+import re
+
+def cleanhtml(raw_html):
+	cleanr = re.compile('<.*?>')
+	cleantext = re.sub(cleanr, '', raw_html)
+	return cleantext
+
+def cleartermcolor(raw_in):
+	ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+	return ansi_escape.sub('', raw_in)
 
 def split_for_window(text, offset=0):
 	width = shutil.get_terminal_size((100, 100))[0] # pass a fallback, 1st arg is width
