@@ -119,9 +119,10 @@ async def update(client, message):
 		await msg.edit(out) 
 
 HELP.add_help(["install", "plugin_add"], "install a plugin",
-				"install a plugin. alemiBot plugins are git repos, cloned " +
-				"into the `plugins` folder as git submodules. You can specify which extension to " +
-				"install by giving `user/repo`. For example, `alemigliardi/statistics`. You can specify " +
+				"install a plugin. alemiBot plugins are git repos, cloned into the `plugins` folder as git submodules. " +
+				"You can specify which extension to install by giving `user/repo` (will default to github.com), " +
+				"or specify the entire url. For example, `alemigliardi/statistics` is the same as " +
+				"`git@github.com:alemigliardi/statistics.git`. You can specify " +
 				"which branch to clone with `-b` option. You can also specify a custom folder to clone into with `-d` option.",
 				args="[-b branch] [-d directory] <link-repo>")
 @alemiBot.on_message(is_superuser & filterCommand(["install", "plugin_add"], list(alemiBot.prefixes), options={
@@ -138,7 +139,10 @@ async def plugin_add(client, message):
 		plugin = message.command["cmd"][0]
 		branch = message.command["branch"] if "branch" in message.command else "main"
 		folder = message.command["dir"] if "dir" in message.command else plugin.split("/")[1]
-		link = f"git@github.com:{plugin}.git"
+		if plugin.startswith("http") or plugin.startswith("git@"):
+			link = plugin
+		else: # default to github over ssh
+			link = f"git@github.com:{plugin}.git"
 
 		out += f"\n` → ` Installing plugin `{plugin}`"
 		await msg.edit(out)
