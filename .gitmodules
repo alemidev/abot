@@ -1,0 +1,4 @@
+[submodule "plugins/yt-downloader-alemibot"]
+	path = plugins/yt-downloader-alemibot
+	url = git@github.com:reloonfire/yt-downloader-alemibot.git
+	branch = main
