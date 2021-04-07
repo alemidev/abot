@@ -10,9 +10,10 @@ from datetime import datetime
 from bot import alemiBot
 
 from pyrogram import filters
+from pyrogram.errors import PeerIdInvalid
 
 from util.decorators import report_error, set_offline
-from util.permission import is_allowed, is_superuser
+from util.permission import is_allowed, is_superuser, allow, disallow, list_allowed
 from util.command import filterCommand
 from util.message import edit_or_reply, is_me
 from util.user import get_username
@@ -236,3 +237,71 @@ async def plugin_list(client, message):
 			await edit_or_reply(message, "`[!] → ` No plugins installed")
 	else:
 		await edit_or_reply(message, "`[!] → ` No plugins installed")
+
+HELP.add_help(["allow", "disallow", "revoke"], "allow/disallow to use bot",
+				"this command will work differently if invoked with `allow` or with `disallow`. Target user " +
+				"will be given/revoked access to public bot commands. ~~Use `@here` or `@everyone` to allow " +
+				"all users in this chat.", args="<target>")
+@alemiBot.on_message(is_superuser & filterCommand(["allow", "disallow", "revoke"], list(alemiBot.prefixes)))
+@report_error(logger)
+@set_offline
+async def manage_allowed_cmd(client, message):
+	users_to_manage = []
+	if message.reply_to_message is not None:
+		peer = message.reply_to_message.from_user
+		if peer is None:
+			return
+		users_to_manage.append(peer)
+	elif "cmd" in message.command:
+		if message.command["cmd"][0] in ["@here", "@everyone"]:
+			async for u in client.iter_chat_members(message.chat.id):
+				if u.user.is_bot:
+					continue
+				users_to_manage.append(u.user)
+		else:
+			lookup = [ uname for uname in message.command["cmd"] if uname != "-delme" ]
+			try:
+				users = await client.get_users(lookup)
+				if users is None:
+					return await edit_or_reply(message, "`[!] → ` No user matched")
+				users_to_manage += users
+			except ValueError:
+				return await edit_or_reply(message, "`[!] → ` Lookup failed")
+	else:
+		return await edit_or_reply(message, "`[!] → ` Provide an ID or reply to a msg")
+	logger.info("Changing permissions")
+	out = ""
+	action = allow if message.command["base"] == "allow" else disallow
+	action_str = "Allowed" if message.command["base"] == "allow" else "Disallowed"
+	for u in users_to_manage:
+		if action(u.id, val=get_username(u)):
+			out += f"` → ` {action_str} **{get_username(u, mention=True)}**\n"
+	if out != "":
+		await edit_or_reply(message, out)
+	else:
+		await edit_or_reply(message, "` → ` No changes")
+
+HELP.add_help(["trusted", "plist", "permlist"], "list allowed users",
+				"this will be pretty leaky, don't do it around untrusted people! It will attempt " +
+				"to get all trusted users in one batch, but if at least one user is not searchable (no " +
+				"username and ubot hasn't interacted with it yet), it will lookup users one by one, and " +
+				"append ids not searchable at the end.")
+@alemiBot.on_message(is_superuser & filterCommand(["trusted", "plist", "permlist"], list(alemiBot.prefixes)))
+@report_error(logger)
+@set_offline
+async def trusted_list(client, message):
+	text = "`[` "
+	issues = ""
+	logger.info("Listing allowed users")
+	try:
+		users = await client.get_users(list_allowed()) # raises PeerIdInvalid exc if even one of the ids has not been interacted with
+		for u in users:
+			text += get_username(u, mention=True) + ", "
+	except PeerIdInvalid:
+		for uid in list_allowed():									
+			try:
+				text += get_username(await client.get_users(uid), mention=True) + ", "
+			except PeerIdInvalid:
+				issues += f"~~[{uid}]~~ "
+	text += "`]`"
+	await edit_or_reply(message, f"` → ` Allowed Users :\n{text}\n{issues}") 
