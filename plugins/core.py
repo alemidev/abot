@@ -51,7 +51,7 @@ HELP.add_help(["asd", "ping"], "a sunny day!",
 @alemiBot.on_message(is_allowed & filterCommand(["asd", "ping"], list(alemiBot.prefixes)))
 @report_error(logger)
 @set_offline
-async def ping(client, message):
+async def ping_cmd(client, message):
 	logger.info("Pong")
 	before = time.time()
 	msg = await edit_or_reply(message, "` → ` a sunny day")
@@ -64,7 +64,7 @@ HELP.add_help("update", "update and restart",
 				"and then restart process with an `execv` call. If nothing gets pulled from `git`, update will stop unless " +
 				"the `-force` flag was given.", args="[-force]")
 @alemiBot.on_message(is_superuser & filterCommand("update", list(alemiBot.prefixes), flags=["-force", "-sub"]))
-async def update(client, message):
+async def update_cmd(client, message):
 	out = message.text.markdown if is_me(message) else f"`→ ` {get_username(message.from_user)} requested update"
 	msg = message if is_me(message) else await message.reply(out)
 	try:
@@ -130,7 +130,9 @@ HELP.add_help(["install", "plugin_add"], "install a plugin",
 	"dir": ["-d"],
 	"branch": ["-b"]
 }))
-async def plugin_add(client, message):
+async def plugin_add_cmd(client, message):
+	if not alemiBot.allow_plugin_install:
+		return await edit_or_reply(message, "`[!] → ` Plugin management is disabled")
 	out = message.text.markdown if is_me(message) else f"`→ ` {get_username(message.from_user)} requested plugin install"
 	msg = message if is_me(message) else await message.reply(out)
 	try:
@@ -180,7 +182,9 @@ HELP.add_help(["uninstall", "plugin_remove"], "uninstall a plugin",
 				"then remove the related folder in `.git/modules` and last remove " +
 				"plugin folder and all its content.", args="<plugin>")
 @alemiBot.on_message(is_superuser & filterCommand(["uninstall", "plugin_remove"], list(alemiBot.prefixes)))
-async def plugin_remove(client, message):
+async def plugin_remove_cmd(client, message):
+	if not alemiBot.allow_plugin_install:
+		return await edit_or_reply(message, "`[!] → ` Plugin management is disabled")
 	out = message.text.markdown if is_me(message) else f"`→ ` {get_username(message.from_user)} requested plugin removal"
 	msg = message if is_me(message) else await message.reply(out)
 	try:
@@ -223,7 +227,7 @@ HELP.add_help(["plugins", "plugin", "plugin_list"], "list all the installed plug
 @alemiBot.on_message(is_superuser & filterCommand(["plugins", "plugin", "plugin_list"], list(alemiBot.prefixes)))
 @report_error(logger)
 @set_offline
-async def plugin_list(client, message):
+async def plugin_list_cmd(client, message):
 	if os.path.isfile(".gitmodules"):
 		with open(".gitmodules") as f:
 			modules = f.read()
@@ -289,7 +293,7 @@ HELP.add_help(["trusted", "plist", "permlist"], "list allowed users",
 @alemiBot.on_message(is_superuser & filterCommand(["trusted", "plist", "permlist"], list(alemiBot.prefixes)))
 @report_error(logger)
 @set_offline
-async def trusted_list(client, message):
+async def trusted_list_cmd(client, message):
 	text = "`[` "
 	issues = ""
 	logger.info("Listing allowed users")
