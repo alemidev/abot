@@ -16,9 +16,9 @@ from util.decorators import report_error, set_offline
 from util.permission import is_allowed, is_superuser, allow, disallow, list_allowed
 from util.command import filterCommand
 from util.message import edit_or_reply, is_me
-from util.user import get_username
-from util.help import HelpCategory, HelpEntry, CATEGORIES, ALIASES, get_all_short_text
+from util.getters import get_username
 from util.text import cleartermcolor
+from util.help import HelpCategory, HelpEntry, CATEGORIES, ALIASES, get_all_short_text
 
 logger = logging.getLogger(__name__)
 

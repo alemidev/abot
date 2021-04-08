@@ -10,6 +10,22 @@ def cleartermcolor(raw_in):
 	ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 	return ansi_escape.sub('', raw_in)
 
+def tokenize_json(text):
+	res = re.subn(
+		r'("[^\"]+"|[0-9.\-]+)',
+		r'``\g<1>``', text.strip())
+	if res[1] * 2 > 100: # we generate 2 entities for every replace we do (kinda)
+		return tokenize_lines(text) # try to tokenize per line at least
+	return "`" + res[0] + "`"
+
+def tokenize_lines(text, mode='markdown'):
+	BEFORE = "```" if mode == "markdown" else "<code>"
+	AFTER = "```" if mode == "markdown" else "</code>"
+	res =  re.subn(r'(.+)', BEFORE + r'\g<1>' + AFTER, text.strip())
+	if res[1] * 2 > 100: # we generate 2 entities for every replace we do (kinda)
+		return BEFORE + text + AFTER
+	return res[0]
+
 def split_for_window(text, offset=0):
 	width = shutil.get_terminal_size((100, 100))[0] # pass a fallback, 1st arg is width
 	width -= width//10 # pad by 1/10th
