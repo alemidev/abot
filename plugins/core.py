@@ -90,14 +90,14 @@ async def update_cmd(client, message):
 			if "-force" not in message.command["flags"]:
 				return await msg.edit(out)
 		elif b"Already up to date" in stdout:
-			out += " [`N/A`]\n"
+			out += " [`N/A`]"
 			if sub_count < 1 and "-force" not in message.command["flags"]:
 				return await msg.edit(out)
 		else:
-			out += " [`OK`]\n"
+			out += " [`OK`]"
 		if sub_count > 0:
 			out += f"`  → ` Submodule{'s' if sub_count > 1 else ''} [`{sub_count}`]\n"
-		out += "` → ` Checking libraries"
+		out += "\n` → ` Checking core libraries"
 		await msg.edit(out) 
 		proc = await asyncio.create_subprocess_exec(
 			"pip", "install", "-r", "requirements.txt", "--upgrade",
@@ -108,6 +108,24 @@ async def update_cmd(client, message):
 			out += " [`WARN`]"
 		else:
 			out += f" [`{stdout.count(b'Collecting')} new`]"
+		if os.path.isfile(".gitmodules"): # Also install dependancies from plugins
+			out += f"`  → ` Submodule{'s' if sub_count > 1 else ''} [`{sub_count}`]\n"
+			with open(".gitmodules") as f:
+				modules = f.read()
+			matches = re.findall(r"path = (?P<path>plugins/[^ ]+)", modules)
+			count = 0
+			for match in matches:
+				if os.path.isfile(f"{match}/requirements.txt"):
+					proc = await asyncio.create_subprocess_exec(
+						"pip", "install", "-r", f"{match}/requirements.txt", "--upgrade",
+						stdout=asyncio.subprocess.PIPE,
+						stderr=asyncio.subprocess.STDOUT)
+					stdout, _stderr = await proc.communicate()
+					if b"ERROR" in stdout:
+						out += " [`WARN`]"
+					else:
+						count += stdout.count(b'Collecting')
+			out += f" [`{count} new`]"
 		out += "\n` → ` Restarting process"
 		await msg.edit(out) 
 		with open("data/lastmsg.json", "w") as f:
@@ -147,7 +165,7 @@ async def plugin_add_cmd(client, message):
 		else: # default to github over ssh
 			link = f"git@github.com:{plugin}.git"
 
-		out += f"\n` → ` Installing plugin `{plugin}`"
+		out += f"\n` → ` Installing `{plugin}`"
 		await msg.edit(out)
 
 		logger.info(f"Installing plugin \"{plugin}\"")
@@ -165,7 +183,21 @@ async def plugin_add_cmd(client, message):
 		if "ERROR: Repository not found" in res:
 			out += f" [`FAIL`]\n`[!] → ` No plugin `{plugin}` could be found"
 			return await msg.edit(out)
-		out += f" [`OK`]\n` → ` Restarting process"
+		out += f" [`OK`]\n` → ` Checking dependancies"
+		await msg.edit(out)
+		if os.path.isfile(f"plugins/{plugin}/requirements.txt"):
+			proc = await asyncio.create_subprocess_exec(
+				"pip", "install", "-r", f"plugins/{plugin}/requirements.txt", "--upgrade",
+				stdout=asyncio.subprocess.PIPE,
+				stderr=asyncio.subprocess.STDOUT)
+			stdout, _stderr = await proc.communicate()
+			if b"ERROR" in stdout:
+				out += " [`WARN`]"
+			else:
+				out += f" [`{stdout.count(b'Uninstalling')} del`]"
+		else:
+			out += " [`N/A`]"
+		out += f"\n` → ` Restarting process"
 		await msg.edit(out)
 		with open("data/lastmsg.json", "w") as f:
 			json.dump({"message_id": msg.message_id,
@@ -196,6 +228,18 @@ async def plugin_remove_cmd(client, message):
 			plugin = plugin.split("/")[1]
 	
 		logger.info(f"Removing plugin \"{plugin}\"")
+		out += f"\n` → ` Removing libraries"
+		await msg.edit(out)
+		if os.path.isfile(f"plugins/{plugin}/requirements.txt"):
+			proc = await asyncio.create_subprocess_exec(
+				"pip", "uninstall", "-y", "-r", f"plugins/{plugin}/requirements.txt",
+				stdout=asyncio.subprocess.PIPE,
+				stderr=asyncio.subprocess.STDOUT)
+			stdout, _stderr = await proc.communicate()
+			if b"ERROR" in stdout:
+				out += " [`WARN`]"
+			else:
+				out += f" [`{stdout.count(b'Uninstalling')} del`]"
 		out += f"\n` → ` Removing {plugin}" 
 		await msg.edit(out)
 		proc = await asyncio.create_subprocess_shell(
