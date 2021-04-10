@@ -32,7 +32,8 @@ class alemiBot(Client):
 		self.app_version += "-" + res.stdout.decode('utf-8').strip()
 
 	async def set_offline(self):
-		await self.send(UpdateStatus(offline=True))
+		if not self.me.is_bot:
+			await self.send(UpdateStatus(offline=True))
 
 	async def start(self):
 		await super().start()
