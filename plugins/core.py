@@ -195,7 +195,8 @@ async def plugin_add_cmd(client, message):
 		if folder is None:
 			folder = plugin
 
-		out += f"\n` → ` Installing `{author}/{plugin}`"
+		out += f"\n`→ ` Installing `{author}/{plugin}`"
+		out += "\n` → ` Fetching source code"
 		await msg.edit(out)
 
 		logger.info(f"Installing \"{author}/{plugin}\"")
@@ -253,17 +254,21 @@ async def plugin_remove_cmd(client, message):
 		return await edit_or_reply(message, "`[!] → ` Plugin management is disabled")
 	out = message.text.markdown if is_me(message) else f"`→ ` {get_username(message.from_user)} requested plugin removal"
 	msg = message if is_me(message) else await message.reply(out)
+
 	try:
 		if "cmd" not in message.command:
 			out += "\n`[!] → ` No input"
 			return await msg.edit(out)
 		plugin = message.command["cmd"][0]
+
+		out += f"\n`→ ` Uninstalling {plugin}"
+
 		if "/" in plugin: # If user passes <user>/<repo> here too, get just repo name
 			plugin = plugin.split("/")[1]
 	
 		logger.info(f"Removing plugin \"{plugin}\"")
 		if "-lib" in message.command["flags"]:
-			out += f"\n` → ` Removing libraries"
+			out += "\n` → ` Removing libraries"
 			await msg.edit(out)
 			if os.path.isfile(f"plugins/{plugin}/requirements.txt"):
 				proc = await asyncio.create_subprocess_exec(
@@ -276,7 +281,7 @@ async def plugin_remove_cmd(client, message):
 					out += " [`WARN`]"
 				else:
 					out += f" [`{stdout.count(b'Uninstalling')} del`]"
-		out += f"\n` → ` Removing {plugin}" 
+		out += "\n` → ` Removing source code" 
 		await msg.edit(out)
 		proc = await asyncio.create_subprocess_shell(
 		  f"git submodule deinit -f plugins/{plugin} && rm -rf .git/modules/plugins/{plugin} && git rm -f plugins/{plugin}",
