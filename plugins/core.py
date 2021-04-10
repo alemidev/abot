@@ -318,13 +318,15 @@ HELP.add_help(["plugins", "plugin", "plugin_list"], "list all the installed plug
 @report_error(logger)
 @set_offline
 async def plugin_list_cmd(client, message):
+	hidden = alemiBot.config.get("plugins", "hidden", fallback="").strip().split("\n")
 	if os.path.isfile(".gitmodules"):
 		with open(".gitmodules") as f:
 			modules = f.read()
 		matches = re.findall(r"url = git@github.com:(?P<p>.*).git", modules)
 		text = "`→ ` Installed plugins:\n"
 		for match in matches:
-			text += f"` → ` `{match}`\n"
+			if match not in hidden:
+				text += f"` → ` `{match}`\n"
 		await edit_or_reply(message, text)
 	else:
 		await edit_or_reply(message, "`[!] → ` No plugins installed")
