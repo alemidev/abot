@@ -148,6 +148,17 @@ async def update_cmd(client, message):
 		out += " [`FAIL`]\n`[!] → ` " + str(e)
 		await msg.edit(out) 
 
+PLUGIN_HTTPS = re.compile(r"https://(?:.*)\.(?:.*)/(?P<plugin>[^ ]+)\.git")
+PLUGIN_SSH = re.compile(r"git@(?:.*)\.(?:.*):(?P<plugin>[^ ]+)\.git")
+def get_plugin(url):
+	match = PLUGIN_HTTPS.match(url)
+	if match:
+		return match["plugin"]
+	match = PLUGIN_SSH.match(url)
+	if match:
+		return match["plugin"]
+	return url
+
 HELP.add_help(["install", "plugin_add"], "install a plugin",
 				"install a plugin. alemiBot plugins are git repos, cloned into the `plugins` folder as git submodules. " +
 				"You can specify which extension to install by giving `user/repo` (will default to github.com), " +
@@ -168,18 +179,21 @@ async def plugin_add_cmd(client, message):
 		if "cmd" not in message.command:
 			out += "\n`[!] → ` No input"
 			return await msg.edit(out)
-		plugin = message.command["cmd"][0]
+		user_input = message.command["cmd"][0]
 		branch = message.command["branch"] if "branch" in message.command else "main"
-		folder = message.command["dir"] if "dir" in message.command else plugin.split("/")[1]
-		if plugin.startswith("http") or plugin.startswith("git@"):
-			link = plugin
+		folder = message.command["dir"] if "dir" in message.command else None
+		if user_input.startswith("http") or user_input.startswith("git@"):
+			link = user_input
 		else: # default to github over ssh
-			link = f"git@github.com:{plugin}.git"
+			link = f"git@github.com:{user_input}.git"
 
-		out += f"\n` → ` Installing `{plugin}`"
+		plugin_author = get_plugin(user_input) # clear url or stuff around
+		author, plugin = plugin_author.split("/", 1)
+
+		out += f"\n` → ` Installing `{author}/{plugin}`"
 		await msg.edit(out)
 
-		logger.info(f"Installing plugin \"{plugin}\"")
+		logger.info(f"Installing \"{author}/{plugin}\"")
 		proc = await asyncio.create_subprocess_shell(
 		  f"git submodule add -b {branch} {link} plugins/{folder}",
 		  stdout=asyncio.subprocess.PIPE,
@@ -189,10 +203,10 @@ async def plugin_add_cmd(client, message):
 		logger.info(stdout.decode())
 		res = cleartermcolor(stdout.decode())
 		if not res.startswith("Cloning"):
-			out += f" [`FAIL`]\n`[!] → ` Plugin `{plugin}` was wrongly uninstalled"
+			out += f" [`FAIL`]\n`[!] → ` Plugin `{author}/{plugin}` was wrongly uninstalled"
 			return await msg.edit(out)
 		if "ERROR: Repository not found" in res:
-			out += f" [`FAIL`]\n`[!] → ` No plugin `{plugin}` could be found"
+			out += f" [`FAIL`]\n`[!] → ` No plugin `{author}/{plugin}` could be found"
 			return await msg.edit(out)
 		out += f" [`OK`]\n` → ` Checking dependancies"
 		await msg.edit(out)
