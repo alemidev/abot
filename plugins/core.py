@@ -228,7 +228,7 @@ async def plugin_add_cmd(client, message):
 				logger.warn(stdout.decode())
 				out += " [`WARN`]"
 			else:
-				out += f" [`{stdout.count(b'Uninstalling')} del`]"
+				out += f" [`{stdout.count(b'Uninstalling')} new`]"
 		else:
 			out += " [`N/A`]"
 		out += f"\n` → ` Restarting process"
