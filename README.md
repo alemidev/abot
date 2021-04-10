@@ -33,7 +33,7 @@ It is strongly recommended to install this on a UNIX system. If you plan to inst
 * Run bot : `python bot.py`. First time it will request your phone number and a verification code.
 
 ## config file
-The defualt config contains the usable fields already. You just need to fill in `api_id` and `api_hash`.
+The default config contains the usable fields already. You just need to fill in `api_id` and `api_hash`.
 You can add a section `[database]` with `username` and `password` for your MongoBD (if you run one). 
 By default, modules `crawler`, `inline` and `logger` will be excluded. You can remove them from the `exclude` 
 block to enable them again. Be warned that `crawler` will make your account super fishy, `logger` requires 
