@@ -198,6 +198,15 @@ async def plugin_add_cmd(client, message):
 		out += f"\n`→ ` Installing `{author}/{plugin}`"
 		logger.info(f"Installing \"{author}/{plugin}\"")
 
+		if os.path.isfile(".gitmodules"):
+			with open(".gitmodules") as f:
+				modules = f.read()
+			matches = re.findall(r"url = git@github.com:(?P<p>.*).git", modules)
+			for match in matches:
+				if match == plugin:
+					out += "`[!] → ` Plugin already installed"
+					return await msg.edit(out)
+
 		if branch is None:
 			out += "\n` → ` Checking branches"
 			await msg.edit(out)
@@ -234,7 +243,7 @@ async def plugin_add_cmd(client, message):
 			return await msg.edit(out)
 		if re.search(r"fatal: '(.*)' is not a commit", res):
 			logger.error(res)
-			out += f" [`FAIL`]\n`[!] → ` Non existing branch for `{author}/{plugin}`"
+			out += f" [`FAIL`]\n`[!] → ` Non existing branch `{branch}` for `{author}/{plugin}`"
 			return await msg.edit(out)
 		out += f" [`OK`]\n` → ` Checking dependancies"
 		await msg.edit(out)
