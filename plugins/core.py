@@ -216,6 +216,10 @@ async def plugin_add_cmd(client, message):
 			logger.error(res)
 			out += f" [`FAIL`]\n`[!] → ` No plugin `{author}/{plugin}` could be found"
 			return await msg.edit(out)
+		if re.search(r"fatal: '(.*)' is not a commit", res):
+			logger.error(res)
+			out += f" [`FAIL`]\n`[!] → ` Non existing branch for `{author}/{plugin}`"
+			return await msg.edit(out)
 		out += f" [`OK`]\n` → ` Checking dependancies"
 		await msg.edit(out)
 		if os.path.isfile(f"plugins/{plugin}/requirements.txt"):
