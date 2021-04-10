@@ -323,13 +323,10 @@ async def plugin_list_cmd(client, message):
 		with open(".gitmodules") as f:
 			modules = f.read()
 		matches = re.findall(r"url = git@github.com:(?P<p>.*).git", modules)
-		text = ""
+		text = "`→ ` Installed plugins:\n"
 		for match in matches:
 			text += f"` → ` `{match}`\n"
-		if len(text) > 0:
-			await edit_or_reply(message, text)
-		else:
-			await edit_or_reply(message, "`[!] → ` No plugins installed")
+		await edit_or_reply(message, text)
 	else:
 		await edit_or_reply(message, "`[!] → ` No plugins installed")
 
