@@ -206,7 +206,6 @@ async def plugin_add_cmd(client, message):
 		  stderr=asyncio.subprocess.STDOUT)
 
 		stdout, _sterr = await proc.communicate()
-		logger.info(stdout.decode())
 		res = cleartermcolor(stdout.decode())
 		if not res.startswith("Cloning"):
 			logger.error(res)
