@@ -80,6 +80,7 @@ async def update_cmd(client, message):
 			stderr=asyncio.subprocess.STDOUT)
 		stdout, _stderr = await proc.communicate()
 		if b"Aborting" in stdout:
+			logger.warn(stdout.decode())
 			out += " [`FAIL`]\n"
 			if "-force" not in message.command["flags"]:
 				return await msg.edit(out)
@@ -115,6 +116,7 @@ async def update_cmd(client, message):
 			stderr=asyncio.subprocess.STDOUT)
 		stdout, _stderr = await proc.communicate()
 		if b"ERROR" in stdout:
+			logger.warn(stdout.decode())
 			out += " [`WARN`]"
 		else:
 			out += f" [`{stdout.count(b'Collecting')} new`]"
@@ -133,6 +135,7 @@ async def update_cmd(client, message):
 						stderr=asyncio.subprocess.STDOUT)
 					stdout, _stderr = await proc.communicate()
 					if b"ERROR" in stdout:
+						logger.warn(stdout.decode())
 						out += " [`WARN`]"
 					else:
 						count += stdout.count(b'Collecting')
@@ -205,9 +208,11 @@ async def plugin_add_cmd(client, message):
 		logger.info(stdout.decode())
 		res = cleartermcolor(stdout.decode())
 		if not res.startswith("Cloning"):
+			logger.error(res)
 			out += f" [`FAIL`]\n`[!] → ` Plugin `{author}/{plugin}` was wrongly uninstalled"
 			return await msg.edit(out)
 		if "ERROR: Repository not found" in res:
+			logger.error(res)
 			out += f" [`FAIL`]\n`[!] → ` No plugin `{author}/{plugin}` could be found"
 			return await msg.edit(out)
 		out += f" [`OK`]\n` → ` Checking dependancies"
@@ -219,6 +224,7 @@ async def plugin_add_cmd(client, message):
 				stderr=asyncio.subprocess.STDOUT)
 			stdout, _stderr = await proc.communicate()
 			if b"ERROR" in stdout:
+				logger.warn(stdout.decode())
 				out += " [`WARN`]"
 			else:
 				out += f" [`{stdout.count(b'Uninstalling')} del`]"
@@ -266,6 +272,7 @@ async def plugin_remove_cmd(client, message):
 					stderr=asyncio.subprocess.STDOUT)
 				stdout, _stderr = await proc.communicate()
 				if b"ERROR" in stdout:
+					logger.warn(stdout.decode())
 					out += " [`WARN`]"
 				else:
 					out += f" [`{stdout.count(b'Uninstalling')} del`]"
@@ -279,9 +286,11 @@ async def plugin_remove_cmd(client, message):
 		stdout, _stderr = await proc.communicate()
 		res = cleartermcolor(stdout.decode())
 		if not res.startswith("Cleared"):
+			logger.error(res)
 			out += f" [`FAIL`]\n`[!] → ` Could not deinit `{plugin}`"
 			return await msg.edit(out)
 		if f"rm 'plugins/{plugin}'" not in res:
+			logger.error(res)
 			out += f" [`FAIL`]\n`[!] → ` Could not delete `{plugin}`"
 			return await msg.edit(out)
 		out += f" [`OK`]\n` → ` Restarting process"
