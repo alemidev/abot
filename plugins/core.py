@@ -183,7 +183,7 @@ async def plugin_add_cmd(client, message):
 			out += "\n`[!] → ` No input"
 			return await msg.edit(out)
 		user_input = message.command["cmd"][0]
-		branch = message.command["branch"] if "branch" in message.command else "main"
+		branch = message.command["branch"] if "branch" in message.command else None
 		folder = message.command["dir"] if "dir" in message.command else None
 		if user_input.startswith("http") or user_input.startswith("git@"):
 			link = user_input
@@ -196,10 +196,27 @@ async def plugin_add_cmd(client, message):
 			folder = plugin
 
 		out += f"\n`→ ` Installing `{author}/{plugin}`"
+		logger.info(f"Installing \"{author}/{plugin}\"")
+
+		if branch is None:
+			out += "\n` → ` Checking branches"
+			await msg.edit(out)
+			proc = await asyncio.create_subprocess_shell(
+			      f"git ls-remote {link}",
+			      stdout=asyncio.subprocess.PIPE,
+			      stderr=asyncio.subprocess.STDOUT)
+			stdout, _sterr = await proc.communicate()
+			res = cleartermcolor(stdout.decode())
+			if res.startswith("ERROR"):
+				logger.error(res)
+				out += f" [`FAIL`]\n`[!] → ` Could not find `{link}`"
+				return await msg.edit(out)
+			out += " [`OK`]"
+			branch = re.search(r"(?:.*)\tHEAD\n(?:.*)\trefs/heads/(?P<branch>.*)\n", res)["branch"]
+
 		out += "\n` → ` Fetching source code"
 		await msg.edit(out)
 
-		logger.info(f"Installing \"{author}/{plugin}\"")
 		proc = await asyncio.create_subprocess_shell(
 		  f"git submodule add -b {branch} {link} plugins/{folder}",
 		  stdout=asyncio.subprocess.PIPE,
