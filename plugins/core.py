@@ -119,7 +119,7 @@ async def update_cmd(client, message):
 		else:
 			out += f" [`{stdout.count(b'Collecting')} new`]"
 		if os.path.isfile(".gitmodules"): # Also install dependancies from plugins
-			out += f"\n`  → ` Submodule{'s' if sub_count > 1 else ''} [`{sub_count}`]\n"
+			out += f"\n`  → ` Submodule{'s' if sub_count > 1 else ''}"
 			await msg.edit(out)
 			with open(".gitmodules") as f:
 				modules = f.read()
