@@ -250,7 +250,7 @@ HELP.add_help(["uninstall", "plugin_remove"], "uninstall a plugin",
 				"into the `plugins` folder as git submodulesThis will call `git submodule deinit -f`, " +
 				"then remove the related folder in `.git/modules` and last remove " +
 				"plugin folder and all its content. If flag `-lib` is added, libraries installed with " +
-				"pip will be removed too (may break dependancies of other plugins!)", args="[-r] <plugin>")
+				"pip will be removed too (may break dependancies of other plugins!)", args="[-lib] <plugin>")
 @alemiBot.on_message(is_superuser & filterCommand(["uninstall", "plugin_remove"], list(alemiBot.prefixes), flags=["-lib"]))
 async def plugin_remove_cmd(client, message):
 	if not alemiBot.allow_plugin_install:
