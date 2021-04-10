@@ -189,6 +189,8 @@ async def plugin_add_cmd(client, message):
 
 		plugin_author = get_plugin(user_input) # clear url or stuff around
 		author, plugin = plugin_author.split("/", 1)
+		if folder is None:
+			folder = plugin
 
 		out += f"\n` → ` Installing `{author}/{plugin}`"
 		await msg.edit(out)
