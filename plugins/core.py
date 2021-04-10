@@ -67,37 +67,47 @@ HELP.add_help("update", "update and restart",
 async def update_cmd(client, message):
 	out = message.text.markdown if is_me(message) else f"`→ ` {get_username(message.from_user)} requested update"
 	msg = message if is_me(message) else await message.reply(out)
+	uptime = str(datetime.now() - client.start_time)
+	out += f"\n`→ ` --runtime-- `{uptime}`"
 	try:
 		logger.info(f"Updating bot ...")
-		uptime = str(datetime.now() - client.start_time)
-		out += f"\n`→ ` --runtime-- `{uptime}`"
-		await msg.edit(out) 
 		out += "\n` → ` Fetching updates"
+		pulled = False
 		await msg.edit(out)
 		proc = await asyncio.create_subprocess_exec(
 			"git", "pull",
 			stdout=asyncio.subprocess.PIPE,
 			stderr=asyncio.subprocess.STDOUT)
 		stdout, _stderr = await proc.communicate()
-		sub_proc = await asyncio.create_subprocess_exec(
-			"git", "submodule", "update", "--remote",
-			stdout=asyncio.subprocess.PIPE,
-			stderr=asyncio.subprocess.STDOUT)
-		sub_stdout, _sub_stderr = await sub_proc.communicate()
-		sub_count = sub_stdout.count(b"checked out")
 		if b"Aborting" in stdout:
 			out += " [`FAIL`]\n"
 			if "-force" not in message.command["flags"]:
 				return await msg.edit(out)
 		elif b"Already up to date" in stdout:
 			out += " [`N/A`]"
-			if sub_count < 1 and "-force" not in message.command["flags"]:
-				return await msg.edit(out)
 		else:
+			pulled = True
 			out += " [`OK`]"
-		if sub_count > 0:
-			out += f"`  → ` Submodule{'s' if sub_count > 1 else ''} [`{sub_count}`]\n"
-		out += "\n` → ` Checking core libraries"
+
+		if os.path.isfile(".gitmodules"): # Also update plugins
+			out += f"\n`  → ` Submodules"
+			await msg.edit(out)
+			sub_proc = await asyncio.create_subprocess_exec(
+				"git", "submodule", "update", "--remote",
+				stdout=asyncio.subprocess.PIPE,
+				stderr=asyncio.subprocess.STDOUT)
+			sub_stdout, _sub_stderr = await sub_proc.communicate()
+			sub_count = sub_stdout.count(b"checked out")
+			if sub_count > 0:
+				out += f" [`{sub_count}`]"
+				pulled = True
+			else:
+				out += " [`N/A`]"
+
+		if not pulled and "-force" not in message.command["flags"]:
+			return await msg.edit(out)
+
+		out += "\n` → ` Checking libraries"
 		await msg.edit(out) 
 		proc = await asyncio.create_subprocess_exec(
 			"pip", "install", "-r", "requirements.txt", "--upgrade",
@@ -109,7 +119,8 @@ async def update_cmd(client, message):
 		else:
 			out += f" [`{stdout.count(b'Collecting')} new`]"
 		if os.path.isfile(".gitmodules"): # Also install dependancies from plugins
-			out += f"`  → ` Submodule{'s' if sub_count > 1 else ''} [`{sub_count}`]\n"
+			out += f"\n`  → ` Submodule{'s' if sub_count > 1 else ''} [`{sub_count}`]\n"
+			await msg.edit(out)
 			with open(".gitmodules") as f:
 				modules = f.read()
 			matches = re.findall(r"path = (?P<path>plugins/[^ ]+)", modules)
@@ -212,8 +223,9 @@ HELP.add_help(["uninstall", "plugin_remove"], "uninstall a plugin",
 				"remove an installed plugin. alemiBot plugins are git repos, cloned " +
 				"into the `plugins` folder as git submodulesThis will call `git submodule deinit -f`, " +
 				"then remove the related folder in `.git/modules` and last remove " +
-				"plugin folder and all its content.", args="<plugin>")
-@alemiBot.on_message(is_superuser & filterCommand(["uninstall", "plugin_remove"], list(alemiBot.prefixes)))
+				"plugin folder and all its content. If flag `-lib` is added, libraries installed with " +
+				"pip will be removed too (may break dependancies of other plugins!)", args="[-r] <plugin>")
+@alemiBot.on_message(is_superuser & filterCommand(["uninstall", "plugin_remove"], list(alemiBot.prefixes), flags=["-lib"]))
 async def plugin_remove_cmd(client, message):
 	if not alemiBot.allow_plugin_install:
 		return await edit_or_reply(message, "`[!] → ` Plugin management is disabled")
@@ -228,18 +240,19 @@ async def plugin_remove_cmd(client, message):
 			plugin = plugin.split("/")[1]
 	
 		logger.info(f"Removing plugin \"{plugin}\"")
-		out += f"\n` → ` Removing libraries"
-		await msg.edit(out)
-		if os.path.isfile(f"plugins/{plugin}/requirements.txt"):
-			proc = await asyncio.create_subprocess_exec(
-				"pip", "uninstall", "-y", "-r", f"plugins/{plugin}/requirements.txt",
-				stdout=asyncio.subprocess.PIPE,
-				stderr=asyncio.subprocess.STDOUT)
-			stdout, _stderr = await proc.communicate()
-			if b"ERROR" in stdout:
-				out += " [`WARN`]"
-			else:
-				out += f" [`{stdout.count(b'Uninstalling')} del`]"
+		if "-lib" in message.command["flags"]:
+			out += f"\n` → ` Removing libraries"
+			await msg.edit(out)
+			if os.path.isfile(f"plugins/{plugin}/requirements.txt"):
+				proc = await asyncio.create_subprocess_exec(
+					"pip", "uninstall", "-y", "-r", f"plugins/{plugin}/requirements.txt",
+					stdout=asyncio.subprocess.PIPE,
+					stderr=asyncio.subprocess.STDOUT)
+				stdout, _stderr = await proc.communicate()
+				if b"ERROR" in stdout:
+					out += " [`WARN`]"
+				else:
+					out += f" [`{stdout.count(b'Uninstalling')} del`]"
 		out += f"\n` → ` Removing {plugin}" 
 		await msg.edit(out)
 		proc = await asyncio.create_subprocess_shell(
