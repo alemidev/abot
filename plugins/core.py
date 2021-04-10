@@ -261,7 +261,7 @@ async def plugin_remove_cmd(client, message):
 			return await msg.edit(out)
 		plugin = message.command["cmd"][0]
 
-		out += f"\n`→ ` Uninstalling {plugin}"
+		out += f"\n`→ ` Uninstalling `{plugin}`"
 
 		if "/" in plugin: # If user passes <user>/<repo> here too, get just repo name
 			plugin = plugin.split("/")[1]
