@@ -15,7 +15,8 @@ except FileNotFoundError:
 	with open("data/perms.json", "w") as f:
 		json.dump({ "SUPERUSER" : [] }, f)
 except KeyError:
-	ALLOWED["SUPERUSER"] = []
+	if "SUPERUSER" not in ALLOWED:
+		ALLOWED["SUPERUSER"] = []
 	with open("data/perms.json", "w") as f:
 		json.dump(ALLOWED, f)
 
