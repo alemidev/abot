@@ -42,7 +42,7 @@ class alemiBot(Client):
 			with open("data/lastmsg.json", "r") as f:
 				lastmsg = json.load(f)
 			if lastmsg:
-				message = await self.get_messages(m["chat_id"], m["message_id"])
+				message = await self.get_messages(lastmsg["chat_id"], lastmsg["message_id"])
 				await message.edit(message.text.markdown + " [`OK`]")
 				with open("data/lastmsg.json", "w") as f:
 					json.dump({}, f)
