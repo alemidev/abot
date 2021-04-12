@@ -38,23 +38,22 @@ class alemiBot(Client):
 	async def start(self):
 		await super().start()
 		self.me = await self.get_me() # this is used to quickly parse /<cmd>@<who> format for commands
-		logging.warning("Bot started\n")
 		try:
 			with open("data/lastmsg.json", "r") as f:
-				m = json.load(f)
-				if m == {}:
-					return
+				lastmsg = json.load(f)
+			if lastmsg:
 				message = await self.get_messages(m["chat_id"], m["message_id"])
 				await message.edit(message.text.markdown + " [`OK`]")
-			with open("data/lastmsg.json", "w") as f:
-				json.dump({}, f)
+				with open("data/lastmsg.json", "w") as f:
+					json.dump({}, f)
 		except:
-			pass # ignore
+			logging.exception("Error editing restart message")
+		logging.warning("Bot started\n")
 		
 	async def stop(self, block=True):
-		c = await super().stop(block)
+		buf = await super().stop(block)
 		logging.warning("Bot stopped\n")
-		return c
+		return buf
 	
 	async def restart(self):
 		await self.stop()
