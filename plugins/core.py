@@ -126,7 +126,7 @@ async def update_cmd(client, message):
 			await msg.edit(out)
 			with open(".gitmodules") as f:
 				modules = f.read()
-			matches = re.findall(r"path = (?P<path>plugins/[^ ]+)", modules)
+			matches = re.findall(r"path = (?P<path>plugins/[^ ]+)\n", modules)
 			count = 0
 			for match in matches:
 				if os.path.isfile(f"{match}/requirements.txt"):
