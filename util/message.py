@@ -1,6 +1,8 @@
 import re
 
 from pyrogram.raw.functions.messages import DeleteScheduledMessages
+from pyrogram.raw.functions.messages import Search
+from pyrogram.raw.types import InputMessagesFilterEmpty
 
 from . import batchify
 from .getters import get_text
@@ -9,6 +11,21 @@ def is_me(message):
 	return message.from_user is not None \
 	and message.from_user.is_self \
 	and message.via_bot is None # can't edit messages from inline bots
+
+async def edit_or_reply(message, text, *args, **kwargs):
+	if len(text.strip()) == 0:
+		return message
+	if is_me(message) and len(get_text(message) + text) < 4090:
+		if message.scheduled: # lmao ye right import more bloat
+			await edit_scheduled(message._client, message, text, *args, **kwargs)
+		else:
+			await message.edit(get_text(message) + "\n" + text, *args, **kwargs)
+		return message
+	else:
+		ret = None
+		for m in batchify(text, 4090):
+			ret = await message.reply(m, *args, **kwargs)
+		return ret
 
 def parse_sys_dict(msg):
 	events = []
@@ -46,18 +63,21 @@ async def edit_scheduled(client, message, text, *args, **kwargs): # Not really p
 	return await client.send_message(message.chat.id, message.text.markdown + "\n" + text, *args,
 										 schedule_date=message.date, **kwargs)
 
-async def edit_or_reply(message, text, *args, **kwargs):
-	if len(text.strip()) == 0:
-		return message
-	if is_me(message) and len(get_text(message) + text) < 4090:
-		if message.scheduled: # lmao ye right import more bloat
-			await edit_scheduled(message._client, message, text, *args, **kwargs)
-		else:
-			await message.edit(get_text(message) + "\n" + text, *args, **kwargs)
-		return message
-	else:
-		ret = None
-		for m in batchify(text, 4090):
-			ret = await message.reply(m, *args, **kwargs)
-		return ret
-
+async def count_messages(client, chat, user, offset=0, query=""):
+	messages = await client.send(
+				Search(
+					peer=await client.resolve_peer(chat),
+					from_id=await client.resolve_peer(user),
+					add_offset=offset,
+					filter=InputMessagesFilterEmpty(),
+					q=query,
+					min_date=0,
+					max_date=0,
+					offset_id=0,
+					limit=0,
+					max_id=0,
+					min_id=0,
+					hash=0,
+				)
+			)
+	return messages.count
