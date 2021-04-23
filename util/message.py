@@ -33,7 +33,7 @@ def parse_media_type(msg:Message):
 		"video_note", "video", "contact", "location", "venue", "poll", "document"
 	]
 	for t in media_types:
-		if hasattr(msg, t):
+		if hasattr(msg, t) and getattr(msg, t):
 			return t
 	return None
 
