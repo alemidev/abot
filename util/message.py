@@ -28,34 +28,13 @@ async def edit_or_reply(message, text, *args, **kwargs):
 		return ret
 
 def parse_media_type(msg:Message):
-	if msg.voice:
-		return "voice"
-	if msg.audio:
-		return "audio"
-	if msg.photo:
-		return "photo"
-	if msg.dice:
-		return "dice"
-	if msg.stricker:
-		return "sticker"
-	if msg.animation:
-		return "animation"
-	if msg.game:
-		return "game"
-	if msg.video_note:
-		return "video_note"
-	if msg.video:
-		return "video"
-	if msg.contact:
-		return "contact"
-	if msg.location:
-		return "location"
-	if msg.venue:
-		return "venue"
-	if msg.poll:
-		return "poll"
-	if msg.document:
-		return "document"
+	media_types = [
+		"voice", "audio", "photo", "dice", "sticker", "animation", "game",
+		"video_note", "video", "contact", "location", "venue", "poll", "document"
+	]
+	for t in media_types:
+		if hasattr(msg, t):
+			return t
 	return None
 
 def parse_sys_dict(msg):
