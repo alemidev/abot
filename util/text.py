@@ -10,6 +10,13 @@ def cleartermcolor(raw_in):
 	ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 	return ansi_escape.sub('', raw_in)
 
+def order_suffix(num, measure='B'):
+	for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+		if abs(num) < 1024.0:
+			return "{n:3.1f} {u}{m}".format(n=num, u=unit, m=measure)
+		num /= 1024.0
+	return "{n:.1f} Yi{m}".format(n=num, m=measure)
+
 def tokenize_json(text):
 	res = re.subn(
 		r'("[^\"]+"|[0-9.\-]+)',
