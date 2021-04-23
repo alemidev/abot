@@ -1,11 +1,18 @@
-def get_text(message):
-	if message.text is not None:
-		return message.text.markdown
+from pyrogram.types import Message
+
+def get_text(msg:Message, raw=False):
+	if hasattr(msg, "text"):
+		if raw and hasattr(msg.text, "raw"):
+			return msg.text.raw
+		elif hasattr(msg.text, "markdown"):
+			return msg.text.markdown
+		return msg.text
+	elif hasattr(msg, "caption"):
+		return msg.caption
+	if raw:
+		return None
 	else:
-		if message.caption is not None:
-			return message.caption
-		else:
-			return ""
+		return ""
 
 def get_text_dict(message):
 	if "text" in message:
