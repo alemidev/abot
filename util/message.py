@@ -2,7 +2,7 @@ import re
 
 from pyrogram.raw.functions.messages import DeleteScheduledMessages
 from pyrogram.raw.functions.messages import Search
-from pyrogram.raw.types import InputMessagesFilterEmpty
+from pyrogram.raw.types import InputMessagesFilterEmpty, Message
 
 from . import batchify
 from .getters import get_text
@@ -26,6 +26,37 @@ async def edit_or_reply(message, text, *args, **kwargs):
 		for m in batchify(text, 4090):
 			ret = await message.reply(m, *args, **kwargs)
 		return ret
+
+def parse_media_type(msg:Message):
+	if msg.voice:
+		return "voice"
+	if msg.audio:
+		return "audio"
+	if msg.photo:
+		return "photo"
+	if msg.dice:
+		return "dice"
+	if msg.stricker:
+		return "sticker"
+	if msg.animation:
+		return "animation"
+	if msg.game:
+		return "game"
+	if msg.video_note:
+		return "video_note"
+	if msg.video:
+		return "video"
+	if msg.contact:
+		return "contact"
+	if msg.location:
+		return "location"
+	if msg.venue:
+		return "venue"
+	if msg.poll:
+		return "poll"
+	if msg.document:
+		return "document"
+	return None
 
 def parse_sys_dict(msg):
 	events = []
