@@ -38,8 +38,8 @@ def get_all_short_text(pref, sudo=False):
 		out += f"`━━┫ {k}`\n"
 		cat = CATEGORIES[k]
 		for cmd in cat.HELP_ENTRIES:
-			if not sudo and not cmd.public:
-				continue
 			entry = cat.HELP_ENTRIES[cmd]
+			if not sudo and not entry.public:
+				continue
 			out += f"`→ {pref}{entry.title} ` {entry.shorttext}\n"
 	return out
