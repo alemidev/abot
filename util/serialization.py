@@ -27,7 +27,7 @@ def convert_to_dict(obj, depth=0):
 				attr: (
 					"*" * len(getattr(obj, attr))
 					if attr == "phone_number" else
-					datetime.fromtimestamp(getattr(obj, attr))
+					datetime.utcfromtimestamp(getattr(obj, attr))
 					if attr.endswith("date") else
 					convert_to_dict(getattr(obj, attr), depth=depth+1)
 				)
