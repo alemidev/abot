@@ -1,3 +1,5 @@
+from typing import Callable
+
 CATEGORIES = {}
 ALIASES = {}
 
@@ -6,17 +8,15 @@ class HelpEntry:
 		self.shorttext = shorttext
 		self.longtext = longtext
 		self.args = args
+		self.public = public
 		if isinstance(title, list):
 			self.title = title[0]
 			for a in title[1:]:
 				ALIASES[a] = title[0]
 		else:
 			self.title = title
-		if public:
-			self.shorttext += " *"
 
 class HelpCategory: 
-
 	def __init__(self, title):
 		self.title = title.upper()
 		self.HELP_ENTRIES = {}
@@ -32,12 +32,14 @@ class HelpCategory:
 			self.add_help(title, shorttext, longtext, public, args)
 		return decorator
 
-def get_all_short_text(pref):
+def get_all_short_text(pref, sudo=False):
 	out = ""
 	for k in CATEGORIES:
 		out += f"`━━┫ {k}`\n"
 		cat = CATEGORIES[k]
 		for cmd in cat.HELP_ENTRIES:
+			if not sudo and not cmd.public:
+				continue
 			entry = cat.HELP_ENTRIES[cmd]
 			out += f"`→ {pref}{entry.title} ` {entry.shorttext}\n"
 	return out

@@ -13,12 +13,12 @@ from pyrogram import filters
 from pyrogram.errors import PeerIdInvalid
 
 from util.decorators import report_error, set_offline
-from util.permission import is_allowed, is_superuser, allow, disallow, list_allowed
+from util.permission import is_allowed, is_superuser, allow, disallow, list_allowed, check_superuser
 from util.command import filterCommand
 from util.message import edit_or_reply, is_me
 from util.getters import get_username
 from util.text import cleartermcolor
-from util.help import HelpCategory, HelpEntry, CATEGORIES, ALIASES, get_all_short_text
+from util.help import HelpCategory, CATEGORIES, ALIASES, get_all_short_text
 
 logger = logging.getLogger(__name__)
 
@@ -41,9 +41,11 @@ async def help_cmd(client, message):
 			elif arg in ALIASES and ALIASES[arg] in cat.HELP_ENTRIES:
 				e = cat.HELP_ENTRIES[ALIASES[arg]]
 				return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode="markdown")
+			# elif arg.lower() == k.lower():
+				# TODO print all commands in a category
 		return await edit_or_reply(message, f"`[!] → ` No command named `{arg}`")
 	await edit_or_reply(message, f"`ᚨᛚᛖᛗᛁᛒᛟᛏ v{client.app_version}`\n" +
-						get_all_short_text(pref) +
+						get_all_short_text(pref, sudo=check_superuser(message)) +
 						f"__Commands with * are available to trusted users__", parse_mode="markdown")
 
 HELP.add_help(["asd", "ping"], "a sunny day!",
