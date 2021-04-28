@@ -1,11 +1,28 @@
 import re
 
+from time import time
+
 from pyrogram.raw.functions.messages import DeleteScheduledMessages
 from pyrogram.raw.functions.messages import Search
 from pyrogram.raw.types import InputMessagesFilterEmpty, Message
+from pyrogram import Client
 
 from . import batchify
 from .getters import get_text
+
+class ProgressChatAction:
+	def __init__(self, client:Client, chat_id:int, action:str="upload_document", interval:float=4.75):
+		self.client = client
+		self.chat_id = chat_id
+		self.action = action
+		self.interval = interval
+		self.last = 0
+
+	async def tick(self):
+		if time() - self.last > self.interval:
+			await self.client.send_chat_action(self.chat_id, self.action)
+			self.last = time()
+
 
 def is_me(message):
 	return message.from_user is not None \
