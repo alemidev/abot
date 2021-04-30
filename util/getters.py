@@ -4,7 +4,7 @@ def get_text(msg:Message, raw:bool=False):
 	if hasattr(msg, "text"):
 		if raw and hasattr(msg.text, "raw"):
 			return msg.text.raw
-		elif hasattr(msg.text, "markdown"):
+		elif not raw and hasattr(msg.text, "markdown"):
 			return msg.text.markdown
 		return msg.text
 	elif hasattr(msg, "caption"):
