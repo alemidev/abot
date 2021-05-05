@@ -153,16 +153,17 @@ async def update_cmd(client, message):
 		out += " [`FAIL`]\n`[!] → ` " + str(e)
 		await msg.edit(out) 
 
-PLUGIN_HTTPS = re.compile(r"https://(?:.*)\.(?:.*)/(?P<plugin>[^ ]+)\.git")
-PLUGIN_SSH = re.compile(r"git@(?:.*)\.(?:.*):(?P<plugin>[^ ]+)\.git")
-def get_plugin(url):
+PLUGIN_HTTPS = re.compile(r"http(?:s|):\/\/(?:.*)\/(?P<author>[^ ]+)\/(?P<plugin>[^ \.]+)(?:\.git|)")
+PLUGIN_SSH = re.compile(r"git@(?:.*)\.(?:.*):(?P<author>[^ ]+)\/(?P<plugin>[^ \.]+)(?:\.git|)")
+def split_url(url):
 	match = PLUGIN_HTTPS.match(url)
 	if match:
-		return match["plugin"]
+		return match["plugin"], match["author"]
 	match = PLUGIN_SSH.match(url)
 	if match:
-		return match["plugin"]
-	return url
+		return match["plugin"], match["author"]
+	author, plugin = url.split("/", 1)
+	return plugin, author
 
 HELP.add_help(["install", "plugin_add"], "install a plugin",
 				"install a plugin. alemiBot plugins are git repos, cloned into the `plugins` folder as git submodules. " +
@@ -187,15 +188,19 @@ async def plugin_add_cmd(client, message):
 		user_input = message.command["cmd"][0]
 		branch = message.command["branch"] if "branch" in message.command else None
 		folder = message.command["dir"] if "dir" in message.command else None
+
+		plugin, author = split_url(user_input) # clear url or stuff around
+		if folder is None:
+			folder = plugin
+
 		if user_input.startswith("http") or user_input.startswith("git@"):
 			link = user_input
 		else: # default to github over ssh
-			link = f"git@github.com:{user_input}.git"
+			if alemiBot.use_ssh:
+				link = f"git@github.com:{author}/{plugin}.git"
+			else:
+				link = f"https://github.com/{author}/{plugin}.git"
 
-		plugin_author = get_plugin(user_input) # clear url or stuff around
-		author, plugin = plugin_author.split("/", 1)
-		if folder is None:
-			folder = plugin
 
 		out += f"\n`→ ` Installing `{author}/{plugin}`"
 		logger.info(f"Installing \"{author}/{plugin}\"")
