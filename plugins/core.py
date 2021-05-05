@@ -37,10 +37,10 @@ async def help_cmd(client, message):
 			cat = CATEGORIES[k]
 			if arg in cat.HELP_ENTRIES:
 				e = cat.HELP_ENTRIES[arg]
-				return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode="markdown")
+				return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode="markdown", disable_web_page_preview=True)
 			elif arg in ALIASES and ALIASES[arg] in cat.HELP_ENTRIES:
 				e = cat.HELP_ENTRIES[ALIASES[arg]]
-				return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode="markdown")
+				return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode="markdown", disable_web_page_preview=True)
 			# elif arg.lower() == k.lower():
 				# TODO print all commands in a category
 		return await edit_or_reply(message, f"`[!] → ` No command named `{arg}`")
