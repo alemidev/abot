@@ -45,7 +45,9 @@ async def help_cmd(client, message):
 				# TODO print all commands in a category
 		return await edit_or_reply(message, f"`[!] → ` No command named `{arg}`")
 	await edit_or_reply(message, f"`ᚨᛚᛖᛗᛁᛒᛟᛏ v{client.app_version}`\n" +
-						get_all_short_text(pref, sudo=check_superuser(message)), parse_mode="markdown")
+						get_all_short_text(pref, sudo=check_superuser(message)),
+						parse_mode="markdown",
+						disable_web_page_preview=True)
 
 HELP.add_help(["asd", "ping"], "a sunny day!",
 				"The ping command.", public=True)
