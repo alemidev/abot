@@ -92,7 +92,7 @@ async def update_cmd(client, message):
 			out += " [`OK`]"
 
 		if os.path.isfile(".gitmodules"): # Also update plugins
-			out += f"\n`  → ` Submodules"
+			out += "\n`  → ` Submodules"
 			await msg.edit(out)
 			sub_proc = await asyncio.create_subprocess_exec(
 				"git", "submodule", "update", "--remote",
@@ -123,7 +123,7 @@ async def update_cmd(client, message):
 		else:
 			out += f" [`{stdout.count(b'Collecting')} new`]"
 		if os.path.isfile(".gitmodules"): # Also install dependancies from plugins
-			out += f"\n`  → ` Submodule{'s' if sub_count > 1 else ''}"
+			out += "\n`  → ` Submodules"
 			await msg.edit(out)
 			with open(".gitmodules") as f:
 				modules = f.read()
