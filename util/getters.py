@@ -4,15 +4,14 @@ def get_text(msg:Message, raw:bool=False):
 	if hasattr(msg, "text") and msg.text:
 		if raw and hasattr(msg.text, "raw"):
 			return msg.text.raw
-		elif not raw and hasattr(msg.text, "markdown"):
+		if not raw and hasattr(msg.text, "markdown"):
 			return msg.text.markdown
 		return msg.text
-	elif hasattr(msg, "caption") and msg.caption:
+	if hasattr(msg, "caption") and msg.caption:
 		return msg.caption
 	if raw:
 		return None
-	else:
-		return ""
+	return ""
 
 def get_user(msg:Message):
 	if hasattr(msg, "from_user") and msg.from_user:

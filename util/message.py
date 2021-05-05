@@ -34,10 +34,9 @@ async def edit_or_reply(message, text, *args, **kwargs):
 		return message
 	if is_me(message) and len(get_text(message) + text) < 4090:
 		if message.scheduled: # lmao ye right import more bloat
-			await edit_scheduled(message._client, message, text, *args, **kwargs)
+			return await edit_scheduled(message._client, message, text, *args, **kwargs)
 		else:
-			await message.edit(get_text(message) + "\n" + text, *args, **kwargs)
-		return message
+			return await message.edit(get_text(message) + "\n" + text, *args, **kwargs)
 	else:
 		ret = None
 		for m in batchify(text, 4090):
@@ -47,7 +46,7 @@ async def edit_or_reply(message, text, *args, **kwargs):
 def parse_media_type(msg:Message):
 	media_types = [
 		"voice", "audio", "photo", "dice", "sticker", "animation", "game",
-		"video_note", "video", "contact", "location", "venue", "poll", "document"
+		"video_note", "video", "contact", "location", "venue", "poll", "document",
 	]
 	for t in media_types:
 		if hasattr(msg, t) and getattr(msg, t):
