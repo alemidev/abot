@@ -37,15 +37,17 @@ async def help_cmd(client, message):
 			cat = CATEGORIES[k]
 			if arg in cat.HELP_ENTRIES:
 				e = cat.HELP_ENTRIES[arg]
-				return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode="markdown")
+				return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode="markdown", disable_web_page_preview=True)
 			elif arg in ALIASES and ALIASES[arg] in cat.HELP_ENTRIES:
 				e = cat.HELP_ENTRIES[ALIASES[arg]]
-				return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode="markdown")
+				return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode="markdown", disable_web_page_preview=True)
 			# elif arg.lower() == k.lower():
 				# TODO print all commands in a category
 		return await edit_or_reply(message, f"`[!] → ` No command named `{arg}`")
 	await edit_or_reply(message, f"`ᚨᛚᛖᛗᛁᛒᛟᛏ v{client.app_version}`\n" +
-						get_all_short_text(pref, sudo=check_superuser(message)), parse_mode="markdown")
+						get_all_short_text(pref, sudo=check_superuser(message)),
+						parse_mode="markdown",
+						disable_web_page_preview=True)
 
 HELP.add_help(["asd", "ping"], "a sunny day!",
 				"The ping command.", public=True)
@@ -92,7 +94,7 @@ async def update_cmd(client, message):
 			out += " [`OK`]"
 
 		if os.path.isfile(".gitmodules"): # Also update plugins
-			out += f"\n`  → ` Submodules"
+			out += "\n`  → ` Submodules"
 			await msg.edit(out)
 			sub_proc = await asyncio.create_subprocess_exec(
 				"git", "submodule", "update", "--remote",
@@ -123,7 +125,7 @@ async def update_cmd(client, message):
 		else:
 			out += f" [`{stdout.count(b'Collecting')} new`]"
 		if os.path.isfile(".gitmodules"): # Also install dependancies from plugins
-			out += f"\n`  → ` Submodule{'s' if sub_count > 1 else ''}"
+			out += "\n`  → ` Submodules"
 			await msg.edit(out)
 			with open(".gitmodules") as f:
 				modules = f.read()

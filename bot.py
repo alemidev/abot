@@ -32,10 +32,6 @@ class alemiBot(Client):
 								stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
 		self.app_version += "-" + res.stdout.decode('utf-8').strip()
 
-	async def set_offline(self):
-		if not self.me.is_bot:
-			await self.send(UpdateStatus(offline=True))
-
 	async def start(self):
 		await super().start()
 		self.me = await self.get_me() # this is used to quickly parse /<cmd>@<who> format for commands
@@ -49,11 +45,11 @@ class alemiBot(Client):
 					json.dump({}, f)
 		except:
 			logging.exception("Error editing restart message")
-		logging.warning("Bot started\n")
+		logging.info("Bot started\n")
 		
 	async def stop(self, block=True):
 		buf = await super().stop(block)
-		logging.warning("Bot stopped\n")
+		logging.info("Bot stopped\n")
 		return buf
 	
 	async def restart(self):
