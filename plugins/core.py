@@ -171,13 +171,15 @@ HELP.add_help(["install", "plugin_add"], "install a plugin",
 				"install a plugin. alemiBot plugins are git repos, cloned into the `plugins` folder as git submodules. " +
 				"You can specify which extension to install by giving `user/repo` (will default to github.com), " +
 				"or specify the entire url. For example, `alemigliardi/statistics` is the same as " +
-				"`git@github.com:alemigliardi/statistics.git`. You can specify " +
+				"`git@github.com:alemigliardi/statistics.git`. By default, https will be used (meaning that if you try to clone " +
+				"a private repo, it will prompt for credentials on terminal, making bot hang). You can make it clone using ssh " +
+				"with `-ssh` flag, or by adding `useSsh = True` to your config (under `[customization]`). You can specify " +
 				"which branch to clone with `-b` option. You can also specify a custom folder to clone into with `-d` option.",
-				args="[-b branch] [-d directory] <link-repo>")
+				args="[-ssh] [-b branch] [-d directory] <link-repo>")
 @alemiBot.on_message(is_superuser & filterCommand(["install", "plugin_add"], list(alemiBot.prefixes), options={
-	"dir": ["-d"],
-	"branch": ["-b"]
-}))
+	"dir": ["-d", "--dir"],
+	"branch": ["-b", "--branch"],
+}, flags=["-ssh"]))
 async def plugin_add_cmd(client, message):
 	if not alemiBot.allow_plugin_install:
 		return await edit_or_reply(message, "`[!] → ` Plugin management is disabled")
@@ -198,11 +200,10 @@ async def plugin_add_cmd(client, message):
 		if user_input.startswith("http") or user_input.startswith("git@"):
 			link = user_input
 		else: # default to github over ssh
-			if alemiBot.use_ssh:
+			if alemiBot.use_ssh or "-ssh" in message.command["flags"]:
 				link = f"git@github.com:{author}/{plugin}.git"
 			else:
 				link = f"https://github.com/{author}/{plugin}.git"
-
 
 		out += f"\n`→ ` Installing `{author}/{plugin}`"
 		logger.info(f"Installing \"{author}/{plugin}\"")
