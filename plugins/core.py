@@ -358,7 +358,7 @@ async def plugin_list_cmd(client, message):
 	if os.path.isfile(".gitmodules"):
 		with open(".gitmodules") as f:
 			modules = f.read()
-		matches = re.findall(r"url = git@github.com:(?P<p>.*).git", modules)
+		matches = re.findall(r"url = (?:git@|https:\/\/(?:www\.|))github\.com(?::|\/)(?P<p>[^ \.]+)(?:\.git|)", modules)
 		text = "`→ ` Installed plugins:\n"
 		for match in matches:
 			if match not in hidden:
