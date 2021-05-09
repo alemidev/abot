@@ -38,7 +38,13 @@ class HelpCategory:
 		h = HelpEntry(title, shorttext, longtext, public=public, args=args)
 		self.HELP_ENTRIES[h.title] = h
 
-	def add(self, cmd:str = "", sudo:bool = True):
+	def add(self,
+			title:str = "",
+			shorttext:str = "",
+			longtext:str = "",
+			cmd:str = "",
+			sudo:bool = True,
+		):
 		"""This decorator (factory) adds a help entry fetching title, aliases, args and
 		longtext from the filterCommand and the function docstring. It's kind of a botchy
 		method but I didn't want to overload pyrogram client decorators. This will only work
@@ -47,24 +53,27 @@ class HelpCategory:
 		Add cmd=True to append a '[<cmd>]' at the end of the arglist. Put sudo=False to make the
 		command available to trusted users."""
 		def decorator(func: Callable) -> Callable:
-			title = ""
+			name = title
+			short = shorttext
+			long = longtext
 			args = ""
-			if not hasattr(func, "handlers"):
-				raise AttributeError("Function doens't have 'handlers' attr. Use help decorator only in plugins")
-			for handler, group in func.handlers:
-				flt = search_filter_command(handler.filters)
-				if not flt:
-					continue
-				title = list(flt.commands)
-				for k in flt.options:
-					args += f"[{flt.options[k][0]} <{k}>] "
-				for f in flt.flags:
-					args += f"[{f}] "
-				break
+			if hasattr(func, "handlers"):
+				for handler, group in func.handlers:
+					flt = search_filter_command(handler.filters)
+					if not flt:
+						continue
+					name = list(flt.commands)
+					for k in flt.options:
+						args += f"[{flt.options[k][0]} <{k}>] "
+					for f in flt.flags:
+						args += f"[{f}] "
+					break
 			if cmd:
 				args += cmd
-			shorttext = func.__doc__.split("\n")[0]
-			self.add_help(title, shorttext, func.__doc__, not sudo, args)
+			if func.__doc__:
+				short = func.__doc__.split("\n")[0]
+				long = func.__doc__
+			self.add_help(name, short, long, not sudo, args)
 			return func
 		return decorator
 
