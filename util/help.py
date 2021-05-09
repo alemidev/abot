@@ -1,7 +1,19 @@
 from typing import Callable
 
+import pyrogram
+
 CATEGORIES = {}
 ALIASES = {}
+
+def ugly_type_check(obj, string):
+	return obj.__class__.__name__ in string
+
+def search_filter_command(flt):
+	if ugly_type_check(flt, 'CommandFilter'):
+		return flt
+	if ugly_type_check(flt, ['AndFilter', 'OrFilter']):
+		return search_filter_command(flt.base) or search_filter_command(flt.other)
+	return None
 
 class HelpEntry:
 	def __init__(self, title, shorttext, longtext, public=False, args=""):
@@ -23,13 +35,28 @@ class HelpCategory:
 		CATEGORIES[self.title] = self
 
 	def add_help(self, title, shorttext, longtext, public=False, args=""):
+		print(f"[{public}] {title} - {shorttext} | {args}\n{longtext}")
 		h = HelpEntry(title, shorttext, longtext, public=public, args=args)
 		self.HELP_ENTRIES[h.title] = h
 
-	def add(self, title, shorttext, public=False, args=""):
+	def add(self, shorttext:str, cmd=False, public=False):
 		def decorator(func: Callable) -> Callable:
-			longtext = func.__doc__
-			self.add_help(title, shorttext, longtext, public, args)
+			tit = ""
+			short = shorttext if shorttext else ""
+			long = func.__doc__
+
+			flt = search_filter_command(func.handler[0].filters)
+			if flt:
+				arg = ""
+				tit = list(flt.commands)
+				for k in flt.options:
+					arg += f"[{flt.options[k][0]} <{k}>] "
+				for f in flt.flags:
+					arg += f"[{f}] "
+			if cmd:
+				arg += " [<cmd>]"
+			self.add_help(tit, short, long, public, arg)
+			return func
 		return decorator
 
 def get_all_short_text(pref, sudo=False):
