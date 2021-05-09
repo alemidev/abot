@@ -49,14 +49,18 @@ class HelpCategory:
 		def decorator(func: Callable) -> Callable:
 			title = ""
 			args = ""
-			if hasattr(func, "handler"):
-				flt = search_filter_command(func.handler[0].filters)
-				if flt:
-					title = list(flt.commands)
-					for k in flt.options:
-						args += f"[{flt.options[k][0]} <{k}>] "
-					for f in flt.flags:
-						args += f"[{f}] "
+			if not hasattr(func, "handlers"):
+				raise AttributeError("Function doens't have 'handlers' attr. Use help decorator only in plugins")
+			for handler, group in func.handlers:
+				flt = search_filter_command(handler.filters)
+				if not flt:
+					continue
+				title = list(flt.commands)
+				for k in flt.options:
+					args += f"[{flt.options[k][0]} <{k}>] "
+				for f in flt.flags:
+					args += f"[{f}] "
+				break
 			if cmd:
 				args += " " + cmd
 			self.add_help(title, shorttext, func.__doc__, not sudo, args)
