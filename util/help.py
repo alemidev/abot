@@ -62,7 +62,7 @@ class HelpCategory:
 					args += f"[{f}] "
 				break
 			if cmd:
-				args += " " + cmd
+				args += cmd
 			self.add_help(title, shorttext, func.__doc__, not sudo, args)
 			return func
 		return decorator
