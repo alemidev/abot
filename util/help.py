@@ -38,8 +38,8 @@ class HelpCategory:
 		h = HelpEntry(title, shorttext, longtext, public=public, args=args)
 		self.HELP_ENTRIES[h.title] = h
 
-	def add(self, shorttext:str, cmd:str = "", sudo:bool = True):
-		"""This decorator adds a help entry fetching title, aliases, args and
+	def add(self, cmd:str = "", sudo:bool = True):
+		"""This decorator (factory) adds a help entry fetching title, aliases, args and
 		longtext from the filterCommand and the function docstring. It's kind of a botchy
 		method but I didn't want to overload pyrogram client decorators. This will only work
 		inside smart plugins thanks to pyrogram botch: it will check the handler in the function
@@ -63,6 +63,7 @@ class HelpCategory:
 				break
 			if cmd:
 				args += cmd
+			shorttext = func.__doc__.split("\n")[0]
 			self.add_help(title, shorttext, func.__doc__, not sudo, args)
 			return func
 		return decorator

@@ -24,12 +24,12 @@ logger = logging.getLogger(__name__)
 
 HELP = HelpCategory("CORE")
 
-@HELP.add("get help on cmd or list all cmds", cmd="[<cmd>]", sudo=False)
+@HELP.add(cmd="[<cmd>]", sudo=False)
 @alemiBot.on_message(is_allowed & filterCommand(["help"], list(alemiBot.prefixes)))
 @report_error(logger)
 @set_offline
 async def help_cmd(client, message):
-	"""This is the help command.
+	"""get help on cmd or list all cmds
 
 	Without args, will print all available commands.
 	Add a command (.help update) to get details on a specific command
@@ -53,22 +53,25 @@ async def help_cmd(client, message):
 						parse_mode="markdown",
 						disable_web_page_preview=True)
 
-@HELP.add("a sunny day!", sudo=False)
+@HELP.add(sudo=False)
 @alemiBot.on_message(is_allowed & filterCommand(["asd", "ping"], list(alemiBot.prefixes)))
 @report_error(logger)
 @set_offline
 async def ping_cmd(client, message):
-	"""The ping command"""
+	"""a sunny day!
+
+	The ping command
+	"""
 	before = time.time()
 	msg = await edit_or_reply(message, "` → ` a sunny day")
 	after = time.time()
 	latency = (after - before) * 1000
 	await msg.edit(f"` → ` a sunny day `({latency:.0f}ms)`")
 
-@HELP.add("update and restart")
+@HELP.add()
 @alemiBot.on_message(is_superuser & filterCommand("update", list(alemiBot.prefixes), flags=["-force"]))
 async def update_cmd(client, message):
-	"""Fetch updates and restart client
+	"""fetch updates and restart client
 
 	Will pull changes from git (`git pull`), install requirements (`pip install -r requirements.txt --upgrade`) \
 	and then restart process with an `execv` call.
@@ -172,13 +175,13 @@ def split_url(url):
 	author, plugin = url.split("/", 1)
 	return plugin, author
 
-@HELP.add("install a plugin", cmd="<plugin>")
+@HELP.add(cmd="<plugin>")
 @alemiBot.on_message(is_superuser & filterCommand(["install", "plugin_add"], list(alemiBot.prefixes), options={
 	"dir": ["-d", "--dir"],
 	"branch": ["-b", "--branch"],
 }, flags=["-ssh"]))
 async def plugin_add_cmd(client, message):
-	"""install a plugin as submodule from git repository
+	"""install a plugin
 
 	alemiBot plugins are git repos, cloned into the `plugins` folder as git submodules.
 	You can specify which extension to install by giving `user/repo` (will default to github.com), \
@@ -288,7 +291,7 @@ async def plugin_add_cmd(client, message):
 		out += " [`FAIL`]\n`[!] → ` " + str(e)
 		await msg.edit(out) 
 
-@HELP.add("uninstall a plugin", cmd="<plugin>")
+@HELP.add(cmd="<plugin>")
 @alemiBot.on_message(is_superuser & filterCommand(["uninstall", "plugin_remove"], list(alemiBot.prefixes), flags=["-lib"]))
 async def plugin_remove_cmd(client, message):
 	"""remove an installed plugin.
@@ -358,12 +361,15 @@ async def plugin_remove_cmd(client, message):
 		out += " [`FAIL`]\n`[!] → ` " + str(e)
 		await msg.edit(out) 
 
-@HELP.add("list all the installed plugin")
+@HELP.add()
 @alemiBot.on_message(is_superuser & filterCommand(["plugins", "plugin", "plugin_list"], list(alemiBot.prefixes)))
 @report_error(logger)
 @set_offline
 async def plugin_list_cmd(client, message):
-	"""list installed plugins. Will basically read the `.gitmodules` file"""
+	"""list installed plugins.
+
+	Will basically read the `.gitmodules` file
+	"""
 	hidden = alemiBot.config.get("plugins", "hidden", fallback="").strip().split("\n")
 	if os.path.isfile(".gitmodules"):
 		with open(".gitmodules") as f:
@@ -377,12 +383,12 @@ async def plugin_list_cmd(client, message):
 	else:
 		await edit_or_reply(message, "`[!] → ` No plugins installed")
 
-@HELP.add("allow/disallow to use bot", cmd="[<target>]")
+@HELP.add(cmd="[<target>]")
 @alemiBot.on_message(is_superuser & filterCommand(["allow", "disallow", "revoke"], list(alemiBot.prefixes)))
 @report_error(logger)
 @set_offline
 async def manage_allowed_cmd(client, message):
-	"""Manage permissions of target user.
+	"""allow/disallow target user
 
 	This command will work differently if invoked with `allow` or with `disallow`.
 	Target user will be given/revoked access to public bot commands. Use `@here` or `@everyone` to allow \
@@ -423,12 +429,12 @@ async def manage_allowed_cmd(client, message):
 	else:
 		await edit_or_reply(message, "` → ` No changes")
 
-@HELP.add("list allowed users")
+@HELP.add()
 @alemiBot.on_message(is_superuser & filterCommand(["trusted", "plist", "permlist"], list(alemiBot.prefixes)))
 @report_error(logger)
 @set_offline
 async def trusted_list_cmd(client, message):
-	"""List users allowed to use the bot (but not superusers)
+	"""list allowed users
 
 	This will be pretty leaky, don't do it around untrusted people!
 	It will attempt to get all trusted users in one batch. If at least one user is not \
