@@ -49,13 +49,14 @@ class HelpCategory:
 		def decorator(func: Callable) -> Callable:
 			title = ""
 			args = ""
-			flt = search_filter_command(func.handler[0].filters)
-			if flt:
-				title = list(flt.commands)
-				for k in flt.options:
-					args += f"[{flt.options[k][0]} <{k}>] "
-				for f in flt.flags:
-					args += f"[{f}] "
+			if hasattr(func, "handler"):
+				flt = search_filter_command(func.handler[0].filters)
+				if flt:
+					title = list(flt.commands)
+					for k in flt.options:
+						args += f"[{flt.options[k][0]} <{k}>] "
+					for f in flt.flags:
+						args += f"[{f}] "
 			if cmd:
 				args += " " + cmd
 			self.add_help(title, shorttext, func.__doc__, not sudo, args)
