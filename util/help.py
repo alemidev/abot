@@ -1,18 +1,18 @@
 from typing import Callable
 
 import pyrogram
+from pyrogram.filters import AndFilter, OrFilter, InvertFilter
 
 CATEGORIES = {}
 ALIASES = {}
 
-def ugly_type_check(obj, string):
-	return obj.__class__.__name__ in string
-
 def search_filter_command(flt):
-	if ugly_type_check(flt, 'CommandFilter'):
-		return flt
-	if ugly_type_check(flt, ['AndFilter', 'OrFilter']):
+	if hasattr(flt, "commands") and hasattr(flt, "options") and hasattr(flt, "flags"):
+		return flt # Since all CommandFilters are made with filters.create, they all have different classes! Can't isinstance them
+	if isinstance(flt, (AndFilter, OrFilter)):
 		return search_filter_command(flt.base) or search_filter_command(flt.other)
+	if isinstance(flt, InvertFilter):
+		return search_filter_command(flt.base)
 	return None
 
 class HelpEntry:
@@ -35,27 +35,30 @@ class HelpCategory:
 		CATEGORIES[self.title] = self
 
 	def add_help(self, title, shorttext, longtext, public=False, args=""):
-		print(f"[{public}] {title} - {shorttext} | {args}\n{longtext}")
 		h = HelpEntry(title, shorttext, longtext, public=public, args=args)
 		self.HELP_ENTRIES[h.title] = h
 
-	def add(self, shorttext:str, cmd=False, public=False):
+	def add(self, shorttext:str, cmd=False, sudo=True):
+		"""This decorator adds a help entry fetching title, aliases, args and
+		longtext from the filterCommand and the function docstring. It's kind of a botchy
+		method but I didn't want to overload pyrogram client decorators. This will only work
+		inside smart plugins thanks to pyrogram botch: it will check the handler in the function
+		itself and dig in its filters to find a filterCommand, and get values from that.
+		Add cmd=True to append a '[<cmd>]' at the end of the arglist. Put sudo=False to make the
+		command available to trusted users."""
 		def decorator(func: Callable) -> Callable:
-			tit = ""
-			short = shorttext if shorttext else ""
-			long = func.__doc__
-
+			title = ""
+			args = ""
 			flt = search_filter_command(func.handler[0].filters)
 			if flt:
-				arg = ""
-				tit = list(flt.commands)
+				title = list(flt.commands)
 				for k in flt.options:
-					arg += f"[{flt.options[k][0]} <{k}>] "
+					args += f"[{flt.options[k][0]} <{k}>] "
 				for f in flt.flags:
-					arg += f"[{f}] "
+					args += f"[{f}] "
 			if cmd:
-				arg += " [<cmd>]"
-			self.add_help(tit, short, long, public, arg)
+				args += " [<cmd>]"
+			self.add_help(title, shorttext, func.__doc__, not sudo, args)
 			return func
 		return decorator
 
