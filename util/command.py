@@ -1,10 +1,10 @@
 import re
 
-from typing import Dict, List
+from typing import Dict, List, Union
 from pyrogram.types import Message
 from pyrogram.filters import create
 
-def filterCommand(commands: str or List[str], prefixes: str or List[str] = "/",
+def filterCommand(commands: Union[str,List[str]], prefixes: Union[str,List[str]] = "/",
 			options: Dict[str, List[str]] = {}, flags: List[str] = [], case_sensitive: bool = False):
 	"""Filter commands, i.e.: text messages starting with "/" or any other custom prefix.
 	Parameters:
@@ -94,7 +94,7 @@ def filterCommand(commands: str or List[str], prefixes: str or List[str] = "/",
 		return False
 
 	commands = commands if isinstance(commands, list) else [commands]
-	commands = {c if case_sensitive else c.lower() for c in commands}
+	commands = [c if case_sensitive else c.lower() for c in commands]
 
 	prefixes = [] if prefixes is None else prefixes
 	prefixes = prefixes if isinstance(prefixes, list) else [prefixes]

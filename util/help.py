@@ -38,7 +38,7 @@ class HelpCategory:
 		h = HelpEntry(title, shorttext, longtext, public=public, args=args)
 		self.HELP_ENTRIES[h.title] = h
 
-	def add(self, shorttext:str, cmd=False, sudo=True):
+	def add(self, shorttext:str, cmd:str = "", sudo:bool = True):
 		"""This decorator adds a help entry fetching title, aliases, args and
 		longtext from the filterCommand and the function docstring. It's kind of a botchy
 		method but I didn't want to overload pyrogram client decorators. This will only work
@@ -57,7 +57,7 @@ class HelpCategory:
 				for f in flt.flags:
 					args += f"[{f}] "
 			if cmd:
-				args += " [<cmd>]"
+				args += " " + cmd
 			self.add_help(title, shorttext, func.__doc__, not sudo, args)
 			return func
 		return decorator

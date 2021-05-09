@@ -5,20 +5,22 @@ from pyrogram.raw.functions.account import UpdateStatus
 from util.message import edit_or_reply
 
 def report_error(lgr):
-	"""
+	"""Will report errors back to user
+
 	This decorator will wrap the handler in a try/catch and
 	report of any raised exc to the user on telegram, while also
-	logging to given logger
+	logging to given logger both command execution and eventual stacktrace
 	"""
 	def deco(func):
 		@functools.wraps(func)
-		async def innerWrapper(client, message):
+		async def wrapper(client, message):
 			try:
+				lgr.info("Running '%s'", func.__name__)
 				await func(client, message)
 			except Exception as e:
-				lgr.exception(f"Exception in '{func.__name__}'")
+				lgr.exception("Exception in '%s'", func.__name__)
 				await edit_or_reply(message, "`[!] → ` " + str(e))
-		return innerWrapper
+		return wrapper
 	return deco
 
 def set_offline(func):
