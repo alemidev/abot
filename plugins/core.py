@@ -34,7 +34,6 @@ async def help_cmd(client, message):
 	Without args, will print all available commands.
 	Add a command (.help update) to get details on a specific command
 	"""
-	logger.info("Help!")
 	pref = alemiBot.prefixes[0]
 	if "cmd" in message.command:
 		arg = message.command["cmd"][0]
@@ -60,7 +59,6 @@ async def help_cmd(client, message):
 @set_offline
 async def ping_cmd(client, message):
 	"""The ping command"""
-	logger.info("Pong")
 	before = time.time()
 	msg = await edit_or_reply(message, "` → ` a sunny day")
 	after = time.time()
@@ -81,7 +79,6 @@ async def update_cmd(client, message):
 	uptime = str(datetime.now() - client.start_time)
 	out += f"\n`→ ` --runtime-- `{uptime}`"
 	try:
-		logger.info(f"Updating bot ...")
 		out += "\n` → ` Fetching updates"
 		pulled = False
 		await msg.edit(out)
@@ -440,7 +437,6 @@ async def trusted_list_cmd(client, message):
 	"""
 	text = "`[` "
 	issues = ""
-	logger.info("Listing allowed users")
 	try:
 		users = await client.get_users(list_allowed()) # raises PeerIdInvalid exc if even one of the ids has not been interacted with
 		for u in users:
