@@ -4,6 +4,27 @@ from typing import Dict, List, Union
 from pyrogram.types import Message
 from pyrogram.filters import create
 
+class CommandMatch:
+	def __init__(self, base):
+		self.base = base
+		self.raw = ""
+		self.args = []
+		self.flags = []
+		self.options = {}
+
+	@property
+	def fullText(self):
+		return " ".join(self.args)
+
+	def __getitem__(self, name:str): # Compatibility, don't use me!
+		if name == "flags":
+			return self.flags
+		if name == "cmd":
+			return self.args
+		if name == "args":
+			return self.fullText
+		return self.options[name]
+
 def filterCommand(commands: Union[str,List[str]], prefixes: Union[str,List[str]] = "/",
 			options: Dict[str, List[str]] = {}, flags: List[str] = [], case_sensitive: bool = False):
 	"""Filter commands, i.e.: text messages starting with "/" or any other custom prefix.
@@ -46,9 +67,10 @@ def filterCommand(commands: Union[str,List[str]], prefixes: Union[str,List[str]]
 				continue
 
 			without_prefix = text[len(prefix):]
+			my_username = client.me.username if hasattr(client, "me") else (await client.get_me()).username
 
 			for cmd in flt.commands:
-				if not re.match(pattern.format(cmd=re.escape(cmd), uname=client.me.username), without_prefix):
+				if not re.match(pattern.format(cmd=re.escape(cmd), uname=my_username), without_prefix):
 					continue
 
 				without_cmd = re.sub("^@[^ ]+", "", without_prefix[len(cmd):])[1:] # remove 1st whitespace
@@ -63,31 +85,29 @@ def filterCommand(commands: Union[str,List[str]], prefixes: Union[str,List[str]]
 				
 				raw_buf = without_cmd
 
-				message.command = { "flags" : [],
-									"base" : cmd }
+				message.command = CommandMatch(cmd)
 
 				i = 0
 				while i < len(match_list):
 					if match_list[i] in flt.flags:
 						token = match_list.pop(i)
 						raw_buf = raw_buf.replace(token, "", 1)
-						message.command["flags"].append(token)
+						message.command.flags.append(token)
 						continue
 					op = False
 					for k in flt.options:
 						if match_list[i] in flt.options[k]:
 							op = True
 							raw_buf = raw_buf.replace(match_list.pop(i), "", 1) # most importantly, pop one token!
-							message.command[k] = match_list.pop(i)
+							message.command.options[k] = match_list.pop(i)
 							raw_buf = raw_buf.replace(message.command[k], "", 1)
 							break
 					if not op:
 						i +=1
 
 				if len(match_list) > 0:
-					message.command["cmd"] = match_list # everything not consumed
-					message.command["arg"] = " ".join(match_list) # provide a joined argument already
-				message.command["raw"] = raw_buf
+					message.command.args = match_list # everything not consumed
+				message.command.raw = raw_buf
 
 				return True
 
