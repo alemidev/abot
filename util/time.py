@@ -2,7 +2,11 @@ import re
 from datetime import timedelta
 
 def parse_timedelta(text):
-	# Oh my this part is horrible but should work reliably
+	"""
+	Will convert a string to a timedelta object. Will parse by
+	searching numbers with time suffixes in the given string, for
+	example 1h, 12min32s and 2y40d
+	"""
 	year = 0
 	res = re.search("(?P<val>[0-9]+)(?: |)y", text)
 	if res:
