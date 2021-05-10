@@ -8,6 +8,10 @@ def get_text(msg:Message, raw:bool=False):
 			return msg.text.markdown
 		return msg.text
 	if hasattr(msg, "caption") and msg.caption:
+		if raw and hasattr(msg.caption, "raw"):
+			return msg.caption.raw
+		if not raw and hasattr(msg.caption, "markdown"):
+			return msg.caption.markdown
 		return msg.caption
 	if raw:
 		return None
