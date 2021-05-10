@@ -44,8 +44,11 @@ class CommandMatch:
 			return self.options[name]
 		return default
 
-	def options(self) -> List[str]:
+	def get_options(self) -> List[str]:
 		return list(self.options.keys())
+
+	def has_option(self, name:str) -> bool:
+		return name in self.options
 
 	def __contains__(self, name:str): # Backwards-compatibility, don't use me
 		if name == "cmd":
