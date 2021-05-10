@@ -18,7 +18,7 @@ class ProgressChatAction:
 		self.interval = interval
 		self.last = 0
 
-	async def tick(self):
+	async def tick(self, *args, **kwargs): # so this can be used as progres callback
 		if time() - self.last > self.interval:
 			await self.client.send_chat_action(self.chat_id, self.action)
 			self.last = time()
