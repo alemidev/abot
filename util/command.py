@@ -61,21 +61,16 @@ class CommandMatch:
 			return bool(self.text)
 		return name in self.flags or name in self.options
 
-	def __getitem__(self, key:Union[str,int]):
-		if key == "flags": # backwards compatibility
-			return self.flags
-		if key == "cmd": # backwards compatibility
-			return self.arg
-		if key in ("arg", "raw"): # backwards compatibility
-			return self.text
-		if isinstance(key, int) and len(self.arg) > key:
+	def __getitem__(self, key:Union[str,int,slice]):
+		if isinstance(key, slice) or ( isinstance(key, int)
+				and len(self.arg) > abs(key)):
 			return self.arg[key]
 		if isinstance(key, str):
 			if key in self.flags:
 				return True
 			if key in self.options:
 				return self.options[key]
-		return None # so it can be used with an or
+		return None # no exc, so it can be used with an or
 
 	def option(self, name:str, default:Any = None):
 		"""get an option if present, or default value (None if not given)"""
