@@ -127,9 +127,6 @@ def filterCommand(commands: Union[str,List[str]], prefixes: Union[str,List[str]]
 				message.command = CommandMatch(cmd)
 
 				while len(match_list) > 0:
-					print(message.command)
-					print(match_list)
-					print()
 					token = match_list.pop(0)
 					if token in flt.flags:
 						raw_buf.consume(token)
