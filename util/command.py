@@ -1,3 +1,8 @@
+"""This is my reimplementation of filter.command
+
+It will parse options ( `-opt value` ), flags ( `-flag` ) and arguments. Matches will
+be put in a CommandMatch object for easier access.
+"""
 import re
 import json
 
@@ -6,24 +11,31 @@ from pyrogram.types import Message
 from pyrogram.filters import create
 
 class ConsumableBuffer:
+	"""Wrapper for a string which needs tokens replaced"""
 	def __init__(self, value:str):
 		self.val = value
 
 	def __str__(self):
 		return self.val
 
-	def get(self):
-		return self.val
-
-	def consume(self, token:Union[str,List[str]]):	
+	def consume(self, token:Union[str,List[str]]):
+		"""Replace first occurrance of token in self. Also remove whitespace around"""
 		if isinstance(token, list):
-			for t in token:
-				self.val = re.sub(rf"(\s|^|'|\"){t}(\s|$|'|\")", " ", self.val, 1)
+			for tok in token:
+				self.val = re.sub(rf"(\s|^)('|\"|){tok}(\2)(\s|$)", r"\1", self.val, 1)
 		else:
-			self.val = re.sub(rf"(\s|^){token}(\s|$)", r"\1", self.val, 1)
+			self.val = re.sub(rf"(\s|^)('|\"|){token}(\2)(\s|$)", r"\1", self.val, 1)
 
 class CommandMatch:
-	def __init__(self, base):
+	"""Command match object, will hold any matched flag/option/argument
+
+	You can access command base, text, arg, flags and options directly as attributes
+	use hash based access (__getitem__): accessing an int will search in arg and accessing
+	a string will search first in flags and then in options. If nothing is available, None
+	is returned (so you can do `msg.cmd["opt"] or "default"`). You can test how many arguments
+	were passed directly calling `len()` on this object.
+	"""
+	def __init__(self, base:str):
 		self.base:str = base
 		self.text:str = ""
 		self.arg:List[str] = []
@@ -32,41 +44,48 @@ class CommandMatch:
 
 	def __str__(self) -> str:
 		return json.dumps({
-			"base" : self.base,
-			"text" : self.text,
-			"arg" : self.arg,
-			"flags" : self.flags,
-			"options" : self.options,
+				"base" : self.base,
+				"text" : self.text,
+				"arg" : self.arg,
+				"flags" : self.flags,
+				"options" : self.options,
 			}, indent=2)
 
+	def __len__(self) -> int:
+		return len(self.arg)
+
+	def __contains__(self, name:str):
+		if name == "cmd": # backwards compatibility
+			return bool(self.arg)
+		if name in ("arg", "raw"): # backwards compatibility
+			return bool(self.text)
+		return name in self.flags or name in self.options
+
+	def __getitem__(self, key:Union[str,int]):
+		if key == "flags": # backwards compatibility
+			return self.flags
+		if key == "cmd": # backwards compatibility
+			return self.arg
+		if key in ("arg", "raw"): # backwards compatibility
+			return self.text
+		if isinstance(key, int) and len(self.arg) > key:
+			return self.arg[key]
+		if isinstance(key, str):
+			if key in self.flags:
+				return True
+			if key in self.options:
+				return self.options[key]
+		return None # so it can be used with an or
+
 	def option(self, name:str, default:Any = None):
+		"""get an option if present, or default value (None if not given)"""
 		if name in self.options:
 			return self.options[name]
 		return default
 
-	def get_options(self) -> List[str]:
-		return list(self.options.keys())
-
-	def has_option(self, name:str) -> bool:
-		return name in self.options
-
-	def __contains__(self, name:str): # Backwards-compatibility, don't use me
-		if name == "cmd":
-			return bool(self.arg)
-		if name in ("args", "raw"):
-			return bool(self.text)
-
-	def __getitem__(self, name:str): # Backwards-compatibility, don't use me!
-		if name == "flags":
-			return self.flags
-		if name == "cmd":
-			return self.arg
-		if name in ("args", "raw"):
-			return self.text
-		return self.options[name]
 
 def filterCommand(commands: Union[str,List[str]], prefixes: Union[str,List[str]] = "/",
-			options: Dict[str, List[str]] = {}, flags: List[str] = [], case_sensitive: bool = False):
+			options: Dict[str, List[str],None] = None, flags: List[str,None] = None, case_sensitive: bool = False):
 	"""Filter commands, i.e.: text messages starting with "/" or any other custom prefix.
 	Parameters:
 		commands (``str`` | ``list``):
@@ -89,6 +108,10 @@ def filterCommand(commands: Union[str,List[str]], prefixes: Union[str,List[str]]
 			Pass True if you want your command(s) to be case sensitive. Defaults to False.
 			Examples: when True, command="Start" would trigger /Start but not /start.
 	"""
+	if not flags:
+		flags = []
+	if not options:
+		options = {}
 	command_re = re.compile(r"([\"'])(.*?)(?<!\\)\1|(\S+)")
 
 	async def func(flt, client, message: Message):

@@ -12,8 +12,6 @@ from datetime import datetime
 from pyrogram import Client, idle
 from configparser import ConfigParser
 
-from pyrogram.raw.functions.account import UpdateStatus
-
 class alemiBot(Client):
 	config = ConfigParser() # uggh doing it like this kinda
 	config.read("config.ini") #		ugly but it'll do for now

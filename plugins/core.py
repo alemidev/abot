@@ -35,8 +35,8 @@ async def help_cmd(client, message):
 	Add a command (.help update) to get details on a specific command
 	"""
 	pref = alemiBot.prefixes[0]
-	if len(message.command.arg) > 0:
-		arg = message.command.arg[0]
+	if len(message.command) > 0:
+		arg = message.command[0]
 		for k in CATEGORIES:
 			cat = CATEGORIES[k]
 			if arg in cat.HELP_ENTRIES:
@@ -93,7 +93,7 @@ async def update_cmd(client, message):
 		logger.info(stdout.decode())
 		if b"Aborting" in stdout:
 			out += " [`FAIL`]\n"
-			if "-force" not in message.command.flags:
+			if not message.command["-force"]:
 				return await msg.edit(out)
 		elif b"Already up to date" in stdout:
 			out += " [`N/A`]"
@@ -117,7 +117,7 @@ async def update_cmd(client, message):
 			else:
 				out += " [`N/A`]"
 
-		if not pulled and "-force" not in message.command.flags:
+		if not pulled and not message.command["-force"]:
 			return await msg.edit(out)
 
 		out += "\n` → ` Checking libraries"
@@ -197,12 +197,12 @@ async def plugin_add_cmd(client, message):
 	out = message.text.markdown if is_me(message) else f"`→ ` {get_username(message.from_user)} requested plugin install"
 	msg = message if is_me(message) else await message.reply(out)
 	try:
-		if len(message.command.arg) > 0:
+		if len(message.command) < 1:
 			out += "\n`[!] → ` No input"
 			return await msg.edit(out)
-		user_input = message.command.arg[0]
-		branch = message.command.option("branch")
-		folder = message.command.option("dir")
+		user_input = message.command[0]
+		branch = message.command["branch"]
+		folder = message.command["dir"]
 
 		plugin, author = split_url(user_input) # clear url or stuff around
 		if folder is None:
@@ -211,7 +211,7 @@ async def plugin_add_cmd(client, message):
 		if user_input.startswith("http") or user_input.startswith("git@"):
 			link = user_input
 		else: # default to github over ssh
-			if alemiBot.use_ssh or "-ssh" in message.command.flags:
+			if alemiBot.use_ssh or message.command["-ssh"]:
 				link = f"git@github.com:{author}/{plugin}.git"
 			else:
 				link = f"https://github.com/{author}/{plugin}.git"
@@ -307,10 +307,10 @@ async def plugin_remove_cmd(client, message):
 	msg = message if is_me(message) else await message.reply(out)
 
 	try:
-		if len(message.command.arg) < 1:
+		if len(message.command) < 1:
 			out += "\n`[!] → ` No input"
 			return await msg.edit(out)
-		plugin = message.command.arg[0]
+		plugin = message.command[0]
 
 		out += f"\n`→ ` Uninstalling `{plugin}`"
 
@@ -318,7 +318,7 @@ async def plugin_remove_cmd(client, message):
 			plugin = plugin.split("/")[1]
 	
 		logger.info(f"Removing plugin \"{plugin}\"")
-		if "-lib" in message.command.flags:
+		if message.command["-lib"]:
 			out += "\n` → ` Removing libraries"
 			await msg.edit(out)
 			if os.path.isfile(f"plugins/{plugin}/requirements.txt"):
@@ -400,8 +400,8 @@ async def manage_allowed_cmd(client, message):
 		if peer is None:
 			return
 		users_to_manage.append(peer)
-	elif len(message.command.arg) > 0:
-		if message.command.arg[0] in ["@here", "@everyone"]:
+	elif len(message.command) > 0:
+		if message.command[0] in ["@here", "@everyone"]:
 			async for u in client.iter_chat_members(message.chat.id):
 				if u.user.is_bot:
 					continue
