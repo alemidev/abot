@@ -1,28 +1,65 @@
 import re
+import json
 
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Any
 from pyrogram.types import Message
 from pyrogram.filters import create
 
+class ConsumableBuffer:
+	def __init__(self, value:str):
+		self.val = value
+
+	def __str__(self):
+		return self.val
+
+	def get(self):
+		return self.val
+
+	def consume(self, token:Union[str,List[str]]):	
+		if isinstance(token, list):
+			for t in token:
+				self.val = re.sub(rf"(\s|^|'|\"){t}(\s|$|'|\")", " ", self.val, 1)
+		else:
+			self.val = re.sub(rf"(\s|^){token}(\s|$)", r"\1", self.val, 1)
+
 class CommandMatch:
 	def __init__(self, base):
-		self.base = base
-		self.raw = ""
-		self.args = []
-		self.flags = []
-		self.options = {}
+		self.base:str = base
+		self.text:str = ""
+		self.arg:List[str] = []
+		self.flags:List[str] = []
+		self.options:Dict[str:str] = {}
 
-	@property
-	def fullText(self):
-		return " ".join(self.args)
+	def __str__(self) -> str:
+		return json.dumps({
+			"base" : self.base,
+			"text" : self.text,
+			"arg" : self.arg,
+			"flags" : self.flags,
+			"options" : self.options,
+			}, indent=2)
 
-	def __getitem__(self, name:str): # Compatibility, don't use me!
+	def option(self, name:str, default:Any = None):
+		if name in self.options:
+			return self.options[name]
+		return default
+
+	def options(self) -> List[str]:
+		return list(self.options.keys())
+
+	def __contains__(self, name:str): # Backwards-compatibility, don't use me
+		if name == "cmd":
+			return bool(self.arg)
+		if name in ("args", "raw"):
+			return bool(self.text)
+
+	def __getitem__(self, name:str): # Backwards-compatibility, don't use me!
 		if name == "flags":
 			return self.flags
 		if name == "cmd":
-			return self.args
-		if name == "args":
-			return self.fullText
+			return self.arg
+		if name in ("args", "raw"):
+			return self.text
 		return self.options[name]
 
 def filterCommand(commands: Union[str,List[str]], prefixes: Union[str,List[str]] = "/",
@@ -83,31 +120,31 @@ def filterCommand(commands: Union[str,List[str]], prefixes: Union[str,List[str]]
 					for m in command_re.finditer(without_cmd)
 				]
 				
-				raw_buf = without_cmd
-
+				raw_buf = ConsumableBuffer(without_cmd)
 				message.command = CommandMatch(cmd)
 
-				i = 0
-				while i < len(match_list):
-					if match_list[i] in flt.flags:
-						token = match_list.pop(i)
-						raw_buf = raw_buf.replace(token, "", 1)
+				while len(match_list) > 0:
+					print(message.command)
+					print(match_list)
+					print()
+					token = match_list.pop(0)
+					if token in flt.flags:
+						raw_buf.consume(token)
 						message.command.flags.append(token)
 						continue
-					op = False
-					for k in flt.options:
-						if match_list[i] in flt.options[k]:
-							op = True
-							raw_buf = raw_buf.replace(match_list.pop(i), "", 1) # most importantly, pop one token!
-							message.command.options[k] = match_list.pop(i)
-							raw_buf = raw_buf.replace(message.command[k], "", 1)
+					found = False
+					for opt in flt.options:
+						if token in flt.options[opt]:
+							found = True
+							val = match_list.pop(0) # pop the value
+							raw_buf.consume([token, val])
+							message.command.options[opt] = val
 							break
-					if not op:
-						i +=1
+					if found:
+						continue
+					message.command.arg.append(token)
 
-				if len(match_list) > 0:
-					message.command.args = match_list # everything not consumed
-				message.command.raw = raw_buf
+				message.command.text = str(raw_buf).strip()
 
 				return True
 
