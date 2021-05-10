@@ -85,7 +85,7 @@ class CommandMatch:
 
 
 def filterCommand(commands: Union[str,List[str]], prefixes: Union[str,List[str]] = "/",
-			options: Dict[str, List[str],None] = None, flags: List[str,None] = None, case_sensitive: bool = False):
+			options: Union[Dict[str, List[str]],None] = None, flags: Union[List[str],None] = None, case_sensitive: bool = False):
 	"""Filter commands, i.e.: text messages starting with "/" or any other custom prefix.
 	Parameters:
 		commands (``str`` | ``list``):
