@@ -187,9 +187,10 @@ async def plugin_add_cmd(client, message):
 	You can specify which extension to install by giving `user/repo` (will default to github.com), \
 	or specify the entire url. For example, `alemidev/alemibot-tricks` is the same as \
 	`https://github.com/alemidev/alemibot-tricks.git`.
-	By default, https will be used (meaning that if you try to clone \
-	a private repo, it will prompt for credentials on terminal, making client hang). You can make it clone using ssh \
-	with `-ssh` flag, or by adding `useSsh = True` to your config (under `[customization]`).
+	By default, https will be used (meaning that if you try to clone a private repo, it will just fail). You can make it clone using ssh \
+	with `-ssh` flag, or by adding `useSsh = True` to your config (under `[customization]`). You can also include your GitHub credentials \
+	in the clone url itself (`https://username:password@github.com/author/repo.git` : replace `username`, `password`, `author` and `repo`) \
+	but your github credentials will be stored in plain text inside project folder. This is --not recommended--! Set up an ssh key for private plugins.
 	You can specify which branch to clone with `-b` option. You can also specify a custom folder to clone into with `-d` option.
 	"""
 	if not alemiBot.allow_plugin_install:
@@ -210,7 +211,7 @@ async def plugin_add_cmd(client, message):
 
 		if user_input.startswith("http") or user_input.startswith("git@"):
 			link = user_input
-		else: # default to github over ssh
+		else:
 			if alemiBot.use_ssh or message.command["-ssh"]:
 				link = f"git@github.com:{author}/{plugin}.git"
 			else:
@@ -232,13 +233,13 @@ async def plugin_add_cmd(client, message):
 			out += "\n` → ` Checking branches"
 			await msg.edit(out)
 			proc = await asyncio.create_subprocess_shell(
-			      f"git ls-remote {link}",
+			      f"GIT_TERMINAL_PROMPT=0 git ls-remote {link}",
 			      stdout=asyncio.subprocess.PIPE,
 			      stderr=asyncio.subprocess.STDOUT)
 			stdout, _sterr = await proc.communicate()
 			res = cleartermcolor(stdout.decode())
 			logger.info(res)
-			if res.startswith("ERROR"):
+			if res.startswith("ERROR") or res.startswith("fatal"):
 				out += f" [`FAIL`]\n`[!] → ` Could not find `{link}`"
 				return await msg.edit(out)
 			out += " [`OK`]"
@@ -248,7 +249,7 @@ async def plugin_add_cmd(client, message):
 		await msg.edit(out)
 
 		proc = await asyncio.create_subprocess_shell(
-		  f"git submodule add -b {branch} {link} plugins/{folder}",
+		  f"GIT_TERMINAL_PROMPT=0 git submodule add -b {branch} {link} plugins/{folder}",
 		  stdout=asyncio.subprocess.PIPE,
 		  stderr=asyncio.subprocess.STDOUT)
 
