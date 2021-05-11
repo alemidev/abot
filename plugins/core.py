@@ -184,13 +184,17 @@ async def plugin_add_cmd(client, message):
 	"""install a plugin
 
 	alemiBot plugins are git repos, cloned into the `plugins` folder as git submodules.
-	You can specify which extension to install by giving `user/repo` (will default to github.com), \
-	or specify the entire url. For example, `alemidev/alemibot-tricks` is the same as \
-	`https://github.com/alemidev/alemibot-tricks.git`.
-	By default, https will be used (meaning that if you try to clone a private repo, it will just fail). You can make it clone using ssh \
-	with `-ssh` flag, or by adding `useSsh = True` to your config (under `[customization]`). You can also include your GitHub credentials \
-	in the clone url itself (`https://username:password@github.com/author/repo.git` : replace `username`, `password`, `author` and `repo`) \
-	but your github credentials will be stored in plain text inside project folder. This is --not recommended--! Set up an ssh key for private plugins.
+	You can specify which extension to install by giving `user/repo` (will default to github.com), or specify the entire url.
+	For example,
+		`alemidev/alemibot-tricks`
+	is the same as
+		`https://github.com/alemidev/alemibot-tricks.git`
+	By default, https will be used (meaning that if you try to clone a private repo, it will just fail).
+	You can make it clone using ssh	with `-ssh` flag, or by adding `useSsh = True` to your config (under `[customization]`).
+	You can also include your GitHub credentials in the clone url itself:
+		`https://username:password@github.com/author/repo.git`
+	Your github credentials will be stored in plain text inside project folder. \
+	Because of this, it is --not recommended-- to include credentials in the clone url. Set up an ssh key for private plugins.
 	You can specify which branch to clone with `-b` option. You can also specify a custom folder to clone into with `-d` option.
 	"""
 	if not alemiBot.allow_plugin_install:
