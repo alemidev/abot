@@ -1,25 +1,32 @@
-# alemibot v0.3
-### Join [the help channel](https://t.me/alemibothelp)
+# alemibot
+**My Telegram bot/userbot framework##**
 
-My personal Telegram userbot. This bot can provide, out of the box, some 
-math/moderation/meme/textediting commands. The most relevant features come 
-with access to a MongoDB, where messages can be stored. With message caching, 
-the bot can provide edit history and show deleted messages.
+This repo contains the root for alemibot:
+* `core` plugin
+* utils
+* config file
+* folders
 
-This project started using Telethon but I migrated to Pyrogram. You can find a `telethon` branch, 
-but it won't receive any more support. All features work and it's pretty polished, but the pyro branch 
-will receive much more work on.
+alemiBot comes with a 2 role permission system builtin, an easy to implement help command and a plugin manager. It also bundles many utils I use across plugins.
 
-## Features
-* Fully modular : core is minimal, with handy utils. Install the plugins you need!
-* `alemigliardi/alemibot-tricks` is a collection of fun to have commands
-* `alemigliardi/alemibot-moderation` has some powerful deletion tools
-* `alemigliardi/alemibot-debugtool` contains some handy commands to manage your bot and server
+alemiBot simplifies my bot development, by providing a standardized and solid baseline, with common features to all projects, which can focus on their specific functionalities.
+
+# Some plugins
+* `alemidev/alemibot-debugtool` very useful tools for debugging and interacting with server
+* `alemidev/alemibot-tricks` my biggest collection of "trick command": fancy stuff to show off
+* ... more to come, send me your plugins!
+
+# Making plugins
+To develop your own plugins for alemiBot, you should clone first this repository and work in a folder in the `plugins` directory.
+Each plugin must be a repository itself which can be installed in the `plugins` folder as a submodule.
+### One "catch"
+Your plugin should import its files as `import plugins.<yourplugin>.<...>`. This means that if you need to have custom classes, you cannot have dashes (`-`) in your plugin name. Thinking about solutions... On the flip side, you can always access utils
+
 # How to deploy
 You just need Python 3.7+ and a PC always on to run this. More dependancies will depend on modules.
 It is strongly recommended to install this on a UNIX system. If you plan to install on Windows, 
-[I recommend installing inside a WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
-* Clone this repo : `git clone https://github.com/alemigliardi/alemibot.git`
+[I recommend installing alemibot inside a WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+* Clone this repo : `git clone https://github.com/alemidev/alemibot.git`
 * Make a `venv` with `python3 -m venv <anyfolder>`
 * Activate `venv` with `source <venvfolder>/bin/activate`
 * Install required libraries with `pip install -r requirements.txt`
@@ -27,4 +34,20 @@ It is strongly recommended to install this on a UNIX system. If you plan to inst
 * Run bot : `python bot.py`. First time it will request your phone number and a verification code.
 
 ## config file
-The defualt config contains the usable fields already. You just need to fill in `api_id` and `api_hash`.
+Only required fields are `api_id` and `api_hash`.
+
+```ini
+[pyrogram]
+api_id = 1234
+api_hash = longstring
+device_model = alemiBot
+[customization]
+prefixes = ./!
+useSsh = True
+```
+
+Plugins may add categories or fields to the config file.
+
+# Contacts
+### Join [the help channel](https://t.me/alemibothelp)
+or mail `me@alemi.dev`
