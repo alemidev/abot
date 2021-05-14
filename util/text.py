@@ -17,6 +17,9 @@ def order_suffix(num, measure='B'):
 		num /= 1024.0
 	return "{n:.1f} Yi{m}".format(n=num, m=measure)
 
+def sep(num, sep=" "): # python lacks a better way to set thousands separator afaik! (without messing with locale)
+	return "{n:,}".format(n=num).replace(",", sep)
+	
 def tokenize_json(text):
 	res = re.subn(
 		r'("[^\"]+"|[0-9.\-]+)',
