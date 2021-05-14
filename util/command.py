@@ -55,10 +55,6 @@ class CommandMatch:
 		return len(self.arg)
 
 	def __contains__(self, name:str):
-		if name == "cmd": # backwards compatibility
-			return bool(self.arg)
-		if name in ("arg", "raw"): # backwards compatibility
-			return bool(self.text)
 		return name in self.flags or name in self.options
 
 	def __getitem__(self, key:Union[str,int,slice]):
