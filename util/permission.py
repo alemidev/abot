@@ -72,6 +72,9 @@ class SudoFilter(Filter):
 
 is_superuser = SudoFilter()
 
+def check_superuser(msg): # ewww, backwards compatibility
+	return is_superuser(None, msg)
+
 class PermsFilter(Filter):
 	def __init__(self, group:str = ""):
 		self.group = group
@@ -87,12 +90,15 @@ class PermsFilter(Filter):
 
 is_allowed = PermsFilter()
 
-def list_allowed():
+def check_allowed(msg): # ewww, backwards compatibility
+	return is_allowed(None, msg)
+
+def list_allowed():# ewww, backwards compatibility
 	return list(PERMS_DB.all())
 
-def allow(uid, group="_"):
+def allow(uid, group="_"):# ewww, backwards compatibility
 	return PERMS_DB.put(uid, group)
 
-def disallow(uid, group="_"):
+def disallow(uid, group="_"):# ewww, backwards compatibility
 	return PERMS_DB.pop(uid, group)
 
