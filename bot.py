@@ -15,6 +15,7 @@ from configparser import ConfigParser
 class alemiBot(Client):
 	config = ConfigParser() # uggh doing it like this kinda
 	config.read("config.ini") #		ugly but it'll do for now
+	sudoers = [ int(uid.strip()) for uid in config.get("perms", "sudo", fallback="").split() ]
 	prefixes = config.get("customization", "prefixes", fallback="./")
 	use_ssh = config.getboolean("customization", "useSsh", fallback=False)
 	allow_plugin_install = config.getboolean("customization", "allowPlugins", fallback=True)

@@ -11,6 +11,16 @@ from bot import alemiBot
 import logging
 logger = logging.getLogger(__name__)
 
+def check_superuser(update):
+	if hasattr(update, "from_user") and update.from_user:
+		return update.from_user.is_self or update.from_user.id in alemiBot.sudoers
+	elif hasattr(update, "sender_chat") and update.sender_chat:
+		return update.sender_chat.id in alemiBot.sudoers
+	raise NotImplementedError
+
+sudo = create(lambda _, __, upd : check_superuser(upd))
+is_superuser = sudo # backwards compatibility
+
 class JsonDriver:
 	def __init__(self, fname:str):
 		self.fname = fname
@@ -59,22 +69,6 @@ class JsonDriver:
 
 PERMS_DB = JsonDriver("data/perms.json")
 
-class SudoFilter(Filter):
-	SUPERUSER = [ int(k.strip()) for k in
-					alemiBot.config.get("perms", "sudo", fallback="").split()
-				]
-	async def __call__(self, client: "pyrogram.Client", update: "pyrogram.types.Update"):
-		if hasattr(update, "from_user") and update.from_user:
-			return update.from_user.is_self or update.from_user.id in self.SUPERUSER
-		elif hasattr(update, "sender_chat") and update.sender_chat:
-			return update.sender_chat.id in self.SUPERUSER
-		raise NotImplementedError
-
-is_superuser = SudoFilter()
-
-def check_superuser(msg): # ewww, backwards compatibility
-	return is_superuser(None, msg)
-
 class PermsFilter(Filter):
 	def __init__(self, group:str = ""):
 		self.group = group
@@ -88,17 +82,17 @@ class PermsFilter(Filter):
 			return PERMS_DB.check(update.sender_chat.id, self.group)
 		raise NotImplementedError
 
-is_allowed = PermsFilter()
+is_allowed = PermsFilter() # backwards compatibility
 
-def check_allowed(msg): # ewww, backwards compatibility
+def check_allowed(msg): # backwards compatibility
 	return is_allowed(None, msg)
 
-def list_allowed():# ewww, backwards compatibility
+def list_allowed(): # backwards compatibility
 	return list(PERMS_DB.all())
 
-def allow(uid, group="_"):# ewww, backwards compatibility
+def allow(uid, group="_"): # backwards compatibility
 	return PERMS_DB.put(uid, group)
 
-def disallow(uid, group="_"):# ewww, backwards compatibility
+def disallow(uid, group="_"): # backwards compatibility
 	return PERMS_DB.pop(uid, group)
 
