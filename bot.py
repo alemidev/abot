@@ -18,6 +18,7 @@ class alemiBot(Client):
 	sudoers = [ int(uid.strip()) for uid in config.get("perms", "sudo", fallback="").split() ]
 	prefixes = config.get("customization", "prefixes", fallback="./")
 	use_ssh = config.getboolean("customization", "useSsh", fallback=False)
+	everyone_allowed = config.getboolean("perms", "public", fallback=False)
 	allow_plugin_install = config.getboolean("customization", "allowPlugins", fallback=True)
 
 	def __init__(self, name):

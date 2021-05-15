@@ -70,11 +70,11 @@ class JsonDriver:
 PERMS_DB = JsonDriver("data/perms.json")
 
 class PermsFilter(Filter):
-	def __init__(self, group:str = ""):
+	def __init__(self, group:str = "_"):
 		self.group = group
 
 	async def __call__(self, client: "pyrogram.Client", update: "pyrogram.types.Update"):
-		if is_superuser(client, update):
+		if is_superuser(client, update) or (self.group == "_" and alemiBot.everyone_allowed):
 			return True
 		if hasattr(update, "from_user") and update.from_user:
 			return PERMS_DB.check(update.from_user.id, self.group)
