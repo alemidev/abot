@@ -17,7 +17,7 @@ class JsonDriver:
 		self.data : Dict[str,List[int]] = {}
 		try:
 			with open(self.fname) as f:
-				self.data = { k:set(v) for k,v in json.load(f) }
+				self.data = json.load(f)
 		except FileNotFoundError:
 			self.data = {}
 			with open(self.fname, "w") as f:
