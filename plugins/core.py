@@ -427,7 +427,7 @@ async def manage_allowed_cmd(client, message):
 	action = allow if message.command.base == "allow" else disallow
 	action_str = "Allowed" if message.command.base == "allow" else "Disallowed"
 	for u in users_to_manage:
-		if action(u.id, val=get_username(u)):
+		if action(u.id):
 			out += f"` → ` {action_str} **{get_username(u, mention=True)}**\n"
 	if out != "":
 		await edit_or_reply(message, out)

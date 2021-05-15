@@ -1,53 +1,98 @@
+import os
 import json
 
+from typing import Dict, List
+
 from pyrogram import filters
-from pyrogram.filters import create
+from pyrogram.filters import Filter, create
+
+from bot import alemiBot
 
 import logging
 logger = logging.getLogger(__name__)
 
-ALLOWED = {}
-SUPERUSER = []
+class JsonDriver:
+	def __init__(self, fname:str):
+		self.fname = fname
+		self.data : Dict[str,List[int]] = {}
+		try:
+			with open(self.fname) as f:
+				self.data = { k:set(v) for k,v in json.load(f) }
+		except FileNotFoundError:
+			self.data = {}
+			with open(self.fname, "w") as f:
+				json.dump({}, f)
+			os.chmod(self.fname, 0o600)
 
-try:
-	with open("data/perms.json") as f:
-		tmp = json.load(f)
-		if "SUPERUSER" in tmp:
-			SUPERUSER = list(tmp["SUPERUSER"])
-		ALLOWED = { int(k) : v for (k, v) in tmp.items() if k.isnumeric() } # Convert json keys to integers
-except FileNotFoundError:
-	with open("data/perms.json", "w") as f:
-		json.dump({ "SUPERUSER" : [] }, f)
-except:
-	logger.exception("Error while loading permission file")
+	def _serialize(self):
+		with open(self.fname, "w") as f:
+			json.dump(self.data, f)
 
-def check_superuser(msg): # basically filters.me plus lookup in a list
-	return bool(msg.from_user and (msg.from_user.is_self or msg.from_user.id in SUPERUSER) or msg.outgoing)
+	def put(self, uid:int, group:str = "_") -> bool:
+		if group not in self.data:
+			self.data[group] = []
+		if uid in self.data[group]:
+			return False
+		self.data[group].append(uid)
+		self._serialize()
+		return True
 
-is_superuser = create(lambda _, __, msg: check_superuser(msg))
+	def pop(self, uid:int, group:str = "_") -> bool:
+		if group not in self.data:
+			return False
+		if uid not in self.data[group]:
+			return False
+		self.data[group].remove(uid)
+		self._serialize()
+		return True
+	
+	def any(self, uid:int) -> bool:
+		return any(uid in self.data[k] for k in self.data)
 
-def check_allowed(msg):
-	return bool(msg.from_user and (msg.from_user.id in ALLOWED or check_superuser(msg)) or msg.outgoing)
+	def check(self, uid:int, group:str = "_") -> bool:
+		if group not in self.data:
+			return False
+		return uid in self.data[group]
 
-is_allowed = filters.create(lambda _, __, msg: check_allowed(msg))
+	def all(self) -> Set[int]:
+		return set(uid for grp in self.data for uid in self.data[grp])
+
+PERMS_DB = JsonDriver("data/perms.json")
+
+class SudoFilter(Filter):
+	SUPERUSER = [ int(k.strip()) for k in
+					alemiBot.config.get("perms", "sudo", fallback="").split()
+				]
+	async def __call__(self, client: "pyrogram.Client", update: "pyrogram.types.Update"):
+		if hasattr(update, "from_user") and update.from_user:
+			return update.from_user.is_self or update.from_user.id in self.SUPERUSER
+		elif hasattr(update, "sender_chat") and update.sender_chat:
+			return update.sender_chat.id in self.SUPERUSER
+		raise NotImplementedError
+
+is_superuser = SudoFilter()
+
+class PermsFilter(Filter):
+	def __init__(self, group:str = ""):
+		self.group = group
+
+	async def __call__(self, client: "pyrogram.Client", update: "pyrogram.types.Update"):
+		if is_superuser(client, update):
+			return True
+		if hasattr(update, "from_user") and update.from_user:
+			return PERMS_DB.check(update.from_user.id, self.group)
+		elif hasattr(update, "sender_chat") and update.sender_chat:
+			return PERMS_DB.check(update.sender_chat.id, self.group)
+		raise NotImplementedError
+
+is_allowed = PermsFilter()
 
 def list_allowed():
-	return list(ALLOWED.keys())
+	return list(PERMS_DB.all())
 
-def allow(uid, val=True):
-	if uid in ALLOWED and ALLOWED[uid] == val:
-		return False
-	ALLOWED[uid] = val # this is handy when editing manually the file
-	serialize()
-	return True
+def allow(uid, group="_"):
+	return PERMS_DB.put(uid, group)
 
-def disallow(uid, val=False):
-	if uid not in ALLOWED:
-		return False
-	ALLOWED.pop(uid, None)
-	serialize()
-	return True
+def disallow(uid, group="_"):
+	return PERMS_DB.pop(uid, group)
 
-def serialize():
-	with open("data/perms.json", "w") as f:
-		json.dump(ALLOWED, f)
