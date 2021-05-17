@@ -13,10 +13,10 @@ def report_error(lgr):
 	"""
 	def deco(func):
 		@functools.wraps(func)
-		async def wrapper(client, message):
+		async def wrapper(client, message, *args, **kwargs):
 			try:
 				lgr.info("Running '%s'", func.__name__)
-				await func(client, message)
+				await func(client, message, *args, **kwargs)
 			except Exception as e:
 				lgr.exception("Exception in '%s'", func.__name__)
 				await edit_or_reply(message, "`[!] → ` " + str(e))
@@ -26,8 +26,8 @@ def report_error(lgr):
 def set_offline(func):
 	"""Will set user back offline when function is done"""
 	@functools.wraps(func)
-	async def wrapper(client, message):
-		await func(client, message)
+	async def wrapper(client, message, *args, **kwargs):
+		await func(client, message, *args, **kwargs)
 		if not client.me.is_bot:
 			await client.send(UpdateStatus(offline=True))
 	return wrapper
@@ -35,7 +35,7 @@ def set_offline(func):
 def cancel_chat_action(func):
 	"""Will cancel any ongoing chat action once handler is done"""
 	@functools.wraps(func)
-	async def wrapper(client, message):
-		await func(client, message)
+	async def wrapper(client, message, *args, **kwargs):
+		await func(client, message, *args, **kwargs)
 		await client.send_chat_action(message.chat.id, "cancel")
 	return wrapper
