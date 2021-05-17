@@ -43,25 +43,25 @@ async def edit_or_reply(message, text, *args, **kwargs):
 			ret = await message.reply(m, *args, **kwargs)
 		return ret
 
-async def send_media(client, message, fname, **kwargs):
+async def send_media(client, chat_id, fname, **kwargs):
 	if fname.endswith((".jpg", ".jpeg", ".png")):
-		prog = ProgressChatAction(client, message.chat.id, action="upload_photo")
-		await client.send_photo(message.chat.id, fname, progress=prog.tick, **kwargs)
+		prog = ProgressChatAction(client, chat_id, action="upload_photo")
+		await client.send_photo(chat_id, fname, progress=prog.tick, **kwargs)
 	elif fname.endswith((".gif", ".mp4", ".webm")):
-		prog = ProgressChatAction(client, message.chat.id, action="upload_video")
-		await client.send_video(message.chat.id, fname, progress=prog.tick, **kwargs)
+		prog = ProgressChatAction(client, chat_id, action="upload_video")
+		await client.send_video(chat_id, fname, progress=prog.tick, **kwargs)
 	elif fname.endswith((".webp", ".tgs")):
-		prog = ProgressChatAction(client, message.chat.id, action="upload_photo")
+		prog = ProgressChatAction(client, chat_id, action="upload_photo")
 		kwargs.pop("caption") # would raise an exception, remove it so it's safe to use from send_media
-		await client.send_sticker(message.chat.id, fname, progress=prog.tick, **kwargs)
+		await client.send_sticker(chat_id, fname, progress=prog.tick, **kwargs)
 	elif fname.endswith((".mp3", ".ogg", ".wav")):
-		prog = ProgressChatAction(client, message.chat.id, action="upload_audio")
+		prog = ProgressChatAction(client, chat_id, action="upload_audio")
 		kwargs.pop("caption") # would raise an exception, remove it so it's safe to use from send_media
-		await client.send_voice(message.chat.id, fname, progress=prog.tick, **kwargs)
+		await client.send_voice(chat_id, fname, progress=prog.tick, **kwargs)
 	else:
-		prog = ProgressChatAction(client, message.chat.id, action="upload_document")
-		await client.send_document(message.chat.id, fname, progress=prog.tick, **kwargs)
-	await client.send_chat_action(message.chat.id, "cancel")
+		prog = ProgressChatAction(client, chat_id, action="upload_document")
+		await client.send_document(chat_id, fname, progress=prog.tick, **kwargs)
+	await client.send_chat_action(chat_id, "cancel")
 
 def parse_media_type(msg:Message):
 	media_types = [
