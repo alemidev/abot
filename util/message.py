@@ -25,9 +25,8 @@ class ProgressChatAction:
 
 
 def is_me(message):
-	return message.from_user is not None \
-	and message.from_user.is_self \
-	and message.via_bot is None # can't edit messages from inline bots
+	return message.outgoing or (message.from_user is not None 
+		and message.from_user.is_self and message.via_bot is None) # can't edit messages from inline bots
 
 async def edit_or_reply(message, text, *args, **kwargs):
 	if len(text.strip()) == 0:
