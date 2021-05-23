@@ -22,9 +22,9 @@ class ConsumableBuffer:
 		"""Replace first occurrance of token in self. Also remove whitespace around"""
 		if isinstance(token, list):
 			for tok in token:
-				self.val = re.sub(rf"(\s|^)('|\"|){tok}(\2)(\s|$)", r"\1", self.val, 1)
+				self.val = re.sub(rf"(\s|^)('|\"|){re.escape(tok)}(\2)(\s|$)", r"\1", self.val, 1)
 		else:
-			self.val = re.sub(rf"(\s|^)('|\"|){token}(\2)(\s|$)", r"\1", self.val, 1)
+			self.val = re.sub(rf"(\s|^)('|\"|){re.escape(token)}(\2)(\s|$)", r"\1", self.val, 1)
 
 class CommandMatch:
 	"""Command match object, will hold any matched flag/option/argument
