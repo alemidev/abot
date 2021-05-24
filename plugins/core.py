@@ -195,7 +195,8 @@ async def plugin_add_cmd(client, message):
 		`https://username:password@github.com/author/repo.git`
 	Your github credentials will be stored in plain text inside project folder. \
 	Because of this, it is --not recommended-- to include credentials in the clone url. Set up an ssh key for private plugins.
-	You can specify which branch to clone with `-b` option. You can also specify a custom folder to clone into with `-d` option.
+	You can specify which branch to clone with `-b` option.
+	You can also specify a custom folder to clone into with `-d` option (this may break plugins relying on data stored in their directory!)
 	"""
 	if not alemiBot.allow_plugin_install:
 		return await edit_or_reply(message, "`[!] → ` Plugin management is disabled")

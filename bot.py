@@ -19,7 +19,7 @@ class alemiBot(Client):
 	prefixes = config.get("customization", "prefixes", fallback="./")
 	use_ssh = config.getboolean("customization", "useSsh", fallback=False)
 	everyone_allowed = config.getboolean("perms", "public", fallback=False)
-	allow_plugin_install = config.getboolean("customization", "allowPlugins", fallback=True)
+	allow_plugin_install = config.getboolean("perms", "allowPlugins", fallback=True)
 
 	def __init__(self, name):
 		super().__init__(
