@@ -40,7 +40,7 @@ class alemiBot(Client):
 	async def start(self):
 		await super().start()
 		self.me = await self.get_me() # this is used to quickly parse /<cmd>@<who> format for commands
-		setproctitle(f"alemiBot - {get_username(self.me)}")
+		setproctitle(f"alemiBot[{get_username(self.me)}]")
 		try:
 			with open("data/lastmsg.json", "r") as f:
 				lastmsg = json.load(f)
