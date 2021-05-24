@@ -34,16 +34,22 @@ It is strongly recommended to install this on a UNIX system. If you plan to inst
 * Run bot : `python bot.py`. First time it will request your phone number and a verification code.
 
 ## config file
-Only required fields are `api_id` and `api_hash`.
+Only required fields are `api_id` and `api_hash`. There is an example config file (`config.ini.example`) where you just need to fill `api_id` and `api_hash`. (remember to rename it in just `config.ini`!)
 
 ```ini
 [pyrogram]
-api_id = 1234
-api_hash = longstring
-device_model = alemiBot
+api_id = 1234 # your API ID
+api_hash = longstring # your API hash
+[perms]
+sudo = 0 # users allowed to operate this account as sudo. Put ids, separate with whitespace
+public = False # commands for allowed users will be available to everyone
+allowPlugins = True # allow superusers to install more plugins
 [customization]
-prefixes = ./!
-useSsh = True
+prefixes = .! # bot prefixes
+useSsh = False # use ssh to clone more plugins
+[plugins]
+root = plugins # change plugins folder, leave this as is
+[database] # unused by default but common in plugins!
 ```
 
 Plugins may add categories or fields to the config file.

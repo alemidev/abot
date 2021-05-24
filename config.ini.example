@@ -5,8 +5,8 @@ api_hash = longstring
 sudo = 0
 public = False
 allowPlugins = True
-[plugins]
-root = plugins
 [customization]
 prefixes = .!#
 useSsh = False
+[plugins]
+root = plugins
