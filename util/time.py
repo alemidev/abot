@@ -17,7 +17,10 @@ def parse_timedelta(text):
 	Will convert a string to a timedelta object. Will parse by
 	searching numbers with time suffixes in the given string, for
 	example 1h, 12min32s and 2y40d. Will also match sign (+|-|)
+	If input is just an integer, it will be treated as number of seconds
 	"""
+	if text.isnumeric():
+		return timedelta(seconds=int(text))
 	year = _search_value(text, "y")
 	day = _search_value(text, "d")
 	hour = _search_value(text, "h")
