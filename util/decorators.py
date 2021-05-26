@@ -3,6 +3,7 @@ import functools
 from pyrogram.raw.functions.account import UpdateStatus
 
 from util.message import edit_or_reply
+from util.getters import get_user, get_username
 
 def report_error(lgr):
 	"""Will report errors back to user
@@ -15,7 +16,7 @@ def report_error(lgr):
 		@functools.wraps(func)
 		async def wrapper(client, message, *args, **kwargs):
 			try:
-				lgr.info("Running '%s'", func.__name__)
+				lgr.info("[%s] Running '%s'", get_username(get_user(message)), func.__name__)
 				await func(client, message, *args, **kwargs)
 			except Exception as e:
 				lgr.exception("Exception in '%s'", func.__name__)

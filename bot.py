@@ -9,8 +9,13 @@ import subprocess
 import logging
 from logging.handlers import RotatingFileHandler
 from datetime import datetime
-from pyrogram import Client, idle
 from configparser import ConfigParser
+
+from setproctitle import setproctitle
+
+from pyrogram import Client
+
+from util.getters import get_username
 
 class alemiBot(Client):
 	config = ConfigParser() # uggh doing it like this kinda
@@ -19,7 +24,7 @@ class alemiBot(Client):
 	prefixes = config.get("customization", "prefixes", fallback="./")
 	use_ssh = config.getboolean("customization", "useSsh", fallback=False)
 	everyone_allowed = config.getboolean("perms", "public", fallback=False)
-	allow_plugin_install = config.getboolean("customization", "allowPlugins", fallback=True)
+	allow_plugin_install = config.getboolean("perms", "allowPlugins", fallback=True)
 
 	def __init__(self, name):
 		super().__init__(
@@ -35,6 +40,7 @@ class alemiBot(Client):
 	async def start(self):
 		await super().start()
 		self.me = await self.get_me() # this is used to quickly parse /<cmd>@<who> format for commands
+		setproctitle(f"alemiBot[{get_username(self.me)}]")
 		try:
 			with open("data/lastmsg.json", "r") as f:
 				lastmsg = json.load(f)
@@ -61,6 +67,7 @@ if __name__ == "__main__":
 	Default logging will only show the message on stdout (but up to INFO) 
 	and show time + type + module + message in file (data/debug.log)
 	"""
+	setproctitle("alemiBot")
 	logger = logging.getLogger()
 	logger.setLevel(logging.INFO)
 	# create file handler which logs even debug messages
@@ -70,7 +77,7 @@ if __name__ == "__main__":
 	ch = logging.StreamHandler()
 	ch.setLevel(logging.INFO)
 	# create formatter and add it to the handlers
-	file_formatter = logging.Formatter("[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s", "%H:%M:%S")
+	file_formatter = logging.Formatter("[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s", "%b %d %Y %H:%M:%S")
 	print_formatter = logging.Formatter("> %(message)s")
 	fh.setFormatter(file_formatter)
 	ch.setFormatter(print_formatter)

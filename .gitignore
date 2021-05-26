@@ -1,21 +1,13 @@
 *.session
 *.session-journal
-output
+config.ini
 
 tags
 cscope.*
 
 downloads/
+data/
 
 __pycache__/
-modules/__pycache__/
+plugins/__pycache__/
 util/__pycache__/
-data/scraped_media
-data/memes
-data/lastmsg.json
-data/debug*
-data/perms.json
-data/triggers.json
-data/censoring.json
-!data/memes/250gb.jpg
-!data/scraped_media/empty

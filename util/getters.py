@@ -29,7 +29,7 @@ def get_username(entity, mention=True):
 	   user first_name (+last_name if present) or chat title. If mention is True
 	   and it's a user, will try to mention user with url when no username is available"""
 	if not entity:
-		return "UNKNOWN"
+		return "[Anonymous]"
 	if hasattr(entity, 'username') and entity.username:
 		if mention:
 			return "@" + entity.username
