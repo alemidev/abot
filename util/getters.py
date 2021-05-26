@@ -1,17 +1,19 @@
 from pyrogram.types import Message
 
-def get_text(msg:Message, raw:bool=False):
+def get_text(msg:Message, raw:bool = False, html:bool = False):
 	if hasattr(msg, "text") and msg.text:
-		if raw and hasattr(msg.text, "raw"):
-			return msg.text.raw
-		if not raw and hasattr(msg.text, "markdown"):
-			return msg.text.markdown
+		if not raw:
+			if html and hasattr(msg.text, "html"):
+				return msg.text.html
+			if not html and hasattr(msg.text, "markdown"):
+				return msg.text.markdown
 		return msg.text
 	if hasattr(msg, "caption") and msg.caption:
-		if raw and hasattr(msg.caption, "raw"):
-			return msg.caption.raw
-		if not raw and hasattr(msg.caption, "markdown"):
-			return msg.caption.markdown
+		if not raw:
+			if html and hasattr(msg.caption, "html"):
+				return msg.text.html
+			if not html and hasattr(msg.caption, "markdown"):
+				return msg.caption.markdown
 		return msg.caption
 	if raw:
 		return None
