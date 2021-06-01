@@ -244,7 +244,7 @@ async def plugin_add_cmd(client, message):
 			stdout, _sterr = await proc.communicate()
 			res = cleartermcolor(stdout.decode())
 			logger.info(res)
-			if res.startswith("ERROR") or res.startswith("fatal"):
+			if res.startswith(("ERROR", "fatal", "remote: Not Found")):
 				out += f" [`FAIL`]\n`[!] → ` Could not find `{link}`"
 				return await msg.edit(out)
 			out += " [`OK`]"
