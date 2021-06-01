@@ -31,11 +31,14 @@ def is_me(message):
 async def edit_or_reply(message, text, *args, **kwargs):
 	if len(text.strip()) == 0:
 		return message
-	if is_me(message) and len(get_text(message) + text) < 4090:
-		if message.scheduled: # lmao ye right import more bloat
+	opts = {}
+	if "parse_mode" in kwargs: # needed to properly get previous message text
+		opts = {"raw": bool(kwargs["parse_mode"] is None), "html": bool(kwargs["parse_mode"] == "html")}
+	if is_me(message) and len(get_text(message, raw=True) or "" + text) < 4090:
+		if message.scheduled:
 			return await edit_scheduled(message._client, message, text, *args, **kwargs)
 		else:
-			return await message.edit(get_text(message) + "\n" + text, *args, **kwargs)
+			return await message.edit(get_text(message, **opts) + "\n" + text, *args, **kwargs)
 	else:
 		ret = None
 		for m in batchify(text, 4090):
