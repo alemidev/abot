@@ -68,6 +68,18 @@ async def ping_cmd(client, message):
 	latency = (after - before) * 1000
 	await msg.edit(f"` → ` a sunny day `({latency:.0f}ms)`")
 
+async def edit_restart_message(client):
+	try:
+		with open("data/lastmsg.json", "r") as f:
+			lastmsg = json.load(f)
+		if "chat_id" in lastmsg and "message_id" in lastmsg:
+			message = await client.get_messages(lastmsg["chat_id"], lastmsg["message_id"])
+			await message.edit(message.text.markdown + " [`OK`]")
+			with open("data/lastmsg.json", "w") as f:
+				json.dump({}, f)
+	except:
+		logging.exception("Error editing restart message")
+
 @HELP.add()
 @alemiBot.on_message(is_superuser & filterCommand("update", list(alemiBot.prefixes), flags=["-force"]))
 async def update_cmd(client, message):

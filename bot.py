@@ -17,6 +17,8 @@ from pyrogram import Client
 
 from util.getters import get_username
 
+from plugins.core import edit_restart_message
+
 class alemiBot(Client):
 	config = ConfigParser() # uggh doing it like this kinda
 	config.read("config.ini") #		ugly but it'll do for now
@@ -25,6 +27,8 @@ class alemiBot(Client):
 	use_ssh = config.getboolean("customization", "useSsh", fallback=False)
 	everyone_allowed = config.getboolean("perms", "public", fallback=False)
 	allow_plugin_install = config.getboolean("perms", "allowPlugins", fallback=True)
+	start_callbaks = []
+	stop_callbacks = []
 
 	def __init__(self, name):
 		super().__init__(
@@ -37,23 +41,29 @@ class alemiBot(Client):
 								stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
 		self.app_version += "-" + res.stdout.decode('utf-8').strip()
 
+	@classmethod
+	def on_start(cls, func):
+		cls.start_callbaks.append(func)
+		return func
+
+	@classmethod
+	def on_stop(cls, func):
+		cls.stop_callbacks.append(func)
+		return func
+
 	async def start(self):
 		await super().start()
 		self.me = await self.get_me() # this is used to quickly parse /<cmd>@<who> format for commands
 		setproctitle(f"alemiBot[{get_username(self.me)}]")
-		try:
-			with open("data/lastmsg.json", "r") as f:
-				lastmsg = json.load(f)
-			if lastmsg:
-				message = await self.get_messages(lastmsg["chat_id"], lastmsg["message_id"])
-				await message.edit(message.text.markdown + " [`OK`]")
-				with open("data/lastmsg.json", "w") as f:
-					json.dump({}, f)
-		except:
-			logging.exception("Error editing restart message")
+		if os.path.isfile("data/lastmsg.json"):
+			await edit_restart_message(self) # if bot was restarted by an update, add [OK]
 		logging.info("Bot started\n")
+		for f in self.start_callbaks:
+			await f(self)
 		
 	async def stop(self, block=True):
+		for f in self.stop_callbacks:
+			await f(self)
 		buf = await super().stop(block)
 		logging.info("Bot stopped\n")
 		return buf
