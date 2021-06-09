@@ -26,8 +26,6 @@ class alemiBot(Client):
 	use_ssh = config.getboolean("customization", "useSsh", fallback=False)
 	everyone_allowed = config.getboolean("perms", "public", fallback=False)
 	allow_plugin_install = config.getboolean("perms", "allowPlugins", fallback=True)
-	start_callbaks = []
-	stop_callbacks = []
 
 	def __init__(self, name):
 		super().__init__(
@@ -40,16 +38,6 @@ class alemiBot(Client):
 								stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
 		self.app_version += "-" + res.stdout.decode('utf-8').strip()
 
-	@classmethod
-	def on_start(cls, func):
-		cls.start_callbaks.append(func)
-		return func
-
-	@classmethod
-	def on_stop(cls, func):
-		cls.stop_callbacks.append(func)
-		return func
-
 	async def start(self):
 		await super().start()
 		self.me = await self.get_me() # this is used to quickly parse /<cmd>@<who> format for commands
@@ -57,12 +45,8 @@ class alemiBot(Client):
 		if os.path.isfile("data/lastmsg.json"):
 			await edit_restart_message(self) # if bot was restarted by an update, add [OK]
 		logging.info("Bot started\n")
-		for f in self.start_callbaks:
-			await f(self)
 		
 	async def stop(self, block=True):
-		for f in self.stop_callbacks:
-			await f(self)
 		buf = await super().stop(block)
 		logging.info("Bot stopped\n")
 		return buf
