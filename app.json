@@ -1,0 +1,27 @@
+{
+  "name": "alemiBot",
+  "description": "Modular telegram bot/userbot frame",
+  "repository": "https://github.com/alemidev/alemibot",
+  "keywords": [
+    "telegram",
+    "userbot",
+    "python",
+    "pyrogram"
+  ],
+  "env": {
+    "API_ID": {
+            "description": "API_ID",
+            "required": true
+    },
+    "API_HASH": {
+            "description": "API_HASH",
+            "required": true
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ]
+}
+
