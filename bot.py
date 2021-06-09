@@ -16,8 +16,7 @@ from setproctitle import setproctitle
 from pyrogram import Client
 
 from util.getters import get_username
-
-from plugins.core import edit_restart_message
+from util.message import edit_restart_message
 
 class alemiBot(Client):
 	config = ConfigParser() # uggh doing it like this kinda

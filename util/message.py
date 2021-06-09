@@ -1,4 +1,6 @@
 import re
+import json
+import logging
 
 from time import time
 
@@ -129,3 +131,15 @@ async def count_messages(client, chat, user, offset=0, query=""):
 				)
 			)
 	return messages.count
+
+async def edit_restart_message(client):
+	try:
+		with open("data/lastmsg.json", "r") as f:
+			lastmsg = json.load(f)
+		if "chat_id" in lastmsg and "message_id" in lastmsg:
+			message = await client.get_messages(lastmsg["chat_id"], lastmsg["message_id"])
+			await message.edit(message.text.markdown + " [`OK`]")
+			with open("data/lastmsg.json", "w") as f:
+				json.dump({}, f)
+	except:
+		logging.exception("Error editing restart message")
