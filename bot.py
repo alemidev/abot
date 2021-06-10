@@ -27,11 +27,13 @@ class alemiBot(Client):
 	everyone_allowed = config.getboolean("perms", "public", fallback=False)
 	allow_plugin_install = config.getboolean("perms", "allowPlugins", fallback=True)
 
-	def __init__(self, name):
+	def __init__(self, name, *args, **kwargs):
 		super().__init__(
-			name,
+			name, *args,
 			workdir="./",
-			app_version="0.3",)
+			app_version="0.3",
+			**kwargs
+		)
 		self.start_time = datetime.now()
 		# Get current commit hash and append to app version
 		res = subprocess.run(["git", "rev-parse", "--short", "HEAD"],

@@ -9,6 +9,10 @@
     "pyrogram"
   ],
   "env": {
+    "SESSION_STRING": {
+            "description": "A valid session string, required to attach to an ongoing telegram session",
+            "required": true
+    },
     "API_ID": {
             "description": "API_ID",
             "required": true
@@ -16,6 +20,14 @@
     "API_HASH": {
             "description": "API_HASH",
             "required": true
+    },
+    "PLUGINS": {
+            "description": "A list of plugins you want to use, separated by commas",
+            "required": false
+    },
+	"CONFIG": {
+            "description": "Add extra config.ini here",
+            "required": false
     }
   },
   "buildpacks": [
