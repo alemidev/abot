@@ -63,7 +63,7 @@ def install_plugin(user_input):
 				["pip", "install", "-r", f"plugins/{plugin}/requirements.txt", "--upgrade"],
 				stdout=subprocess.PIPE,
 				stderr=subprocess.STDOUT)
-			stdout, _stderr = await proc.communicate()
+			stdout, _stderr = proc.communicate()
 			logger.info(stdout.decode())
 	except Exception as e:
 		logger.exception("Error while installing plugin")
