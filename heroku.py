@@ -20,6 +20,9 @@ def install_plugin(user_input):
 		logger.info("Installing \"%s/%s\"", author, plugin)
 		folder = plugin
 
+		custom_env = os.environ.copy()
+		custom_env["GIT_TERMINAL_PROMPT"] = 0
+
 		if user_input.startswith("http") or user_input.startswith("git@"):
 			link = user_input
 		else:
@@ -27,9 +30,10 @@ def install_plugin(user_input):
 
 		logger.info("Checking branches")
 		proc = subprocess.Popen(
-		      ["GIT_TERMINAL_PROMPT=0", "git", "ls-remote", link],
+		      ["git", "ls-remote", link],
 		      stdout=subprocess.PIPE,
-		      stderr=subprocess.STDOUT)
+		      stderr=subprocess.STDOUT,
+			  env=custom_env)
 		stdout, _sterr = proc.communicate()
 		res = cleartermcolor(stdout.decode())
 		logger.info(res)
@@ -41,9 +45,10 @@ def install_plugin(user_input):
 		logger.info("Fetching source code")
 
 		proc = subprocess.Popen(
-		  ["GIT_TERMINAL_PROMPT=0", "git", "submodule", "add", "-b", branch, link, f"plugins/{folder}"],
+		  ["git", "submodule", "add", "-b", branch, link, f"plugins/{folder}"],
 		  stdout=subprocess.PIPE,
-		  stderr=subprocess.STDOUT)
+		  stderr=subprocess.STDOUT,
+		  env=custom_env)
 
 		stdout, _sterr = proc.communicate()
 		res = cleartermcolor(stdout.decode())
