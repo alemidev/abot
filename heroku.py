@@ -96,11 +96,13 @@ if __name__ == "__main__":
 	logger.addHandler(fh)
 	logger.addHandler(ch)
 
-	with open("config.ini", "w") as f:
-		f.write(os.environ["CONFIG"])
+	if "CONFIG" in os.environ:
+		with open("config.ini", "w") as f:
+			f.write(os.environ["CONFIG"])
 
-	for p in os.environ["PLUGINS"].split(","):
-		install_plugin(p.strip())
+	if "PLUGINS" in os.environ:
+		for p in os.environ["PLUGINS"].split(","):
+			install_plugin(p.strip())
 
 	app = alemiBot(
 		os.environ["SESSION_STRING"],
