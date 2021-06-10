@@ -21,7 +21,7 @@ def install_plugin(user_input):
 		folder = plugin
 
 		custom_env = os.environ.copy()
-		custom_env["GIT_TERMINAL_PROMPT"] = 0
+		custom_env["GIT_TERMINAL_PROMPT"] = "0"
 
 		if user_input.startswith("http") or user_input.startswith("git@"):
 			link = user_input
