@@ -44,8 +44,8 @@ def install_plugin(user_input):
 
 		logger.info("Fetching source code")
 
-		proc = subprocess.Popen(
-		  ["git", "submodule", "add", "-b", branch, link, f"plugins/{folder}"],
+		proc = subprocess.Popen( # Can't add as submodules on heroku since it's not a git repo!
+		  ["git", "clone", "-b", branch, link, f"plugins/{folder}"],
 		  stdout=subprocess.PIPE,
 		  stderr=subprocess.STDOUT,
 		  env=custom_env)
