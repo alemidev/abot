@@ -25,7 +25,9 @@ Your plugin should import its files as `import plugins.<yourplugin>.<...>`. This
 # How to deploy
 ## Heroku
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/alemidev/alemibot/tree/heroku)
+
 You can use [this](https://replit.com/@dashezup/generate-pyrogram-session-string) for now to get your session string (WIP!!)
+
 Get your API\_ID and API\_HASH on [my.telegram.org](https://my.telegram.org/) or use sample ones
 
 ## Self hosted
