@@ -2,11 +2,15 @@
   "name": "alemiBot",
   "description": "Modular telegram bot/userbot frame",
   "repository": "https://github.com/alemidev/alemibot",
+  "logo": "https://data.alemi.dev/alemibot.jpg",
   "keywords": [
     "telegram",
     "userbot",
     "python",
-    "pyrogram"
+    "pyrogram",
+	"modular",
+	"plugins",
+	"bot"
   ],
   "env": {
     "SESSION_STRING": {
@@ -14,11 +18,11 @@
             "required": true
     },
     "API_ID": {
-            "description": "API_ID",
+            "description": "Your Application ID. Can be found in your API Development Tools (my.telegram.org)",
             "required": true
     },
     "API_HASH": {
-            "description": "API_HASH",
+            "description": "Your Application Hash. Can be found in your API Development Tools (my.telegram.org)",
             "required": true
     },
     "PLUGINS": {
@@ -26,7 +30,7 @@
             "required": false
     },
 	"CONFIG": {
-            "description": "Add extra config.ini here",
+            "description": "You can write your config.ini file here as you would for launching the bot. No need to specify API_ID or API_HASH or plugin root.",
             "required": false
     }
   },
