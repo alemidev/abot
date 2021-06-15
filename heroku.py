@@ -7,6 +7,7 @@ import sys
 import subprocess
 import logging
 from logging.handlers import RotatingFileHandler
+from configparser import ConfigParser
 
 from bot import alemiBot
 
@@ -116,5 +117,8 @@ if __name__ == "__main__":
 		api_hash=os.environ["API_HASH"],
 		plugins=dict(root="plugins"),
 	)
+
+	app.config = ConfigParser().read("config.ini") # read it again since we edited it
+
 	app.run()
 
