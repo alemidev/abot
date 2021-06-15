@@ -118,7 +118,8 @@ if __name__ == "__main__":
 		plugins=dict(root="plugins"),
 	)
 
-	app.config = ConfigParser().read("config.ini") # read it again since we edited it
+	app.config = ConfigParser()
+	app.config.read("config.ini") # read it again since we edited it
 
 	app.run()
 
