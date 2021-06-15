@@ -16,7 +16,10 @@ from plugins.core import split_url
 
 def install_plugin(user_input):
 	try:
+		force_branch = None
 		plugin, author = split_url(user_input) # clear url or stuff around
+		if ":" in plugin:
+			plugin, force_branch = plugin.split(":", 1)
 		logger.info("Installing \"%s/%s\"", author, plugin)
 		folder = plugin
 
@@ -41,6 +44,9 @@ def install_plugin(user_input):
 			logger.error("Could not find %s", link)
 			return
 		branch = re.search(r"(?:.*)\tHEAD\n(?:.*)\trefs/heads/(?P<branch>.*)\n", res)["branch"]
+
+		if force_branch:
+			branch = force_branch
 
 		logger.info("Fetching source code")
 
