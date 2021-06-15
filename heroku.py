@@ -106,6 +106,8 @@ if __name__ == "__main__":
 	if "CONFIG" in os.environ:
 		with open("config.ini", "w") as f:
 			f.write(os.environ["CONFIG"])
+	alemiBot.config = ConfigParser()
+	alemiBot.config.read("config.ini") # read it again since we edited it
 
 	if "PLUGINS" in os.environ:
 		for p in os.environ["PLUGINS"].split(","):
@@ -117,9 +119,5 @@ if __name__ == "__main__":
 		api_hash=os.environ["API_HASH"],
 		plugins=dict(root="plugins"),
 	)
-
-	app.config = ConfigParser()
-	app.config.read("config.ini") # read it again since we edited it
-
 	app.run()
 
