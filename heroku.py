@@ -3,6 +3,7 @@
 """
 import re
 import os
+import sys
 import subprocess
 import logging
 from logging.handlers import RotatingFileHandler
@@ -143,7 +144,6 @@ if __name__ == "__main__":
 			install_plugin(p.strip())
 
 	logger.info(str(os.listdir()))
-	logger.info(__name__)
 
-	os.execv(__name__, (os.getcwd() + '/bot.py',))
+	os.execv(sys.executable, (os.getcwd() + '/bot.py',))
 
