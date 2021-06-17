@@ -96,7 +96,6 @@ if __name__ == "__main__":
 	ch.setLevel(logging.INFO)
 	# create formatter and add it to the handlers
 	print_formatter = logging.Formatter("> %(message)s")
-	fh.setFormatter(file_formatter)
 	ch.setFormatter(print_formatter)
 	# add the handlers to the logger
 	logger.addHandler(ch)
@@ -118,6 +117,7 @@ if __name__ == "__main__":
 	fh = RotatingFileHandler('data/debug.log', maxBytes=1048576, backupCount=5) # 1MB files
 	fh.setLevel(logging.INFO)
 	file_formatter = logging.Formatter("[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s", "%b %d %Y %H:%M:%S")
+	fh.setFormatter(file_formatter)
 	logger.addHandler(fh)
 
 	logger.info("Preparing config file")
