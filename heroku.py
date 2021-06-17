@@ -110,12 +110,12 @@ if __name__ == "__main__":
 	cfg.add_section("plugins")
 	cfg.set("plugins", "root", "plugins")
 	cfg.add_section("perms")
-	cfg.set("perms", "sudo", os.environ.get("SUPERUSERS") or 0)
-	cfg.set("perms", "public", bool(os.environ.get("ALLOW_EVERYONE")))
-	cfg.set("perms", "allowPlugins", os.environ.get("ALLOW_PLUGINS") or True)
+	cfg.set("perms", "sudo", os.environ.get("SUPERUSERS") or "0")
+	cfg.set("perms", "public", os.environ.get("ALLOW_EVERYONE") or "False")
+	cfg.set("perms", "allowPlugins", os.environ.get("ALLOW_PLUGINS") or "True")
 	cfg.add_section("customization")
 	cfg.set("customization", "prefixes", os.environ.get("COMMAND_PREFIXES") or "./!")
-	cfg.set("customization", "useSsh", False)
+	cfg.set("customization", "useSsh", "False")
 
 	with open("config.ini", "w") as f:
 		cfg.write(f)
