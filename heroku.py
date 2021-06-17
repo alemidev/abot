@@ -8,8 +8,6 @@ import logging
 
 from configparser import ConfigParser
 
-logger = logging.getLogger("SETUP")
-logger.setLevel(logging.INFO)
 
 PLUGIN_HTTPS = re.compile(r"http(?:s|):\/\/(?:.*)\/(?P<author>[^ ]+)\/(?P<plugin>[^ \.]+)(?:\.git|)")
 PLUGIN_SSH = re.compile(r"git@(?:.*)\.(?:.*):(?P<author>[^ ]+)\/(?P<plugin>[^ \.]+)(?:\.git|)")
@@ -90,6 +88,18 @@ def install_plugin(user_input):
 		return
 
 if __name__ == "__main__":
+	# setup logging early on
+	logger = logging.getLogger("SETUP")
+	logger.setLevel(logging.INFO)
+	# create console handler with a higher log level
+	ch = logging.StreamHandler()
+	ch.setLevel(logging.INFO)
+	# create formatter and add it to the handlers
+	print_formatter = logging.Formatter("> %(message)s")
+	ch.setFormatter(print_formatter)
+	# add the handlers to the logger
+	logger.addHandler(ch)
+
 	env = os.environ.copy()
 	env["GIT_TERMINAL_PROMPT"] = "0"
 	
@@ -133,4 +143,4 @@ if __name__ == "__main__":
 
 	logger.info("Starting process")
 
-	os.execv("python", os.getcwd() + "/" + bot.py)
+	os.execv("python", os.getcwd() + "/bot.py")
