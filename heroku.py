@@ -5,6 +5,7 @@ import re
 import os
 import subprocess
 import logging
+from logging.handlers import RotatingFileHandler
 
 from configparser import ConfigParser
 
