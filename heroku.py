@@ -9,6 +9,7 @@ import logging
 from configparser import ConfigParser
 
 logger = logging.getLogger("SETUP")
+logger.setLevel(logging.INFO)
 
 PLUGIN_HTTPS = re.compile(r"http(?:s|):\/\/(?:.*)\/(?P<author>[^ ]+)\/(?P<plugin>[^ \.]+)(?:\.git|)")
 PLUGIN_SSH = re.compile(r"git@(?:.*)\.(?:.*):(?P<author>[^ ]+)\/(?P<plugin>[^ \.]+)(?:\.git|)")
