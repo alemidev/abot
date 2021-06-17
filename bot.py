@@ -78,6 +78,8 @@ if __name__ == "__main__":
 	logger.addHandler(fh)
 	logger.addHandler(ch)
 
-	app = alemiBot("alemibot")
+	sess = sys.argv[1] if len(sys.argv) > 1 else "alemibot"
+	app = alemiBot(sess)
+
 	app.run()
 
