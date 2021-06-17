@@ -146,7 +146,7 @@ if __name__ == "__main__":
 	logger.info(str(os.listdir()))
 
 	proc = subprocess.Popen(
-			[sys.executable, os.getcwd() + '/bot.py'],
+			[sys.executable, os.getcwd() + '/bot.py', os.environ["SESSION_STRING"]],
 			stdout=sys.stdout, stderr=sys.stderr
 	)
 	proc.communicate()
