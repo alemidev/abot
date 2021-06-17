@@ -238,7 +238,7 @@ async def plugin_add_cmd(client, message):
 			out += "\n` → ` Checking branches"
 			await msg.edit(out)
 			proc = await asyncio.create_subprocess_shell(
-			      f"GIT_TERMINAL_PROMPT=0 git ls-remote {link}",
+			      f"GIT_TERMINAL_PROMPT=0 git ls-remote --symref {link} HEAD",
 			      stdout=asyncio.subprocess.PIPE,
 			      stderr=asyncio.subprocess.STDOUT)
 			stdout, _sterr = await proc.communicate()
@@ -248,7 +248,7 @@ async def plugin_add_cmd(client, message):
 				out += f" [`FAIL`]\n`[!] → ` Could not find `{link}`"
 				return await msg.edit(out)
 			out += " [`OK`]"
-			branch = re.search(r"(?:.*)\tHEAD\n(?:.*)\trefs/heads/(?P<branch>.*)\n", res)["branch"]
+			branch = re.search(r"refs\/heads\/(?P<branch>[^\s]+)(?:\s+)HEAD", res)["branch"]
 
 		out += "\n` → ` Fetching source code"
 		await msg.edit(out)
