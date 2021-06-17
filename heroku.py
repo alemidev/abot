@@ -145,7 +145,7 @@ if __name__ == "__main__":
 
 	logger.info(str(os.listdir()))
 
-	proc = subprocess.popen(
+	proc = subprocess.Popen(
 			[sys.executable, os.getcwd() + '/bot.py'],
 			stdout=sys.stdout, stderr=sys.stderr
 	)
