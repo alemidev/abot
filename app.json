@@ -29,8 +29,24 @@
             "description": "A list of plugins you want to use, separated by commas",
             "required": false
     },
-	"CONFIG": {
-            "description": "You can write your config.ini file here as you would for launching the bot. No need to specify API_ID or API_HASH or plugin root.",
+	"SUPERUSERS": {
+			"description": "A list of ids of users allowed to fully use this bot. Self is always a superuser. Leave blank for noone except self.",
+			"required": false
+	},
+	"ALLOW_EVERYONE": {
+			"description": "Allow everyone to use bot public command. This effectively bypasses the permission system.",
+			"required": false
+	},
+	"ALLOW_PLUGINS": {
+			"description": "Allow superusers to install more plugins during execution, that won't persist across dyno reboots. Defaults to true.",
+			"required": false
+	},
+	"COMMAND_PREFIXES": {
+			"description": "Characters used to trigger bot commands. Defaults to './!'",
+			"required": false
+	},
+	"EXTRA_CONFIG": {
+            "description": "You can write additional config.ini sections here",
             "required": false
     }
   },
