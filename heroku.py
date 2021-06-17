@@ -143,6 +143,7 @@ if __name__ == "__main__":
 			install_plugin(p.strip())
 
 	logger.info(str(os.listdir()))
+	logger.info(__name__)
 
-	os.execv(__name__, ('bot.py',))
+	os.execv(__name__, (os.getcwd() + '/bot.py',))
 
