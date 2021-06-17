@@ -3,17 +3,22 @@
 """
 import re
 import os
-import sys
 import subprocess
 import logging
 
 logger = logging.getLogger("SETUP")
 
-from configparser import ConfigParser
-
-from util.text import cleartermcolor
-
-from plugins.core import split_url
+PLUGIN_HTTPS = re.compile(r"http(?:s|):\/\/(?:.*)\/(?P<author>[^ ]+)\/(?P<plugin>[^ \.]+)(?:\.git|)")
+PLUGIN_SSH = re.compile(r"git@(?:.*)\.(?:.*):(?P<author>[^ ]+)\/(?P<plugin>[^ \.]+)(?:\.git|)")
+def split_url(url):
+	match = PLUGIN_HTTPS.match(url)
+	if match:
+		return match["plugin"], match["author"]
+	match = PLUGIN_SSH.match(url)
+	if match:
+		return match["plugin"], match["author"]
+	author, plugin = url.split("/", 1)
+	return plugin, authorfrom configparser import ConfigParser
 
 def install_plugin(user_input):
 	try:
@@ -39,7 +44,7 @@ def install_plugin(user_input):
 		      stderr=subprocess.STDOUT,
 			  env=custom_env)
 		stdout, _sterr = proc.communicate()
-		res = cleartermcolor(stdout.decode())
+		res = stdout.decode()
 		logger.info(res)
 		if res.startswith(("ERROR", "fatal", "remote: Not Found")):
 			logger.error("Could not find %s", link)
@@ -58,7 +63,7 @@ def install_plugin(user_input):
 		  env=custom_env)
 
 		stdout, _sterr = proc.communicate()
-		res = cleartermcolor(stdout.decode())
+		res = stdout.decode()
 		logger.info(res)
 		if not res.startswith("Cloning"):
 			logger.error("Plugin %s/%s was wrongly uninstalled", author, plugin)
