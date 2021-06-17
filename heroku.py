@@ -92,13 +92,17 @@ if __name__ == "__main__":
 	env = os.environ.copy()
 	env["GIT_TERMINAL_PROMPT"] = "0"
 	
+	logger.info("Cloning main repo")
 	proc = subprocess.Popen(
 			["git", "clone", "https://github.com/alemidev/alemibot"],
 			stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env
 	)
+	stdout, _sterr = proc.communicate()
+	logger.info(stdout.decode())
 
 	os.chdir(os.getcwd() + "/alemibot")
 
+	logger.info("Preparing config file")
 	cfg = ConfigParser()
 	cfg["pyrogram"]["api_id"] = os.environ["API_ID"]
 	cfg["pyrogram"]["api_hash"] = os.environ["API_HASH"]
@@ -116,8 +120,12 @@ if __name__ == "__main__":
 		with open("config.ini", "a") as f:
 			f.write('\n' + os.environ.get("EXTRA_CONFIG"))
 
+	logger.info("Installing preloaded plugins")
+
 	if os.environ.get("PLUGINS"):
 		for p in os.environ["PLUGINS"].split(","):
 			install_plugin(p.strip())
+
+	logger.info("Starting process")
 
 	os.execv("python", os.getcwd() + "/" + bot.py)
