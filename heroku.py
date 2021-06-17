@@ -97,7 +97,7 @@ if __name__ == "__main__":
 			stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env
 	)
 
-	os.chdir("alemibot")
+	os.chdir(os.getcwd() + "/alemibot")
 
 	cfg = ConfigParser()
 	cfg["pyrogram"]["api_id"] = os.environ["API_ID"]
