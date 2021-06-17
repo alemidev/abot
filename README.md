@@ -23,6 +23,17 @@ Each plugin must be a repository itself which can be installed in the `plugins` 
 Your plugin should import its files as `import plugins.<yourplugin>.<...>`. This means that if you need to have custom classes, you cannot have dashes (`-`) in your plugin name. Thinking about solutions... On the flip side, you can always access utils
 
 # How to deploy
+## Heroku
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/alemidev/alemibot/tree/heroku)
+
+You can use [this](https://replit.com/@dashezup/generate-pyrogram-session-string) or [this](https://alemi.dev/pyrosess) (very wip!) to make a session string
+
+Get your API\_ID and API\_HASH on [my.telegram.org](https://my.telegram.org/) or fetch sample ones
+
+All other arguments are optional.
+Hit deploy, wait for heroku to build your dyno and enable the worker in `Resources` (top bar)
+
+## Self-hosted
 You just need Python 3.7+ and a PC always on to run this. More dependancies will depend on modules.
 It is strongly recommended to install this on a UNIX system. If you plan to install on Windows, 
 [I recommend installing alemibot inside a WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
@@ -33,7 +44,7 @@ It is strongly recommended to install this on a UNIX system. If you plan to inst
 * Edit the `config.ini` file with your API hash and ID (visit https://my.telegram.org/)
 * Run bot : `python bot.py`. First time it will request your phone number and a verification code.
 
-## config file
+# config file
 Only required fields are `api_id` and `api_hash`. There is an example config file (`config.ini.example`) where you just need to fill `api_id` and `api_hash`. (remember to rename it in just `config.ini`!)
 
 ```ini
