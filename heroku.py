@@ -6,6 +6,8 @@ import os
 import subprocess
 import logging
 
+from configparser import ConfigParser
+
 logger = logging.getLogger("SETUP")
 
 PLUGIN_HTTPS = re.compile(r"http(?:s|):\/\/(?:.*)\/(?P<author>[^ ]+)\/(?P<plugin>[^ \.]+)(?:\.git|)")
@@ -18,7 +20,7 @@ def split_url(url):
 	if match:
 		return match["plugin"], match["author"]
 	author, plugin = url.split("/", 1)
-	return plugin, authorfrom configparser import ConfigParser
+	return plugin, author
 
 def install_plugin(user_input):
 	try:
