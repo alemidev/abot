@@ -111,7 +111,7 @@ if __name__ == "__main__":
 	stdout, _sterr = proc.communicate()
 	logger.info(stdout.decode())
 
-	os.chdir(os.getcwd() + "/alemibot")
+	os.chdir("alemibot")
 
 	logger.info("Preparing config file")
 	cfg = ConfigParser()
@@ -143,4 +143,4 @@ if __name__ == "__main__":
 
 	logger.info("Starting process")
 
-	os.execv("python", (os.getcwd() + "/bot.py", ))
+	os.execv("python", ("bot.py",))
