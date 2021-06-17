@@ -89,13 +89,14 @@ def install_plugin(user_input):
 
 if __name__ == "__main__":
 	# setup logging early on
-	logger = logging.getLogger("SETUP")
+	logger = logging.getLogger()
 	logger.setLevel(logging.INFO)
 	# create console handler with a higher log level
 	ch = logging.StreamHandler()
 	ch.setLevel(logging.INFO)
 	# create formatter and add it to the handlers
 	print_formatter = logging.Formatter("> %(message)s")
+	fh.setFormatter(file_formatter)
 	ch.setFormatter(print_formatter)
 	# add the handlers to the logger
 	logger.addHandler(ch)
@@ -112,6 +113,12 @@ if __name__ == "__main__":
 	logger.info(stdout.decode())
 
 	os.chdir("alemibot")
+
+	# create file handler
+	fh = RotatingFileHandler('data/debug.log', maxBytes=1048576, backupCount=5) # 1MB files
+	fh.setLevel(logging.INFO)
+	file_formatter = logging.Formatter("[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s", "%b %d %Y %H:%M:%S")
+	logger.addHandler(fh)
 
 	logger.info("Preparing config file")
 	cfg = ConfigParser()
@@ -141,6 +148,9 @@ if __name__ == "__main__":
 		for p in os.environ["PLUGINS"].split(","):
 			install_plugin(p.strip())
 
-	logger.info("Starting process")
 
-	os.execv("python", ("bot.py",))
+	from bot import alemiBot
+
+	app = alemiBot("alemibot")
+	app.run()
+
