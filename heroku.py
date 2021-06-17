@@ -104,14 +104,18 @@ if __name__ == "__main__":
 
 	logger.info("Preparing config file")
 	cfg = ConfigParser()
-	cfg["pyrogram"]["api_id"] = os.environ["API_ID"]
-	cfg["pyrogram"]["api_hash"] = os.environ["API_HASH"]
-	cfg["plugins"]["root"] = "plugins"
-	cfg["perms"]["sudo"] = os.environ.get("SUPERUSERS") or 0
-	cfg["perms"]["public"] = bool(os.environ.get("ALLOW_EVERYONE"))
-	cfg["perms"]["allowPlugins"] = os.environ.get("ALLOW_PLUGINS") or True
-	cfg["customization"]["prefixes"] = os.environ.get("COMMAND_PREFIXES") or "./!"
-	cfg["customization"]["useSsh"] = False
+	cfg.add_section("pyrogram")
+	cfg.set("pyrogram", "api_id", os.environ["API_ID"])
+	cfg.set("pyrogram", "api_hash", os.environ["API_HASH"])
+	cfg.add_section("plugins")
+	cfg.set("plugins", "root", "plugins")
+	cfg.add_section("perms")
+	cfg.set("perms", "sudo", os.environ.get("SUPERUSERS") or 0)
+	cfg.set("perms", "public", bool(os.environ.get("ALLOW_EVERYONE")))
+	cfg.set("perms", "allowPlugins", os.environ.get("ALLOW_PLUGINS") or True)
+	cfg.add_section("customization")
+	cfg.set("customization", "prefixes", os.environ.get("COMMAND_PREFIXES") or "./!")
+	cfg.set("customization", "useSsh", False)
 
 	with open("config.ini", "w") as f:
 		cfg.write(f)
