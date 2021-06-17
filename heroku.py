@@ -143,4 +143,4 @@ if __name__ == "__main__":
 
 	logger.info("Starting process")
 
-	os.execv("python", os.getcwd() + "/bot.py")
+	os.execv("python", (os.getcwd() + "/bot.py"))
