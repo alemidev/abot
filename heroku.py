@@ -114,13 +114,6 @@ if __name__ == "__main__":
 
 	os.chdir("alemibot")
 
-	# create file handler
-	fh = RotatingFileHandler('data/debug.log', maxBytes=1048576, backupCount=5) # 1MB files
-	fh.setLevel(logging.INFO)
-	file_formatter = logging.Formatter("[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s", "%b %d %Y %H:%M:%S")
-	fh.setFormatter(file_formatter)
-	logger.addHandler(fh)
-
 	logger.info("Preparing config file")
 	cfg = ConfigParser()
 	cfg.add_section("pyrogram")
@@ -149,9 +142,7 @@ if __name__ == "__main__":
 		for p in os.environ["PLUGINS"].split(","):
 			install_plugin(p.strip())
 
+	logger.info(str(os.listdir()))
 
-	from bot import alemiBot
-
-	app = alemiBot("alemibot")
-	app.run()
+	os.execv(__name__, ('bot.py',))
 
