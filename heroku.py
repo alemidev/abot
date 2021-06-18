@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 """
+This script will deploy and run alemiBot on Heroku.
+It will first clone the main repo and move inside, then setup any preloaded plugin.
+It will require a session string to work, since you cannot interact with terminal on heroku.
 """
 import re
 import os
 import sys
+import signal
 import subprocess
 import logging
-from logging.handlers import RotatingFileHandler
 
 from configparser import ConfigParser
 
@@ -14,6 +17,7 @@ from configparser import ConfigParser
 PLUGIN_HTTPS = re.compile(r"http(?:s|):\/\/(?:.*)\/(?P<author>[^ ]+)\/(?P<plugin>[^ \.]+)(?:\.git|)")
 PLUGIN_SSH = re.compile(r"git@(?:.*)\.(?:.*):(?P<author>[^ ]+)\/(?P<plugin>[^ \.]+)(?:\.git|)")
 def split_url(url):
+	"""get author/plugin from a repo url"""
 	match = PLUGIN_HTTPS.match(url)
 	if match:
 		return match["plugin"], match["author"]
@@ -24,6 +28,7 @@ def split_url(url):
 	return plugin, author
 
 def install_plugin(user_input):
+	"""try to install a plugin as submodule from either an url or author/repo:branch"""
 	try:
 		force_branch = None
 		plugin, author = split_url(user_input) # clear url or stuff around
@@ -85,7 +90,7 @@ def install_plugin(user_input):
 				stderr=subprocess.STDOUT)
 			stdout, _stderr = proc.communicate()
 			logger.info(stdout.decode())
-	except Exception as e:
+	except Exception:
 		logger.exception("Error while installing plugin")
 		return
 
@@ -143,11 +148,20 @@ if __name__ == "__main__":
 		for p in os.environ["PLUGINS"].split(","):
 			install_plugin(p.strip())
 
-	logger.info(str(os.listdir()))
+	logger.info("Starting bot subprocess")
 
 	proc = subprocess.Popen(
 			[sys.executable, os.getcwd() + '/bot.py', os.environ["SESSION_STRING"]],
 			stdout=sys.stdout, stderr=sys.stderr
 	)
-	proc.communicate()
 
+	def stop_bot():
+		"""will sigint bot subprocess"""
+		logger.info("Received SIGTERM, stopping bot subprocess")
+		os.kill(proc.pid, signal.SIGINT)
+
+	signal.signal(signal.SIGTERM, stop_bot)
+
+	proc.wait()
+	
+	logger.info("Worker exiting")
