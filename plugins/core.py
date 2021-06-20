@@ -105,7 +105,7 @@ async def info_cmd(client, message):
 	await edit_or_reply(message,
 		f'<code>→ </code> <a href="https://github.com/alemidev/alemibot">ᚨᛚᛖᛗᛁᛒᛟᛏ</a> <code>v{client.app_version}</code>\n' +
 		f"<code> → </code> <b>uptime</b> <code>{str(datetime.now() - client.start_time)}</code>\n" +
-		f"<code>  → </code> <b>session age</b> <code>{str(session_age)}</code>\n" if not client.me.is_bot else "" +
+		(f"<code>  → </code> <b>session age</b> <code>{str(session_age)}</code>\n" if not client.me.is_bot else "") +
 		f"<code> → </code> <b>latency</b> <code>{latency:.1f} ms</code>\n" +
 		f"<code> → </code> <b>plugins</b> <code>{plugin_count}</code>\n" +
 		f"<code>→ </code> <b>system</b> <code>{platform.system()}-{platform.machine()} {platform.release()}</code>\n" +
