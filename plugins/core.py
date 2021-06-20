@@ -1,23 +1,28 @@
 import asyncio
 import time
 import logging
+import platform
 import io
 import os
+import sys
 import re
 import json
 from datetime import datetime
+
+import psutil
 
 from bot import alemiBot
 
 from pyrogram import filters
 from pyrogram.errors import PeerIdInvalid
+from pyrogram.raw.functions.account import UpdateStatus
 
 from util.decorators import report_error, set_offline
 from util.permission import is_allowed, is_superuser, allow, disallow, list_allowed, check_superuser
 from util.command import filterCommand
 from util.message import edit_or_reply, is_me
 from util.getters import get_username
-from util.text import cleartermcolor
+from util.text import cleartermcolor, order_suffix
 from util.help import HelpCategory, CATEGORIES, ALIASES, get_all_short_text
 
 logger = logging.getLogger(__name__)
@@ -67,6 +72,46 @@ async def ping_cmd(client, message):
 	after = time.time()
 	latency = (after - before) * 1000
 	await msg.edit(f"` → ` a sunny day `({latency:.0f}ms)`")
+
+@HELP.add()
+@alemiBot.on_message(is_superuser & filterCommand(["info", "about", "flex"], list(alemiBot.prefixes)))
+@report_error(logger)
+@set_offline
+async def info_cmd(client, message):
+	"""info about project and client status
+
+	Will show current uptime, project version and system+load specs.
+	"""
+	before = time.time()
+	await client.send(UpdateStatus(offline=False))
+	after = time.time()
+	latency = (after - before) * 1000
+	self_proc = psutil.Process(os.getpid())
+	ram_usage = self_proc.memory_percent()
+	ram_load = psutil.virtual_memory().percent
+	total_ram = psutil.virtual_memory().total
+	cpu_usage = self_proc.cpu_percent()
+	cpu_load = psutil.cpu_percent()
+	cpu_count = psutil.cpu_count()
+	cpu_freq = max(psutil.cpu_freq().max, psutil.cpu_freq().current) # max might be 0 and current might be lower than max
+	with open(".gitmodules") as f: # not too nice but will do for now
+		plugin_count = f.read().count("[submodule")
+
+	session_creation_time = os.path.getctime("LICENSE") # nobody touches this file! longest living file in folder
+	session_age = str(datetime.now() - datetime.fromtimestamp(session_creation_time))
+	
+	await edit_or_reply(message,
+		f'<code>→ </code> <a href="https://github.com/alemidev/alemibot">ᚨᛚᛖᛗᛁᛒᛟᛏ</a> <code>v{client.app_version}</code>\n' +
+		f"<code> → </code> <b>uptime</b> <code>{str(datetime.now() - client.start_time)}</code>\n" +
+		f"<code>  → </code> <b>age</b> <code>{session_age}</code>\n" +
+		f"<code> → </code> <b>latency</b> <code>{latency:.1f} ms</code>\n" +
+		f"<code> → </code> <b>plugins</b> <code>{plugin_count}</code>\n" +
+		f"<code>→ </code> <b>system</b> <code>{platform.system()}-{platform.machine()} {platform.release()}</code>\n" +
+		f"<code> → </code> <b>cpu load [{cpu_count}@{cpu_freq/1000:.1f}GHz]</b> <code>{cpu_usage:.2f}%</code> (<code>{cpu_load:.2f}%</code> system)\n" +
+		f"<code> → </code> <b>mem use [{order_suffix(total_ram)}]</b> <code>{ram_usage:.2f}%</code> (<code>{ram_load:.2f}%</code> system)\n" +
+		f"<code>→ </code> <b>python</b> <code>{platform.python_version()}</code>\n",
+		parse_mode="html", disable_web_page_preview=True
+	)
 
 @HELP.add()
 @alemiBot.on_message(is_superuser & filterCommand("update", list(alemiBot.prefixes), flags=["-force"]))
