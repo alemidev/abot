@@ -98,13 +98,14 @@ async def info_cmd(client, message):
 	with open(".gitmodules") as f: # not too nice but will do for now
 		plugin_count = f.read().count("[submodule")
 	
-	sess = list(filter(lambda x : x.current , (await client.send(GetAuthorizations())).authorizations))[0]
-	session_age = datetime.now() - datetime.utcfromtimestamp(sess.date_created)
+	if not client.me.is_bot:
+		sess = list(filter(lambda x : x.current , (await client.send(GetAuthorizations())).authorizations))[0]
+		session_age = datetime.now() - datetime.utcfromtimestamp(sess.date_created)
 	
 	await edit_or_reply(message,
 		f'<code>→ </code> <a href="https://github.com/alemidev/alemibot">ᚨᛚᛖᛗᛁᛒᛟᛏ</a> <code>v{client.app_version}</code>\n' +
 		f"<code> → </code> <b>uptime</b> <code>{str(datetime.now() - client.start_time)}</code>\n" +
-		f"<code>  → </code> <b>session age</b> <code>{str(session_age)}</code>\n" +
+		f"<code>  → </code> <b>session age</b> <code>{str(session_age)}</code>\n" if not client.me.is_bot else "" +
 		f"<code> → </code> <b>latency</b> <code>{latency:.1f} ms</code>\n" +
 		f"<code> → </code> <b>plugins</b> <code>{plugin_count}</code>\n" +
 		f"<code>→ </code> <b>system</b> <code>{platform.system()}-{platform.machine()} {platform.release()}</code>\n" +
