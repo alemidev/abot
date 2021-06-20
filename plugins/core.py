@@ -109,7 +109,7 @@ async def info_cmd(client, message):
 		f"<code> → </code> <b>latency</b> <code>{latency:.1f} ms</code>\n" +
 		f"<code> → </code> <b>plugins</b> <code>{plugin_count}</code>\n" +
 		f"<code>→ </code> <b>system</b> <code>{platform.system()}-{platform.machine()} {platform.release()}</code>\n" +
-		f"<code> → </code> <b>cpu [</b><code>{cpu_count}x{cpu_freq/1000:.1f}GHz</code><b>] load</b> <code>{cpu_usage:.2f}%</code> (<code>{cpu_load:.2f}%</code> system)\n" +
+		f"<code> → </code> <b>cpu [</b><code>{cpu_count}x {cpu_freq/1000:.1f}GHz</code><b>] load</b> <code>{cpu_usage:.2f}%</code> (<code>{cpu_load:.2f}%</code> system)\n" +
 		f"<code> → </code> <b>mem [</b><code>{order_suffix(total_ram)}</code><b>] use</b> <code>{ram_usage:.2f}%</code> (<code>{ram_load:.2f}%</code> system)\n" +
 		f"<code>→ </code> <b>python</b> <code>{platform.python_version()}</code>\n",
 		parse_mode="html", disable_web_page_preview=True
