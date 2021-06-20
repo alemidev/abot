@@ -15,7 +15,8 @@ from bot import alemiBot
 
 from pyrogram import filters
 from pyrogram.errors import PeerIdInvalid
-from pyrogram.raw.functions.account import UpdateStatus, GetAuthorizations
+from pyrogram.raw.functions.account import GetAuthorizations
+from pyrogram.raw.functions import Ping
 
 from util.decorators import report_error, set_offline
 from util.permission import is_allowed, is_superuser, allow, disallow, list_allowed, check_superuser
@@ -83,7 +84,7 @@ async def info_cmd(client, message):
 	Will show current uptime, project version and system+load specs.
 	"""
 	before = time.time()
-	await client.send(UpdateStatus(offline=False))
+	await client.send(Ping(ping_id=69))
 	after = time.time()
 	latency = (after - before) * 1000
 	self_proc = psutil.Process(os.getpid())
