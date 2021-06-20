@@ -11,10 +11,17 @@ def get_text(msg:Message, raw:bool = False, html:bool = False):
 	if hasattr(msg, "caption") and msg.caption:
 		if not raw:
 			if html and hasattr(msg.caption, "html"):
-				return msg.text.html
+				return msg.caption.html
 			if not html and hasattr(msg.caption, "markdown"):
 				return msg.caption.markdown
 		return msg.caption
+	if hasattr(msg, "query") and msg.query:
+		if not raw:
+			if html and hasattr(msg.query, "html"):
+				return msg.query.html
+			if not html and hasattr(msg.query, "markdown"):
+				return msg.query.markdown
+		return msg.query
 	if raw:
 		return None
 	return ""
