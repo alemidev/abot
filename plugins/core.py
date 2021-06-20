@@ -69,10 +69,10 @@ async def ping_cmd(client, message):
 	The ping command
 	"""
 	before = time.time()
-	msg = await edit_or_reply(message, "` → ` a sunny day")
+	await client.send(Ping(ping_id=69))
 	after = time.time()
 	latency = (after - before) * 1000
-	await msg.edit(f"` → ` a sunny day `({latency:.0f}ms)`")
+	await edit_or_reply(message, f"` → ` a sunny day (`{latency:.1f}` ms)")
 
 @HELP.add()
 @alemiBot.on_message(is_superuser & filterCommand(["info", "about", "flex"], list(alemiBot.prefixes)))
