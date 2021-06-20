@@ -72,7 +72,8 @@ async def ping_cmd(client, message):
 	await client.send(Ping(ping_id=69))
 	after = time.time()
 	latency = (after - before) * 1000
-	await edit_or_reply(message, f"` → ` a sunny day (`{latency:.1f}` ms)")
+	answer = "a sunny day" if message.command.base == "asd" else "pong"
+	await edit_or_reply(message, f"` → ` {answer} (`{latency:.1f}` ms)")
 
 @HELP.add()
 @alemiBot.on_message(is_superuser & filterCommand(["info", "about", "flex"], list(alemiBot.prefixes)))
