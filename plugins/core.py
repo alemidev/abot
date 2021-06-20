@@ -15,7 +15,7 @@ from bot import alemiBot
 
 from pyrogram import filters
 from pyrogram.errors import PeerIdInvalid
-from pyrogram.raw.functions.account import UpdateStatus
+from pyrogram.raw.functions.account import UpdateStatus, GetAuthorizations
 
 from util.decorators import report_error, set_offline
 from util.permission import is_allowed, is_superuser, allow, disallow, list_allowed, check_superuser
@@ -96,14 +96,14 @@ async def info_cmd(client, message):
 	cpu_freq = max(psutil.cpu_freq().max, psutil.cpu_freq().current) # max might be 0 and current might be lower than max
 	with open(".gitmodules") as f: # not too nice but will do for now
 		plugin_count = f.read().count("[submodule")
-
-	session_creation_time = os.path.getctime("LICENSE") # nobody touches this file! longest living file in folder
-	session_age = str(datetime.now() - datetime.fromtimestamp(session_creation_time))
+	
+	sess = list(filter(lambda x : x.current , (await client.send(GetAuthorizations())).authorizations))[0]
+	session_age = datetime.now() - datetime.utcfromtimestamp(sess.date_created)
 	
 	await edit_or_reply(message,
 		f'<code>→ </code> <a href="https://github.com/alemidev/alemibot">ᚨᛚᛖᛗᛁᛒᛟᛏ</a> <code>v{client.app_version}</code>\n' +
 		f"<code> → </code> <b>uptime</b> <code>{str(datetime.now() - client.start_time)}</code>\n" +
-		f"<code>  → </code> <b>age</b> <code>{session_age}</code>\n" +
+		f"<code>  → </code> <b>session age</b> <code>{str(session_age)}</code>\n" +
 		f"<code> → </code> <b>latency</b> <code>{latency:.1f} ms</code>\n" +
 		f"<code> → </code> <b>plugins</b> <code>{plugin_count}</code>\n" +
 		f"<code>→ </code> <b>system</b> <code>{platform.system()}-{platform.machine()} {platform.release()}</code>\n" +
