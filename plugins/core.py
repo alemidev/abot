@@ -2,6 +2,7 @@ import asyncio
 import time
 import logging
 import platform
+import resource
 import io
 import os
 import sys
@@ -82,7 +83,14 @@ async def ping_cmd(client, message):
 async def info_cmd(client, message):
 	"""info about project and client status
 
-	Will show current uptime, project version and system+load specs.
+	Will show project version+link, current uptime, session age (for users), latency, plugins count and system+load specs.
+	The project version is composed as   v `release` - `commit_hash`   , to identify down to the single commit executing code.
+	Hardware specs might not be super accurate, especially on virtualized hosts.
+	Process CPU usage is calculated as `CPU_TIME / EXECUTION_TIME`. cpu_time includes both user mode and kernel mode.
+	CPU usage is thus an average usage across the entirety of the process execution.
+	CPU usage will count both main process and any child (still executing or terminated).
+	System total CPU usage instead is calculated as a delta since last call. It is a hardly significant value since it fluctuates a lot.
+	RAM total and used is calculated appropriately both for process and for system.
 	"""
 	before = time.time()
 	await client.send(Ping(ping_id=69))
@@ -92,8 +100,14 @@ async def info_cmd(client, message):
 	ram_usage = self_proc.memory_percent()
 	ram_load = psutil.virtual_memory().percent
 	total_ram = psutil.virtual_memory().total
-	cpu_usage = self_proc.cpu_percent()
-	cpu_load = psutil.cpu_percent()
+	# cpu_usage = self_proc.cpu_percent() # getting it like this always returns 0
+	# 									  # let's instead calculate CPU usage as cpu_time/execution_time
+	execution_time = (datetime.now() - client.start_time).total_seconds()
+	res_self = resource.getrusage(resource.RUSAGE_SELF)
+	res_child = resource.getrusage(resource.RUSAGE_CHILDREN)
+	cpu_time = res_self.ru_utime + res_child.ru_utime + res_self.ru_stime + res_child.ru_stime
+	cpu_usage = cpu_time / execution_time
+	cpu_load = psutil.cpu_percent() # total
 	cpu_count = psutil.cpu_count()
 	cpu_freq = max(psutil.cpu_freq().max, psutil.cpu_freq().current) # max might be 0 and current might be lower than max
 	with open(".gitmodules") as f: # not too nice but will do for now
