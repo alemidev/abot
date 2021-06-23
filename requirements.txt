@@ -1,2 +1,1 @@
 https://github.com/alemidev/pyrogram/archive/master.zip
-setproctitle

@@ -120,6 +120,14 @@ if __name__ == "__main__":
 
 	os.chdir("alemibot")
 
+	logger.info("Installing dependancies")
+	proc = subprocess.Popen(
+			["pip", "install", "-r", "requirements.txt"],
+			stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+	)
+	stdout, _sterr = proc.communicate()
+	logger.info(stdout.decode())
+
 	logger.info("Preparing config file")
 	cfg = ConfigParser()
 	cfg.add_section("pyrogram")
@@ -155,7 +163,7 @@ if __name__ == "__main__":
 			stdout=sys.stdout, stderr=sys.stderr
 	)
 
-	def stop_bot():
+	def stop_bot(signum, frame):
 		"""will sigint bot subprocess"""
 		logger.info("Received SIGTERM, stopping bot subprocess")
 		os.kill(proc.pid, signal.SIGINT)
