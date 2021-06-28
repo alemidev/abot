@@ -47,7 +47,7 @@ def install_plugin(user_input):
 
 		logger.info("Checking branches")
 		proc = subprocess.Popen(
-		      ["git", "ls-remote", link],
+		      ["git", "ls-remote", "--symref", link, "HEAD"],
 		      stdout=subprocess.PIPE,
 		      stderr=subprocess.STDOUT,
 			  env=custom_env)
@@ -57,7 +57,7 @@ def install_plugin(user_input):
 		if res.startswith(("ERROR", "fatal", "remote: Not Found")):
 			logger.error("Could not find %s", link)
 			return
-		branch = re.search(r"(?:.*)\tHEAD\n(?:.*)\trefs/heads/(?P<branch>.*)\n", res)["branch"]
+		branch = re.search(r"refs\/heads\/(?P<branch>[^\s]+)(?:\s+)HEAD", res)["branch"]
 
 		if force_branch:
 			branch = force_branch
