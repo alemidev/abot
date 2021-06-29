@@ -23,12 +23,12 @@ class ProgressChatAction:
 	a method which will not send another chat action until cooldown expired.
 	Can be used as context manager.
 	"""
-	ACTIONS = {
+	ACTIONS = [
 		"typing", "upload_photo", "record_video", "upload_video",
 		"record_audio", "upload_audio", "upload_document", "find_location",
 		"record_video_note", "upload_video_note", "choose_contact",
 		"playing", "speaking", "cancel"
-	}
+	]
 	def __init__(
 			self,
 			client:Client,
@@ -41,7 +41,7 @@ class ProgressChatAction:
 		self.chat_id = chat_id
 		self.action = action
 		if random:
-			self.action = choice(self.ACTIONS - {"speaking", "cancel"})
+			self.action = choice(list(set(self.ACTIONS) - {"speaking", "cancel"}))
 		self.interval = interval
 		self._running = False
 		self.last = 0
