@@ -1,6 +1,10 @@
 import re
 import json
+import asyncio
 import logging
+from random import choice
+
+from typing import Union, Optional, List
 
 from time import time
 
@@ -13,17 +17,69 @@ from . import batchify
 from .getters import get_text
 
 class ProgressChatAction:
-	def __init__(self, client:Client, chat_id:int, action:str="upload_document", interval:float=4.75):
+	"""Helper class for ongoing chat actions.
+	Wraps information needed to send the chat action and provides either
+	the ability to run the task in background and stop it when done, or to call
+	a method which will not send another chat action until cooldown expired.
+	Can be used as context manager.
+	"""
+	ACTIONS = {
+		"typing", "upload_photo", "record_video", "upload_video",
+		"record_audio", "upload_audio", "upload_document", "find_location",
+		"record_video_note", "upload_video_note", "choose_contact",
+		"playing", "speaking", "cancel"
+	}
+	def __init__(
+			self,
+			client:Client,
+			chat_id:int,
+			action:str="upload_document",
+			random:bool=False,
+			interval:float=4.75
+	):
 		self.client = client
 		self.chat_id = chat_id
 		self.action = action
+		if random:
+			self.action = choice(self.ACTIONS - {"speaking", "cancel"})
 		self.interval = interval
+		self._running = False
 		self.last = 0
 
-	async def tick(self, *args, **kwargs): # so this can be used as progres callback
+	async def _tick_task(self):
+		while self._running:
+			self.last = time()
+			await asyncio.gather(
+					self.client.send_chat_action(self.chat_id, self.action),
+					asyncio.sleep(self.interval)
+			)
+
+	async def tick(self, *args, **kwargs): # args and kwargs so this can be used as progres callback for uploads
+		"""If <interval> time has passed since last chat action, update last time and send a chat action"""
 		if time() - self.last > self.interval:
 			await self.client.send_chat_action(self.chat_id, self.action)
 			self.last = time()
+
+	def run(self) -> bool:
+		"""Start a background task, sending a chat action every <interval> seconds.
+		Won't start a new task if one is running. Returns True if a new task was started.
+		"""
+		if self._running:
+			return False
+		self._running = True
+		asyncio.get_event_loop().create_task(self._tick_task())
+		return True
+
+	def stop(self):
+		"""Stop the background task"""
+		self._running = False
+
+	def __enter__(self):
+		self.run()
+		return self
+
+	def __exit__(self, exc_type, exc_value, traceback):
+		self.stop()
 
 
 def is_me(message):
