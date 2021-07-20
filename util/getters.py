@@ -33,25 +33,36 @@ def get_user(msg:Message):
 		return msg.sender_chat
 	return None
 
-def get_username(entity, mention=True):
+def get_username(entity, mention=True, log=False):
 	"""Get username of chat or user. If no username is available, will return
-	   user first_name (+last_name if present) or chat title. If mention is True
-	   and it's a user, will try to mention user with url when no username is available"""
+	   user first_name (+last_name if present) or chat title. If mention is True and target
+	   is mentionable, a mention will be returned (either with @ or with a tg deeplink).
+	   If log is True, the user_id will be included."""
 	if not entity:
 		return "[Anonymous]"
 	if hasattr(entity, 'username') and entity.username:
 		if mention:
-			return "@" + entity.username
+			if log:
+				return f"{entity.id}|@{entity.username}"
+			return f"@{entity.username}"
+		if log:
+			return f"{entity.id}|{entity.username}"
 		return entity.username
-	if mention and hasattr(entity, 'mention') and entity.mention:
+	if mention and not log and hasattr(entity, 'mention') and entity.mention:
 		return entity.mention
 	if hasattr(entity, 'first_name') and entity.first_name:
 		if hasattr(entity, 'last_name') and entity.last_name:
+			if log:
+				return f"{entity.id}|{entity.first_name} {entity.last_name}"
 			return f"{entity.first_name} {entity.last_name}"
+		if log:
+			return f"{entity.id}|{entity.first_name}"
 		return entity.first_name
 	if hasattr(entity, 'title') and entity.title:
+		if log:
+			return f"{entity.id}|{entity.title}"
 		return entity.title
-	return "UNKNOWN"
+	return str(entity.id)
 
 def get_channel(chat):
 	if chat.title is None:

@@ -16,7 +16,7 @@ def report_error(lgr):
 	def deco(func):
 		@functools.wraps(func)
 		async def wrapper(client, message, *args, **kwargs):
-			author = get_username(get_user(message))
+			author = get_username(get_user(message), log=True)
 			try:
 				lgr.info("[%s] running '%s'", author, func.__name__)
 				await func(client, message, *args, **kwargs)
