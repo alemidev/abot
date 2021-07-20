@@ -1,5 +1,6 @@
 import functools
 
+from pyrogram.errors import ChatWriteForbidden, FloodWait
 from pyrogram.raw.functions.account import UpdateStatus
 
 from util.message import edit_or_reply
@@ -15,11 +16,19 @@ def report_error(lgr):
 	def deco(func):
 		@functools.wraps(func)
 		async def wrapper(client, message, *args, **kwargs):
+			author = get_username(get_user(message))
 			try:
-				lgr.info("[%s] running '%s'", get_username(get_user(message)), func.__name__)
+				lgr.info("[%s] running '%s'", author, func.__name__)
 				await func(client, message, *args, **kwargs)
+			except FloodWait as e:
+				lgr.error("[%s] FloodWait too long (%d s), aborting", author, e.x)
+			except ChatWriteForbidden as e:
+				try: # It may come from another chat, still try to report it
+					await edit_or_reply(message, "`[!] → ` " + str(e))
+				except ChatWriteForbidden: # Can't write messages here, prevent the double stacktrace
+					lgr.error("[%s] Cannot send messages in this chat", author)
 			except Exception as e:
-				lgr.exception("exception in '%s' started by '%s'", func.__name__, get_text(message))
+				lgr.exception("[%s] exception in '%s' started by '%s'", author, func.__name__, get_text(message))
 				await edit_or_reply(message, "`[!] → ` " + str(e))
 		return wrapper
 	return deco
