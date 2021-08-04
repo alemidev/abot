@@ -99,8 +99,11 @@ async def edit_or_reply(message, text, separator="\n", nomentions=False, *args, 
 			return await message.edit(get_text(message, **opts) + separator + text, *args, **kwargs)
 	else:
 		ret = None
-		fragments = batchify(get_text(message, **opts) + separator + text, 4090)
-		ret = await message.edit(fragments.pop(0), *args, **kwargs)
+		if is_me(message):
+			fragments = batchify(get_text(message, **opts) + separator + text, 4090)
+			ret = await message.edit(fragments.pop(0), *args, **kwargs)
+		else:
+			fragments = batchify(text, 4090)
 		for m in fragments:
 			if nomentions: # Edit the message so that it won't mention anyone
 				ret = await message.reply("[placeholder]", *args, **kwargs)
