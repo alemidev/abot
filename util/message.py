@@ -86,7 +86,7 @@ def is_me(message):
 	return message.outgoing or (message.from_user is not None 
 		and message.from_user.is_self and message.via_bot is None) # can't edit messages from inline bots
 
-async def edit_or_reply(message, text, separator="\n", *args, **kwargs):
+async def edit_or_reply(message, text, separator="\n", nomentions=False, *args, **kwargs):
 	if len(text.strip()) == 0:
 		return message
 	opts = {}
@@ -99,8 +99,14 @@ async def edit_or_reply(message, text, separator="\n", *args, **kwargs):
 			return await message.edit(get_text(message, **opts) + separator + text, *args, **kwargs)
 	else:
 		ret = None
-		for m in batchify(text, 4090):
-			ret = await message.reply(m, *args, **kwargs)
+		fragments = batchify(text, 4090)
+		ret = await message.edit(fragments.pop(0), *args, **kwargs)
+		for m in fragments:
+			if nomentions: # Edit the message so that it won't mention anyone
+				ret = await message.reply("[placeholder]", *args, **kwargs)
+				ret = await ret.edit(m, *args, **kwargs)
+			else:
+				ret = await message.reply(m, *args, **kwargs)
 		return ret
 
 async def send_media(client, chat_id, fname, **kwargs):
