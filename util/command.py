@@ -107,7 +107,12 @@ def filterCommand(commands: Union[str,List[str]], prefixes: Union[str,List[str]]
 
 	async def func(flt, client, message: Message):
 		if message.scheduled: # allow to trigger commands!
-			return False
+			return False # don't get triggered when the message is scheduled, only when it's sent! This allows scheduling actions
+
+		reply_to = message.reply_to_message
+		if reply_to and reply_to.reply_markup and isinstance(reply_to.reply_markup, ReplyKeyboardMarkup):
+			return False # don't get triggered by messages replying to a msg with ReplyKeyboard. This to prevent unwanted (and malicious!) command executions
+
 		text = message.text or message.caption
 		message.command = None
 
