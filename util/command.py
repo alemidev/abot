@@ -7,7 +7,7 @@ import re
 import json
 
 from typing import Dict, List, Union, Any
-from pyrogram.types import Message
+from pyrogram.types import Message, ReplyKeyboardMarkup
 from pyrogram.filters import create
 
 class ConsumableBuffer:
