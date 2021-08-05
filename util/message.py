@@ -89,28 +89,26 @@ def is_me(message):
 async def edit_or_reply(message, text, separator="\n", nomentions=False, *args, **kwargs):
 	if len(text.strip()) == 0:
 		return message
-	opts = {}
-	if "parse_mode" in kwargs: # needed to properly get previous message text
-		opts = {"raw": bool(kwargs["parse_mode"] is None), "html": bool(kwargs["parse_mode"] == "html")}
-	if is_me(message) and len((get_text(message, raw=True) or "") + text) < 4090:
-		if message.scheduled:
-			return await edit_scheduled(message._client, message, text, *args, **kwargs)
+
+	if is_me(message):
+		opts = {}
+		if "parse_mode" in kwargs: # needed to properly get previous message text
+			opts = {"raw": bool(kwargs["parse_mode"] is None), "html": bool(kwargs["parse_mode"] == "html")}
+		text = get_text(message, **opts) + separator + text
+
+	fragments = batchify(text, 4096)
+	ret = None
+
+	if is_me(message): # If I sent this message, edit it with the first fragment
+		ret = await message.edit(fragments.pop(0), *args, **kwargs)
+
+	for frag in fragments:
+		if nomentions: # Edit the message so that it won't mention anyone
+			ret = await message.reply("[placeholder]", *args, **kwargs)
+			ret = await ret.edit(frag, *args, **kwargs)
 		else:
-			return await message.edit(get_text(message, **opts) + separator + text, *args, **kwargs)
-	else:
-		ret = None
-		if is_me(message):
-			fragments = batchify(get_text(message, **opts) + separator + text, 4090)
-			ret = await message.edit(fragments.pop(0), *args, **kwargs)
-		else:
-			fragments = batchify(text, 4090)
-		for m in fragments:
-			if nomentions: # Edit the message so that it won't mention anyone
-				ret = await message.reply("[placeholder]", *args, **kwargs)
-				ret = await ret.edit(m, *args, **kwargs)
-			else:
-				ret = await message.reply(m, *args, **kwargs)
-		return ret
+			ret = await message.reply(frag, *args, **kwargs)
+	return ret
 
 async def send_media(client, chat_id, fname, **kwargs):
 	if fname.endswith((".jpg", ".jpeg", ".png")):
