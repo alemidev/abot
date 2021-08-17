@@ -19,13 +19,9 @@ class ColorFormatter(Formatter):
 		}
 
 	def format(self, record:LogRecord) -> str:
+		if record.exc_text: # jank way to color the stacktrace but will do for now
+			record.exc_text = colored(record.exc_text, color='grey', attrs=['bold'])
 		return self.formatters.get(record.levelno).format(record)
-
-	def formatException(self, exc_info) -> str:
-		return colored(super().formatException(exc_info), color='grey', attrs=['bold'])
-
-	def formatStack(self, stack_info) -> str:
-		return colored(super().formatStack(stack_info), color='grey', attrs=['bold'])
 
 def cleanhtml(raw_html):
 	cleanr = re.compile('<.*?>')
