@@ -11,7 +11,7 @@ class ColorFormatter(Formatter):
 		self.fmt : str = fmt
 		self.formatters : Dict[int, Formatter] = {
 			DEBUG: Formatter(colored(fmt, color='grey')),
-			INFO: Formatter(colored(fmt, color='white')),
+			INFO: Formatter(colored(fmt)),
 			WARNING: Formatter(colored(fmt, color='yellow')),
 			ERROR: Formatter(colored(fmt, color='red')),
 			CRITICAL: Formatter(colored(fmt, color='red', attrs=['bold'])),
