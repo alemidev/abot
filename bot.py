@@ -4,7 +4,6 @@ WOOOT a pyrogram rewrite im crazyyy
 """
 import os
 import sys
-import json
 import subprocess
 import logging
 from logging.handlers import RotatingFileHandler
@@ -17,6 +16,7 @@ from pyrogram import Client
 
 from util.getters import get_username
 from util.message import edit_restart_message
+from util.text import ColorFormatter
 
 class alemiBot(Client):
 	config = ConfigParser() # uggh doing it like this kinda
@@ -31,7 +31,8 @@ class alemiBot(Client):
 		super().__init__(
 			name,
 			workdir="./",
-			app_version="0.3",)
+			app_version="0.3",
+		)
 		self.start_time = datetime.now()
 		# Get current commit hash and append to app version
 		res = subprocess.run(["git", "rev-parse", "--short", "HEAD"],
@@ -71,13 +72,18 @@ if __name__ == "__main__":
 	ch.setLevel(logging.INFO)
 	# create formatter and add it to the handlers
 	file_formatter = logging.Formatter("[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s", "%b %d %Y %H:%M:%S")
-	print_formatter = logging.Formatter("> %(message)s")
+	# TODO better argparse
+	if any(x == "--no-color" for x in sys.argv):
+		print_formatter = logging.Formatter("> %(message)s")
+	else:
+		print_formatter = ColorFormatter("> %(message)s")
 	fh.setFormatter(file_formatter)
 	ch.setFormatter(print_formatter)
 	# add the handlers to the logger
 	logger.addHandler(fh)
 	logger.addHandler(ch)
 
+	# TODO better argparse
 	sess = sys.argv[1] if len(sys.argv) > 1 else "alemibot"
 	app = alemiBot(sess)
 

@@ -1,5 +1,24 @@
-import shutil
 import re
+import shutil
+
+from typing import Dict
+from logging import Formatter, LogRecord, DEBUG, INFO, WARNING, ERROR, CRITICAL
+
+from termcolor import colored
+
+class ColorFormatter(Formatter):
+	def __init__(self, fmt:str):
+		self.fmt : str = fmt
+		self.formatters : Dict[int, Formatter] = {
+			DEBUG: Formatter(colored(fmt, color='grey')),
+			INFO: Formatter(colored(fmt, color='white')),
+			WARNING: Formatter(colored(fmt, color='yellow')),
+			ERROR: Formatter(colored(fmt, color='red')),
+			CRITICAL: Formatter(colored(fmt, color='red', attrs=['bold'])),
+		}
+
+	def format(self, record:LogRecord) -> str:
+		return self.formatters.get(record.levelno).format(record)
 
 def cleanhtml(raw_html):
 	cleanr = re.compile('<.*?>')
