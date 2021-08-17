@@ -3,6 +3,7 @@ import shutil
 
 from typing import Dict
 from logging import Formatter, LogRecord, DEBUG, INFO, WARNING, ERROR, CRITICAL
+from traceback import format_exception
 
 from termcolor import colored
 
@@ -19,6 +20,9 @@ class ColorFormatter(Formatter):
 
 	def format(self, record:LogRecord) -> str:
 		return self.formatters.get(record.levelno).format(record)
+
+	def formatException(self, exc_info) -> str:
+		return colored(super().formatException(exc_info), color='grey', attrs=['bold'])
 
 def cleanhtml(raw_html):
 	cleanr = re.compile('<.*?>')
