@@ -24,6 +24,9 @@ class ColorFormatter(Formatter):
 	def formatException(self, exc_info) -> str:
 		return colored(super().formatException(exc_info), color='grey', attrs=['bold'])
 
+	def formatStack(self, stack_info) -> str:
+		return colored(super().formatStack(stack_info), color='grey', attrs=['bold'])
+
 def cleanhtml(raw_html):
 	cleanr = re.compile('<.*?>')
 	cleantext = re.sub(cleanr, '', raw_html)
