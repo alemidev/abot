@@ -32,6 +32,7 @@ class alemiBot(Client):
 			name,
 			workdir="./",
 			app_version="0.3",
+			sleep_threshold=int(alemiBot.config.get("pyrogram", "sleep_threshold", fallback="10")),
 		)
 		self.start_time = datetime.now()
 		# Get current commit hash and append to app version
