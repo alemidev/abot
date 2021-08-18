@@ -44,6 +44,8 @@ def get_username(entity, mention=True, log=False):
 		if mention:
 			if log:
 				return f"{entity.id}|@{entity.username}"
+			if hasattr(entity, 'title') and entity.title:
+				return f"<a href=https://t.me/{entity.username}>{entity.title}</a>"
 			return f"@{entity.username}"
 		if log:
 			return f"{entity.id}|{entity.username}"
@@ -61,6 +63,8 @@ def get_username(entity, mention=True, log=False):
 	if hasattr(entity, 'title') and entity.title:
 		if log:
 			return f"{entity.id}|{entity.title}"
+		if mention and hasattr(entity, 'invite_link') and entity.invite_link:
+			return f"<a href={entity.invite_link}>{entity.title}</a>"
 		return entity.title
 	return str(entity.id)
 
