@@ -10,7 +10,9 @@ from time import time
 
 from pyrogram.raw.functions.messages import DeleteScheduledMessages
 from pyrogram.raw.functions.messages import Search
-from pyrogram.raw.types import InputMessagesFilterEmpty, Message
+from pyrogram.raw.types.messages import MessagesSlice
+from pyrogram.raw.types import InputMessagesFilterEmpty
+from pyrogram.types import Message
 from pyrogram import Client
 
 from . import batchify
@@ -82,11 +84,15 @@ class ProgressChatAction:
 		self.stop()
 
 
-def is_me(message):
+def is_me(message:Message) -> bool:
 	return message.outgoing or (message.from_user is not None 
 		and message.from_user.is_self and message.via_bot is None) # can't edit messages from inline bots
 
-async def edit_or_reply(message, text, separator="\n", nomentions=False, *args, **kwargs):
+async def edit_or_reply(message:Message, text:str, separator:str="\n", nomentions:bool=False, *args, **kwargs) -> Message:
+	"""Will edit provided message if possible, appending provided text separated by given separator (default \\n).
+	If the message cannot be edited, reply to it instead.
+	If text is longer than 4096 characters, message will be split in subsequent replies.
+	Accepts any arg that you would pass to message.edit() or message.reply()"""
 	if len(text.strip()) == 0:
 		return message
 
@@ -110,7 +116,10 @@ async def edit_or_reply(message, text, separator="\n", nomentions=False, *args, 
 			ret = await message.reply(frag, *args, **kwargs)
 	return ret
 
-async def send_media(client, chat_id, fname, **kwargs):
+async def send_media(client:Client, chat_id:int, fname:str, **kwargs):
+	"""Will send a media accordingly: with proper method and with right chat_action.
+	Will accept any arg that is valid for client.send_photo/video/sticker/voice/document.
+	"caption" will be removed from kwargs if sending a sticker or an audio."""
 	if fname.endswith((".jpg", ".jpeg", ".png")):
 		prog = ProgressChatAction(client, chat_id, action="upload_photo")
 		await client.send_photo(chat_id, fname, progress=prog.tick, **kwargs)
@@ -130,7 +139,7 @@ async def send_media(client, chat_id, fname, **kwargs):
 		await client.send_document(chat_id, fname, progress=prog.tick, **kwargs)
 	await client.send_chat_action(chat_id, "cancel")
 
-def parse_media_type(msg:Message):
+def parse_media_type(msg:Message) -> Optional[str]:
 	media_types = [
 		"voice", "audio", "photo", "dice", "sticker", "animation", "game",
 		"video_note", "video", "contact", "location", "venue", "poll", "document",
@@ -168,7 +177,7 @@ def parse_sys_dict(msg):
 		events.append("game score")
 	return "SYS[ " + " | ".join(events) + " ]"
 
-async def edit_scheduled(client, message, text, *args, **kwargs): # Not really possible, we just delete and resend
+async def edit_scheduled(client:Client, message:Message, text:str, *args, **kwargs): # Not really possible, we just delete and resend
 	if message.reply_to_message:
 		kwargs["reply_to_message_id"] = message.reply_to_message.message_id
 	peer = await client.resolve_peer(message.chat.id)
@@ -176,8 +185,8 @@ async def edit_scheduled(client, message, text, *args, **kwargs): # Not really p
 	return await client.send_message(message.chat.id, message.text.markdown + "\n" + text, *args,
 										 schedule_date=message.date, **kwargs)
 
-async def count_messages(client, chat, user, offset=0, query=""):
-	messages = await client.send(
+async def count_messages(client:Client, chat:int, user:int, offset:int=0, query:str="") -> int:
+	messages : MessagesSlice = await client.send(
 				Search(
 					peer=await client.resolve_peer(chat),
 					from_id=await client.resolve_peer(user),
@@ -195,7 +204,7 @@ async def count_messages(client, chat, user, offset=0, query=""):
 			)
 	return messages.count
 
-async def edit_restart_message(client):
+async def edit_restart_message(client:Client):
 	try:
 		with open("data/lastmsg.json", "r") as f:
 			lastmsg = json.load(f)
