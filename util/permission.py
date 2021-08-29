@@ -16,7 +16,8 @@ def check_superuser(update):
 		return update.from_user.is_self or update.from_user.id in alemiBot.sudoers
 	elif hasattr(update, "sender_chat") and update.sender_chat:
 		return update.sender_chat.id in alemiBot.sudoers
-	raise NotImplementedError
+	logger.warning("Received entity with no sender \n\t%s", str(update).replace('\n', '\n\t'))
+	return False
 
 sudo = create(lambda _, __, upd : check_superuser(upd))
 is_superuser = sudo # backwards compatibility
