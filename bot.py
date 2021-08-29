@@ -17,6 +17,7 @@ from pyrogram import Client
 from util.getters import get_username
 from util.message import edit_restart_message
 from util.text import ColorFormatter
+from util.context import Context
 
 class alemiBot(Client):
 	config = ConfigParser() # uggh doing it like this kinda
@@ -35,6 +36,7 @@ class alemiBot(Client):
 			sleep_threshold=int(alemiBot.config.get("pyrogram", "sleep_threshold", fallback="10")),
 		)
 		self.start_time = datetime.now()
+		self.ctx = Context()
 		# Get current commit hash and append to app version
 		res = subprocess.run(["git", "rev-parse", "--short", "HEAD"],
 								stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
@@ -47,12 +49,12 @@ class alemiBot(Client):
 		if os.path.isfile("data/lastmsg.json"):
 			await edit_restart_message(self) # if bot was restarted by an update, add [OK]
 		logging.info("Bot started\n")
-		
+
 	async def stop(self, block=True):
 		buf = await super().stop(block)
 		logging.info("Bot stopped\n")
 		return buf
-	
+
 	async def restart(self):
 		await self.stop()
 		os.execv(__file__, sys.argv) # This will replace current process
