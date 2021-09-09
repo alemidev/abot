@@ -64,7 +64,7 @@ class ProgressChatAction:
 		self.last = 0
 
 	@_catch_errors
-	async def _tick_task(self):
+	async def _tick_task(self, *args, **kwargs):
 		while self._running:
 			self.last = time()
 			await asyncio.gather(
