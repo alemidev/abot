@@ -2,6 +2,7 @@ import re
 import json
 import asyncio
 import logging
+import functools
 from random import choice
 
 from typing import Union, Optional, List
@@ -14,9 +15,23 @@ from pyrogram.raw.types.messages import MessagesSlice
 from pyrogram.raw.types import InputMessagesFilterEmpty
 from pyrogram.types import Message
 from pyrogram import Client
+from pyrogram.errors import ChatWriteForbidden, FloodWait
 
 from . import batchify
 from .getters import get_text
+
+def _catch_errors(fun):
+	@functools.wraps(fun)
+	async def wrapper(*args, **kwargs):
+		try:
+			await fun(args, kwargs)
+		except FloodWait as e:
+			logging.error("FloodWait too long (%d s), aborting", e.x)
+		except ChatWriteForbidden as e:
+			logging.error("Cannot write in this chat")
+		except Exception as e:
+			logging.exception("ignoring exception in '%s'", fun.__name__)
+	return wrapper
 
 class ProgressChatAction:
 	"""Helper class for ongoing chat actions.
@@ -48,14 +63,16 @@ class ProgressChatAction:
 		self._running = False
 		self.last = 0
 
+	@_catch_errors
 	async def _tick_task(self):
 		while self._running:
 			self.last = time()
 			await asyncio.gather(
-					self.client.send_chat_action(self.chat_id, self.action),
-					asyncio.sleep(self.interval)
+				self.client.send_chat_action(self.chat_id, self.action),
+				asyncio.sleep(self.interval)
 			)
 
+	@_catch_errors
 	async def tick(self, *args, **kwargs): # args and kwargs so this can be used as progres callback for uploads
 		"""If <interval> time has passed since last chat action, update last time and send a chat action"""
 		if time() - self.last > self.interval:
