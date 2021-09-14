@@ -22,9 +22,9 @@ from .getters import get_text
 
 def _catch_errors(fun):
 	@functools.wraps(fun)
-	async def wrapper(*args, **kwargs):
+	async def wrapper(self, *args, **kwargs):
 		try:
-			await fun(args, kwargs)
+			await fun(self, args, kwargs)
 		except FloodWait as e:
 			logging.error("FloodWait too long (%d s), aborting", e.x)
 		except ChatWriteForbidden as e:
