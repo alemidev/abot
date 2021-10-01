@@ -27,6 +27,12 @@ def report_error(lgr):
 					await edit_or_reply(message, "`[!] → ` " + str(e))
 				except ChatWriteForbidden: # Can't write messages here, prevent the double stacktrace
 					lgr.error("[%s] Cannot send messages in this chat", author)
+			except ChatSendMediaForbidden as e:
+				try: # It may come from another chat, still try to report it
+					await edit_or_reply(message, "`[!] → ` cannot send media in this chat")
+					lgr.warning("[%s] Cannot send media in this chat", author)
+				except Exception:
+					lgr.exception("[%s] Cannot send media in this chat and failed to notify", author)
 			except Exception as e:
 				lgr.exception("[%s] exception in '%s' started by '%s'", author, func.__name__, get_text(message))
 				await edit_or_reply(message, "`[!] → ` " + str(e))
