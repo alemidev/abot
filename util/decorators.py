@@ -1,6 +1,6 @@
 import functools
 
-from pyrogram.errors import ChatWriteForbidden, FloodWait
+from pyrogram.errors import ChatWriteForbidden, FloodWait, ChatSendMediaForbidden
 from pyrogram.raw.functions.account import UpdateStatus
 
 from util.message import edit_or_reply
