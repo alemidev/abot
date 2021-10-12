@@ -32,7 +32,7 @@ class HelpCategory:
 	def __init__(self, title):
 		self.title = title.upper()
 		self.HELP_ENTRIES = {}
-		CATEGORIES[self.title] = self
+		CATEGORIES[self.title.upper()] = self
 
 	def add_help(self, title, shorttext, longtext, public=False, args=""):
 		h = HelpEntry(title, shorttext, longtext, public=public, args=args)
@@ -80,11 +80,11 @@ class HelpCategory:
 def get_all_short_text(pref, sudo=False):
 	out = ""
 	for k in CATEGORIES:
-		out += f"`━━┫ {k}`\n"
+		out += f"<code>━━┫ {k}</code>\n"
 		cat = CATEGORIES[k]
 		for cmd in cat.HELP_ENTRIES:
 			entry = cat.HELP_ENTRIES[cmd]
 			if not sudo and not entry.public:
 				continue
-			out += f"`→ {pref}{entry.title} ` {entry.shorttext}\n"
+			out += f"<code> → </code> <code>{pref}{entry.title} </code> {entry.shorttext}\n"
 	return out

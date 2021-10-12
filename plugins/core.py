@@ -1,3 +1,4 @@
+""" TODO split this shit up!!! """
 import asyncio
 import time
 import logging
@@ -8,6 +9,7 @@ import os
 import sys
 import re
 import json
+import html
 from datetime import datetime
 
 import psutil
@@ -31,8 +33,17 @@ logger = logging.getLogger(__name__)
 
 HELP = HelpCategory("CORE")
 
+_BASE_HELP_TEMPLATE = """
+<code> → </code> Pass an argument to browse a command documentation: <code>.help update</code>
+<code> → </code> List all available commands with <code>.help -l</code>
+<code>  → </code> Angle brackets represents a required argument. .count &lt;n&gt; must be invoked with a value, such as .count 5.
+<code>  → </code> Square brackets represent optional arguments. Text inside square brackets needs to appear literally, while variable input is shown as required arg.
+<code>   → </code> An optional flag will be .update [-force], and be invoked with .update -force.
+<code>   → </code> An option will be shown as .roll [-n &lt;n&gt;], and invoked with .roll -n 100.
+"""
+
 @HELP.add(cmd="[<cmd>]", sudo=False)
-@alemiBot.on_message(is_allowed & filterCommand(["help"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filterCommand(["help"], list(alemiBot.prefixes), flags=["-l", "--list"]))
 @report_error(logger)
 @set_offline
 async def help_cmd(client, message):
@@ -41,24 +52,32 @@ async def help_cmd(client, message):
 	Without args, will print all available commands.
 	Add a command (.help update) to get details on a specific command
 	"""
-	pref = alemiBot.prefixes[0]
-	if len(message.command) > 0:
+	if message.command["-l"] or message.command["--list"]:
+		pref = alemiBot.prefixes[0]
+		return await edit_or_reply(message,
+			f"<code>ᚨᛚᛖᛗᛁᛒᛟᛏ</code> v<b>{client.app_version}</b>\n" + 
+				get_all_short_text(pref, sudo=check_superuser(message)),
+			parse_mode="html"
+		)
+	elif len(message.command) > 0:
 		arg = message.command[0]
+		# if arg.upper() in CATEGORIES:
+			# TODO print all commands in a category
 		for k in CATEGORIES:
 			cat = CATEGORIES[k]
 			if arg in cat.HELP_ENTRIES:
 				e = cat.HELP_ENTRIES[arg]
-				return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode="markdown", disable_web_page_preview=True)
+				return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode="html", disable_web_page_preview=True)
 			elif arg in ALIASES and ALIASES[arg] in cat.HELP_ENTRIES:
 				e = cat.HELP_ENTRIES[ALIASES[arg]]
-				return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode="markdown", disable_web_page_preview=True)
-			# elif arg.lower() == k.lower():
-				# TODO print all commands in a category
-		return await edit_or_reply(message, f"`[!] → ` No command named `{arg}`")
-	await edit_or_reply(message, f"`ᚨᛚᛖᛗᛁᛒᛟᛏ v{client.app_version}`\n" +
-						get_all_short_text(pref, sudo=check_superuser(message)),
-						parse_mode="markdown",
-						disable_web_page_preview=True)
+				return await edit_or_reply(message, f"<code>→ {e.title} {e.args} </code>\n{e.longtext}", parse_mode="html", disable_web_page_preview=True)
+		return await edit_or_reply(message, f"<code>[!] → </code> No command named <code>{arg}</code>", parse_mode="html")
+	else:
+		return await edit_or_reply(message, html.escape(
+			alemiBot.config.get("customization", "desc", fallback="") + "\n" +
+			_BASE_HELP_TEMPLATE +
+			f"based on <code>ᚨᛚᛖᛗᛁᛒᛟᛏ</code> v<b>{client.app_version}</b>\n"
+		), parse_mode="html")
 
 @HELP.add(sudo=False)
 @alemiBot.on_message(is_allowed & filterCommand(["asd", "ping"], list(alemiBot.prefixes)))

@@ -8,5 +8,6 @@ allowPlugins = True
 [customization]
 prefixes = .!#
 useSsh = False
+desc = Hi this is my bot
 [plugins]
 root = plugins
