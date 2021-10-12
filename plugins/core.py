@@ -36,7 +36,8 @@ HELP = HelpCategory("CORE")
 _BASE_HELP_TEMPLATE = """
 <code> → </code> Read a command documentation: <code>{prefix}help update</code>
 <code> → </code> List all available commands with <code>{prefix}help -l</code>
-<code>  → </code> Angle brackets for required args: <code>{prefix}count &lt;n&gt;</code> (ex. <code>{prefix}count 5</code>).
+<code>  → </code> Angle brackets for required args:
+<code>   → </code> <code>{prefix}count &lt;n&gt;</code> (ex. <code>{prefix}count 5</code>).
 <code>  → </code> Square brackets for optional arguments:
 <code>   → </code> Flag :  <code>{prefix}update [-force]</code> (ex. <code>{prefix}update -force</code>).
 <code>   → </code> Option : <code>{prefix}roll [-n &lt;n&gt;]</code> (ex. <code>{prefix}roll -n 100</code>).
