@@ -86,5 +86,5 @@ def get_all_short_text(pref, sudo=False):
 			entry = cat.HELP_ENTRIES[cmd]
 			if not sudo and not entry.public:
 				continue
-			out += f"<code> → </code> <code>{pref}{entry.title} </code> {entry.shorttext}\n"
+			out += f"→ <code>{pref}{entry.title}</code> {entry.shorttext}\n"
 	return out
