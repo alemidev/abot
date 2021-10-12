@@ -73,11 +73,12 @@ async def help_cmd(client, message):
 				return await edit_or_reply(message, f"<code>→ {e.title} {e.args} </code>\n{e.longtext}", parse_mode="html", disable_web_page_preview=True)
 		return await edit_or_reply(message, f"<code>[!] → </code> No command named <code>{arg}</code>", parse_mode="html")
 	else:
-		return await edit_or_reply(message, html.escape(
+		return await edit_or_reply(message,
 			alemiBot.config.get("customization", "desc", fallback="") + "\n" +
 			_BASE_HELP_TEMPLATE +
-			f"based on <code>ᚨᛚᛖᛗᛁᛒᛟᛏ</code> v<b>{client.app_version}</b>\n"
-		), parse_mode="html")
+			f"based on <code>ᚨᛚᛖᛗᛁᛒᛟᛏ</code> v<b>{client.app_version}</b>\n",
+			parse_mode="html"
+		)
 
 @HELP.add(sudo=False)
 @alemiBot.on_message(is_allowed & filterCommand(["asd", "ping"], list(alemiBot.prefixes)))
