@@ -77,7 +77,7 @@ async def help_cmd(client, message):
 		if descr:
 			descr = f"<code> → </code> <i>{descr}</i>"
 		return await edit_or_reply(message,
-			descr + _BASE_HELP_TEMPLATE.format(pref) +
+			descr + _BASE_HELP_TEMPLATE.format(prefix=pref) +
 			f"based on <code>ᚨᛚᛖᛗᛁᛒᛟᛏ</code> v<b>{client.app_version}</b>\n",
 			parse_mode="html"
 		)
