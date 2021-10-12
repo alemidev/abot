@@ -34,12 +34,12 @@ logger = logging.getLogger(__name__)
 HELP = HelpCategory("CORE")
 
 _BASE_HELP_TEMPLATE = """
-<code> → </code> Pass an argument to browse a command documentation: <code>.help update</code>
-<code> → </code> List all available commands with <code>.help -l</code>
-<code>  → </code> Angle brackets represents a required argument. .count &lt;n&gt; must be invoked with a value, such as .count 5.
-<code>  → </code> Square brackets represent optional arguments. Text inside square brackets needs to appear literally, while variable input is shown as required arg.
-<code>   → </code> An optional flag will be .update [-force], and be invoked with .update -force.
-<code>   → </code> An option will be shown as .roll [-n &lt;n&gt;], and invoked with .roll -n 100.
+<code> → </code> Read a command documentation: <code>{prefix}help update</code>
+<code> → </code> List all available commands with <code>{prefix}help -l</code>
+<code>  → </code> Angle brackets for required args: <code>{prefix}count &lt;n&gt;</code> (ex. <code>{prefix}count 5</code>).
+<code>  → </code> Square brackets for optional arguments:
+<code>   → </code> Flag :  <code>{prefix}update [-force]</code> (ex. <code>{prefix}update -force</code>).
+<code>   → </code> Option : <code>{prefix}roll [-n &lt;n&gt;]</code> (ex. <code>{prefix}roll -n 100</code>).
 """
 
 @HELP.add(cmd="[<cmd>]", sudo=False)
@@ -52,8 +52,8 @@ async def help_cmd(client, message):
 	Without args, will print all available commands.
 	Add a command (.help update) to get details on a specific command
 	"""
+	pref = alemiBot.prefixes[0]
 	if message.command["-l"] or message.command["--list"]:
-		pref = alemiBot.prefixes[0]
 		return await edit_or_reply(message,
 			f"<code>ᚨᛚᛖᛗᛁᛒᛟᛏ</code> v<b>{client.app_version}</b>\n" + 
 				get_all_short_text(pref, sudo=check_superuser(message)),
@@ -73,9 +73,11 @@ async def help_cmd(client, message):
 				return await edit_or_reply(message, f"<code>→ {e.title} {e.args} </code>\n{e.longtext}", parse_mode="html", disable_web_page_preview=True)
 		return await edit_or_reply(message, f"<code>[!] → </code> No command named <code>{arg}</code>", parse_mode="html")
 	else:
+		descr = alemiBot.config.get("customization", "desc", fallback="")
+		if descr:
+			descr = f"<code> → </code> <i>{descr}</i>"
 		return await edit_or_reply(message,
-			alemiBot.config.get("customization", "desc", fallback="") + "\n" +
-			_BASE_HELP_TEMPLATE +
+			descr + _BASE_HELP_TEMPLATE.format(pref) +
 			f"based on <code>ᚨᛚᛖᛗᛁᛒᛟᛏ</code> v<b>{client.app_version}</b>\n",
 			parse_mode="html"
 		)
