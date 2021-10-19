@@ -39,7 +39,6 @@ _BASE_HELP_TEMPLATE = """
 <code>  → </code> Angle brackets represent user input:
 <code>   → </code> <code>{prefix}count &lt;n&gt;</code> (ex: <code>{prefix}count 5</code>).
 <code>  → </code> Square brackets for optional parameters:
-<code>   → </code> Argument :  <code>{prefix}query [<payload>]</code> (ex: <code>{prefix}query "abc"</code>).
 <code>   → </code> Flag :  <code>{prefix}update [-force]</code> (ex: <code>{prefix}update -force</code>).
 <code>   → </code> Option : <code>{prefix}roll [-n &lt;n&gt;]</code> (ex: <code>{prefix}roll -n 100</code>).
 <code>   → </code> Argument :  <code>{prefix}query [&lt;payload&gt;]</code> (ex: <code>{prefix}query "abc"</code>).
