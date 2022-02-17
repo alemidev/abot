@@ -74,6 +74,9 @@ class CommandMatch:
 			return self.options[name]
 		return default
 
+class _Message(Message):
+	"""This type wraps pyrogram default Message type to add our CommandMatch type"""
+	command : CommandMatch
 
 # TODO redo this as class maybe?
 def filterCommand(commands: Union[str,List[str]], prefixes: Optional[Union[str,List[str]]] = None,

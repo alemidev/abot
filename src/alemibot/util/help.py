@@ -44,7 +44,7 @@ class HelpCategory:
 			longtext:str = "",
 			cmd:str = "",
 			sudo:bool = True,
-		):
+		) -> Callable:
 		"""This decorator (factory) adds a help entry fetching title, aliases, args and
 		longtext from the filterCommand and the function docstring. It's kind of a botchy
 		method but I didn't want to overload pyrogram client decorators. This will only work

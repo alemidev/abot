@@ -12,7 +12,6 @@ from datetime import datetime
 import psutil
 
 from pyrogram import filters
-from pyrogram.types import Message
 from pyrogram.errors import PeerIdInvalid
 from pyrogram.raw.functions import Ping
 from pyrogram.raw.functions.account import GetAuthorizations
@@ -25,6 +24,7 @@ from alemibot.util import (
 )
 
 from alemibot.util.help import CATEGORIES, ALIASES, get_all_short_text
+from alemibot.util.command import _Message as Message
 
 logger = logging.getLogger(__name__)
 
@@ -51,11 +51,11 @@ async def help_cmd(client:alemiBot, message:Message):
 	Without args, will print all available commands.
 	Add a command (.help update) to get details on a specific command
 	"""
-	pref = alemiBot.prefixes[0]
+	pref = client.prefixes[0]
 	if message.command["-l"] or message.command["--list"]:
 		return await edit_or_reply(message,
 			f"<code>ᚨᛚᛖᛗᛁᛒᛟᛏ</code> v<b>{client.app_version}</b>\n" + 
-				get_all_short_text(pref, sudo=check_superuser(message)),
+				get_all_short_text(pref, sudo=sudo(client, message)),
 			parse_mode="html"
 		)
 	elif len(message.command) > 0:
@@ -72,7 +72,7 @@ async def help_cmd(client:alemiBot, message:Message):
 				return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode="markdown", disable_web_page_preview=True)
 		return await edit_or_reply(message, f"<code>[!] → </code> No command named <code>{arg}</code>", parse_mode="html")
 	else:
-		descr = alemiBot.config.get("customization", "desc", fallback="")
+		descr = client.config.get("customization", "desc", fallback="")
 		if descr:
 			descr = f"<code> → </code> <i>{descr}</i>"
 		return await edit_or_reply(message,
@@ -279,7 +279,7 @@ async def plugin_add_cmd(client:alemiBot, message:Message):
 	You can specify which branch to clone with `-b` option.
 	You can also specify a custom folder to clone into with `-d` option (this may break plugins relying on data stored in their directory!)
 	"""
-	if not alemiBot.allow_plugin_install:
+	if not client.config.getboolean("perms", "allowPlugins", fallback=True):
 		return await edit_or_reply(message, "`[!] → ` Plugin management is disabled")
 	out = message.text.markdown if is_me(message) else f"`→ ` {get_username(message.from_user)} requested plugin install"
 	msg = message if is_me(message) else await message.reply(out)
@@ -298,7 +298,7 @@ async def plugin_add_cmd(client:alemiBot, message:Message):
 		if user_input.startswith("http") or user_input.startswith("git@"):
 			link = user_input
 		else:
-			if alemiBot.use_ssh or message.command["-ssh"]:
+			if client.config.getboolean("customization", "useSsh", fallback=False) or message.command["-ssh"]:
 				link = f"git@github.com:{author}/{plugin}.git"
 			else:
 				link = f"https://github.com/{author}/{plugin}.git"
@@ -319,9 +319,10 @@ async def plugin_add_cmd(client:alemiBot, message:Message):
 			out += "\n` → ` Checking branches"
 			await msg.edit(out)
 			proc = await asyncio.create_subprocess_shell(
-			      f"GIT_TERMINAL_PROMPT=0 git ls-remote --symref {link} HEAD",
-			      stdout=asyncio.subprocess.PIPE,
-			      stderr=asyncio.subprocess.STDOUT)
+				f"GIT_TERMINAL_PROMPT=0 git ls-remote --symref {link} HEAD",
+				stdout=asyncio.subprocess.PIPE,
+				stderr=asyncio.subprocess.STDOUT
+			)
 			stdout, _sterr = await proc.communicate()
 			res = cleartermcolor(stdout.decode())
 			logger.info(res)
@@ -336,9 +337,10 @@ async def plugin_add_cmd(client:alemiBot, message:Message):
 		await msg.edit(out)
 
 		proc = await asyncio.create_subprocess_shell(
-		  f"GIT_TERMINAL_PROMPT=0 git submodule add -b {branch} {link} plugins/{folder}",
-		  stdout=asyncio.subprocess.PIPE,
-		  stderr=asyncio.subprocess.STDOUT)
+			f"GIT_TERMINAL_PROMPT=0 git submodule add -b {branch} {link} plugins/{folder}",
+			stdout=asyncio.subprocess.PIPE,
+			stderr=asyncio.subprocess.STDOUT
+		)
 
 		stdout, _sterr = await proc.communicate()
 		res = cleartermcolor(stdout.decode())
@@ -379,6 +381,8 @@ async def plugin_add_cmd(client:alemiBot, message:Message):
 		out += " [`FAIL`]\n`[!] → ` " + str(e)
 		await msg.edit(out) 
 
+# TODO maybe I can merge these 2 commands like trust/revoke ?
+
 @HELP.add(cmd="<plugin>")
 @alemiBot.on_message(sudo & filterCommand(["uninstall", "plugin_remove"], flags=["-lib"]))
 async def plugin_remove_cmd(client:alemiBot, message:Message):
@@ -389,7 +393,7 @@ async def plugin_remove_cmd(client:alemiBot, message:Message):
 	plugin folder and all its content.
 	If flag `-lib` is added, libraries installed with pip will be removed too (may break dependancies of other plugins!)
 	"""
-	if not alemiBot.allow_plugin_install:
+	if not client.config.getboolean("perms", "allowPlugins", fallback=True):
 		return await edit_or_reply(message, "`[!] → ` Plugin management is disabled")
 	out = message.text.markdown if is_me(message) else f"`→ ` {get_username(message.from_user)} requested plugin removal"
 	msg = message if is_me(message) else await message.reply(out)
@@ -458,7 +462,7 @@ async def plugin_list_cmd(client:alemiBot, message:Message):
 
 	Will basically read the `.gitmodules` file
 	"""
-	hidden = alemiBot.config.get("plugins", "hidden", fallback="").strip().split("\n")
+	hidden = client.config.get("plugins", "hidden", fallback="").strip().split("\n")
 	if os.path.isfile(".gitmodules"):
 		with open(".gitmodules") as f:
 			modules = f.read()
