@@ -6,7 +6,7 @@ be put in a CommandMatch object for easier access.
 import re
 import json
 
-from typing import Dict, List, Union, Any
+from typing import Dict, List, Union, Any, Optional
 from pyrogram.types import Message
 from pyrogram.filters import create
 
@@ -40,7 +40,7 @@ class CommandMatch:
 		self.text:str = ""
 		self.arg:List[str] = []
 		self.flags:List[str] = []
-		self.options:Dict[str:str] = {}
+		self.options:Dict[str,str] = {}
 
 	def __str__(self) -> str:
 		return json.dumps({
@@ -75,8 +75,9 @@ class CommandMatch:
 		return default
 
 
-def filterCommand(commands: Union[str,List[str]], prefixes: Union[str,List[str]] = "/",
-			options: Union[Dict[str, List[str]],None] = None, flags: Union[List[str],None] = None, case_sensitive: bool = False):
+# TODO redo this as class maybe?
+def filterCommand(commands: Union[str,List[str]], prefixes: Optional[Union[str,List[str]]] = None,
+			options: Optional[Dict[str, List[str]]] = None, flags: Optional[List[str]] = None, case_sensitive: bool = False):
 	"""Filter commands, i.e.: text messages starting with "/" or any other custom prefix.
 	Parameters:
 		commands (``str`` | ``list``):
@@ -87,7 +88,8 @@ def filterCommand(commands: Union[str,List[str]], prefixes: Union[str,List[str]]
 		prefixes (``str`` | ``list``, *optional*):
 			A prefix or a list of prefixes as string the filter should look for.
 			Defaults to "/" (slash). Examples: ".", "!", ["/", "!", "."], list(".:!").
-			Pass None or "" (empty string) to allow commands with no prefix at all.
+			Pass "" (empty string) to allow commands with no prefix at all.
+			Pass None to use alemiBot default prefixes.
 		options (``dict { str : list }``, *optional*):
 			A dictionary with name and list of keywords to match. If a keyword is matched 
 			in the commands, it will be consumed together with next element and put in the 
@@ -105,7 +107,7 @@ def filterCommand(commands: Union[str,List[str]], prefixes: Union[str,List[str]]
 		options = {}
 	command_re = re.compile(r"([\"'])(.*?)(?<!\\)\1|(\S+)")
 
-	async def func(flt, client, message: Message):
+	async def func(flt, client:'alemiBot', message: Message):
 		if message.scheduled: # allow to trigger commands!
 			return False # don't get triggered when the message is scheduled, only when it's sent! This allows scheduling actions
 
@@ -117,7 +119,9 @@ def filterCommand(commands: Union[str,List[str]], prefixes: Union[str,List[str]]
 
 		pattern = r"^{cmd}(?:@{uname}|)(?:\s|$)" if flt.case_sensitive else r"(?i)^{cmd}(?:@{uname}+|)(?:\s|$)"
 
-		for prefix in flt.prefixes:
+		prefixes = client.prefixes if flt.prefixes is None else flt.prefixes
+
+		for prefix in prefixes:
 			if not text.startswith(prefix):
 				continue
 
@@ -168,21 +172,21 @@ def filterCommand(commands: Union[str,List[str]], prefixes: Union[str,List[str]]
 	commands = commands if isinstance(commands, list) else [commands]
 	commands = [c if case_sensitive else c.lower() for c in commands]
 
-	prefixes = [] if prefixes is None else prefixes
-	prefixes = prefixes if isinstance(prefixes, list) else [prefixes]
-	prefixes = set(prefixes) if prefixes else {""}
+	if prefixes is not None and not isinstance(prefixes, list):
+		prefixes = [ prefixes ]
+	flt_prefixes = set(prefixes) if prefixes is not None else None
 
 	flags = flags if isinstance(flags, list) else [flags]
 
 	for k in options:
-		options[k] = options[k] if isinstance(options[k], list) else [options[k]]
-
+		if not isinstance(options[k], list):
+			options[k] = [ options[k] ] # TODO how to make mypy shut up here?
 
 	return create(
 		func,
 		"CommandFilter",
 		commands=commands,
-		prefixes=prefixes,
+		prefixes=flt_prefixes,
 		case_sensitive=case_sensitive,
 		options=options,
 		flags=flags

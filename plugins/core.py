@@ -4,30 +4,27 @@ import time
 import logging
 import platform
 import resource
-import io
 import os
-import sys
 import re
 import json
-import html
 from datetime import datetime
 
 import psutil
 
-from bot import alemiBot
-
 from pyrogram import filters
+from pyrogram.types import Message
 from pyrogram.errors import PeerIdInvalid
-from pyrogram.raw.functions.account import GetAuthorizations
 from pyrogram.raw.functions import Ping
+from pyrogram.raw.functions.account import GetAuthorizations
 
-from util.decorators import report_error, set_offline
-from util.permission import is_allowed, is_superuser, allow, disallow, list_allowed, check_superuser
-from util.command import filterCommand
-from util.message import edit_or_reply, is_me
-from util.getters import get_username
-from util.text import cleartermcolor, order_suffix
-from util.help import HelpCategory, CATEGORIES, ALIASES, get_all_short_text
+from alemibot import alemiBot
+
+from alemibot.util import (
+	report_error, set_offline, is_allowed, sudo, filterCommand, edit_or_reply, is_me,
+	get_username, cleartermcolor, order_suffix, HelpCategory
+)
+
+from alemibot.util.help import CATEGORIES, ALIASES, get_all_short_text
 
 logger = logging.getLogger(__name__)
 
@@ -45,10 +42,10 @@ _BASE_HELP_TEMPLATE = """
 """
 
 @HELP.add(cmd="[<cmd>]", sudo=False)
-@alemiBot.on_message(is_allowed & filterCommand(["help"], list(alemiBot.prefixes), flags=["-l", "--list"]))
+@alemiBot.on_message(is_allowed & filterCommand(["help"], flags=["-l", "--list"]))
 @report_error(logger)
 @set_offline
-async def help_cmd(client, message):
+async def help_cmd(client:alemiBot, message:Message):
 	"""get help on cmd or list all cmds
 
 	Without args, will print all available commands.
@@ -85,10 +82,10 @@ async def help_cmd(client, message):
 		)
 
 @HELP.add(sudo=False)
-@alemiBot.on_message(is_allowed & filterCommand(["asd", "ping"], list(alemiBot.prefixes)))
+@alemiBot.on_message(is_allowed & filterCommand(["asd", "ping"]))
 @report_error(logger)
 @set_offline
-async def ping_cmd(client, message):
+async def ping_cmd(client:alemiBot, message:Message):
 	"""a sunny day!
 
 	The ping command
@@ -101,10 +98,10 @@ async def ping_cmd(client, message):
 	await edit_or_reply(message, f"` → ` {answer} (`{latency:.1f}` ms)")
 
 @HELP.add()
-@alemiBot.on_message(is_superuser & filterCommand(["info", "about", "flex"], list(alemiBot.prefixes)))
+@alemiBot.on_message(sudo & filterCommand(["info", "about", "flex"]))
 @report_error(logger)
 @set_offline
-async def info_cmd(client, message):
+async def info_cmd(client:alemiBot, message:Message):
 	"""info about project and client status
 
 	Will show project version+link, current uptime, session age (for users), latency, plugins count and system+load specs.
@@ -155,8 +152,8 @@ async def info_cmd(client, message):
 	)
 
 @HELP.add()
-@alemiBot.on_message(is_superuser & filterCommand("update", list(alemiBot.prefixes), flags=["-force"]))
-async def update_cmd(client, message):
+@alemiBot.on_message(sudo & filterCommand("update", flags=["-force"]))
+async def update_cmd(client:alemiBot, message:Message):
 	"""fetch updates and restart client
 
 	Will pull changes from git (`git pull`), install requirements (`pip install -r requirements.txt --upgrade`) \
@@ -240,9 +237,7 @@ async def update_cmd(client, message):
 			out += f" [`{count} new`]"
 		out += "\n` → ` Restarting process"
 		await msg.edit(out) 
-		with open("data/lastmsg.json", "w") as f:
-			json.dump({"message_id": msg.message_id,
-						"chat_id": msg.chat.id}, f)
+		client.storage.conn.execute("INSERT INTO last_message VALUES (?, ?)", (msg.chat.id, msg.message_id))
 		asyncio.get_event_loop().create_task(client.restart())
 	except Exception as e:
 		logger.exception("Error while updating")
@@ -262,11 +257,11 @@ def split_url(url):
 	return plugin, author
 
 @HELP.add(cmd="<plugin>")
-@alemiBot.on_message(is_superuser & filterCommand(["install", "plugin_add"], list(alemiBot.prefixes), options={
+@alemiBot.on_message(sudo & filterCommand(["install", "plugin_add"], options={
 	"dir": ["-d", "--dir"],
 	"branch": ["-b", "--branch"],
 }, flags=["-ssh"]))
-async def plugin_add_cmd(client, message):
+async def plugin_add_cmd(client:alemiBot, message:Message):
 	"""install a plugin
 
 	alemiBot plugins are git repos, cloned into the `plugins` folder as git submodules.
@@ -334,7 +329,8 @@ async def plugin_add_cmd(client, message):
 				out += f" [`FAIL`]\n`[!] → ` Could not find `{link}`"
 				return await msg.edit(out)
 			out += " [`OK`]"
-			branch = re.search(r"refs\/heads\/(?P<branch>[^\s]+)(?:\s+)HEAD", res)["branch"]
+			match = re.search(r"refs\/heads\/(?P<branch>[^\s]+)(?:\s+)HEAD", res)
+			branch = match['branch'] if match else 'UNKNOWN'
 
 		out += "\n` → ` Fetching source code"
 		await msg.edit(out)
@@ -384,8 +380,8 @@ async def plugin_add_cmd(client, message):
 		await msg.edit(out) 
 
 @HELP.add(cmd="<plugin>")
-@alemiBot.on_message(is_superuser & filterCommand(["uninstall", "plugin_remove"], list(alemiBot.prefixes), flags=["-lib"]))
-async def plugin_remove_cmd(client, message):
+@alemiBot.on_message(sudo & filterCommand(["uninstall", "plugin_remove"], flags=["-lib"]))
+async def plugin_remove_cmd(client:alemiBot, message:Message):
 	"""remove an installed plugin.
 
 	alemiBot plugins are git repos, cloned into the `plugins` folder as git submodules.
@@ -454,10 +450,10 @@ async def plugin_remove_cmd(client, message):
 		await msg.edit(out) 
 
 @HELP.add()
-@alemiBot.on_message(is_superuser & filterCommand(["plugins", "plugin", "plugin_list"], list(alemiBot.prefixes)))
+@alemiBot.on_message(sudo & filterCommand(["plugins", "plugin", "plugin_list"]))
 @report_error(logger)
 @set_offline
-async def plugin_list_cmd(client, message):
+async def plugin_list_cmd(client:alemiBot, message:Message):
 	"""list installed plugins.
 
 	Will basically read the `.gitmodules` file
@@ -476,10 +472,12 @@ async def plugin_list_cmd(client, message):
 		await edit_or_reply(message, "`[!] → ` No plugins installed")
 
 @HELP.add(cmd="[<target>]")
-@alemiBot.on_message(is_superuser & filterCommand(["allow", "disallow", "revoke"], list(alemiBot.prefixes)))
+@alemiBot.on_message(sudo & filterCommand(["allow", "disallow", "revoke"], options={
+	'group' : ['-g', '--group'],
+}))
 @report_error(logger)
 @set_offline
-async def manage_allowed_cmd(client, message):
+async def manage_allowed_cmd(client:alemiBot, message:Message):
 	"""allow/disallow target user
 
 	This command will work differently if invoked with `allow` or with `disallow`.
@@ -511,10 +509,10 @@ async def manage_allowed_cmd(client, message):
 		return await edit_or_reply(message, "`[!] → ` Provide an ID or reply to a msg")
 	logger.info("Changing permissions")
 	out = ""
-	action = allow if message.command.base == "allow" else disallow
+	action = client.auth.put if message.command.base == "allow" else client.auth.pop
 	action_str = "Allowed" if message.command.base == "allow" else "Disallowed"
 	for u in users_to_manage:
-		if action(u.id):
+		if action(u.id, message.command['group'] or '_'):
 			out += f"` → ` {action_str} **{get_username(u, mention=True)}**\n"
 	if out != "":
 		await edit_or_reply(message, out)
@@ -522,10 +520,10 @@ async def manage_allowed_cmd(client, message):
 		await edit_or_reply(message, "` → ` No changes")
 
 @HELP.add()
-@alemiBot.on_message(is_superuser & filterCommand(["trusted", "plist", "permlist"], list(alemiBot.prefixes)))
+@alemiBot.on_message(sudo & filterCommand(["trusted", "plist", "permlist"]))
 @report_error(logger)
 @set_offline
-async def trusted_list_cmd(client, message):
+async def trusted_list_cmd(client:alemiBot, message:Message):
 	"""list allowed users
 
 	This will be pretty leaky, don't do it around untrusted people!
@@ -536,11 +534,11 @@ async def trusted_list_cmd(client, message):
 	text = "`[` "
 	issues = ""
 	try:
-		users = await client.get_users(list_allowed()) # raises PeerIdInvalid exc if even one of the ids has not been interacted with
+		users = await client.get_users(client.auth.all()) # raises PeerIdInvalid exc if even one of the ids has not been interacted with
 		for u in users:
 			text += get_username(u, mention=True) + ", "
 	except PeerIdInvalid:
-		for uid in list_allowed():									
+		for uid in client.auth.all():
 			try:
 				text += get_username(await client.get_users(uid), mention=True) + ", "
 			except PeerIdInvalid:

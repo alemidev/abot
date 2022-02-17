@@ -1,10 +1,10 @@
 import functools
 
-from pyrogram.errors import ChatWriteForbidden, FloodWait, ChatSendMediaForbidden
+from pyrogram.errors import ChatWriteForbidden, ChatSendMediaForbidden, FloodWait, SlowmodeWait
 from pyrogram.raw.functions.account import UpdateStatus
 
-from util.message import edit_or_reply
-from util.getters import get_user, get_username, get_text
+from .message import edit_or_reply
+from .getters import get_user, get_username, get_text
 
 def report_error(lgr):
 	"""Will report errors back to user
@@ -22,6 +22,8 @@ def report_error(lgr):
 				await func(client, message, *args, **kwargs)
 			except FloodWait as e:
 				lgr.error("[%s] FloodWait too long (%d s), aborting", author, e.x)
+			except SlowmodeWait as e:
+				lgr.error("[%s] SlowmodeWait too long (%d s), aborting", author, e.x)
 			except ChatWriteForbidden as e:
 				try: # It may come from another chat, still try to report it
 					await edit_or_reply(message, "`[!] → ` " + str(e))

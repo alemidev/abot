@@ -17,7 +17,7 @@ from pyrogram.types import Message
 from pyrogram import Client
 from pyrogram.errors import ChatWriteForbidden, FloodWait
 
-from . import batchify
+from .text import batchify
 from .getters import get_text
 
 def _catch_errors(fun):
@@ -76,8 +76,8 @@ class ProgressChatAction:
 	async def tick(self, *args, **kwargs): # args and kwargs so this can be used as progres callback for uploads
 		"""If <interval> time has passed since last chat action, update last time and send a chat action"""
 		if time() - self.last > self.interval:
-			await self.client.send_chat_action(self.chat_id, self.action)
 			self.last = time()
+			await self.client.send_chat_action(self.chat_id, self.action)
 
 	def run(self) -> bool:
 		"""Start a background task, sending a chat action every <interval> seconds.
@@ -220,15 +220,3 @@ async def count_messages(client:Client, chat:int, user:int, offset:int=0, query:
 				)
 			)
 	return messages.count
-
-async def edit_restart_message(client:Client):
-	try:
-		with open("data/lastmsg.json", "r") as f:
-			lastmsg = json.load(f)
-		if "chat_id" in lastmsg and "message_id" in lastmsg:
-			message = await client.get_messages(lastmsg["chat_id"], lastmsg["message_id"])
-			await message.edit(message.text.markdown + " [`OK`]")
-			with open("data/lastmsg.json", "w") as f:
-				json.dump({}, f)
-	except:
-		logging.exception("Error editing restart message")

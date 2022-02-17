@@ -2,10 +2,19 @@ import re
 import shutil
 
 from typing import Dict
-from logging import Formatter, LogRecord, DEBUG, INFO, WARNING, ERROR, CRITICAL
+from logging import StreamHandler, getLogger, Formatter, LogRecord, DEBUG, INFO, WARNING, ERROR, CRITICAL
+from logging.handlers import RotatingFileHandler
 from traceback import format_exception
 
 from termcolor import colored
+
+def batchify(str_in, size):
+	if len(str_in) < size:
+		return [str_in]
+	out = []
+	for i in range((len(str_in)//size) + 1):
+		out.append(str_in[i*size : (i+1)*size])
+	return out
 
 class ColorFormatter(Formatter):
 	def __init__(self, fmt:str):
@@ -21,7 +30,28 @@ class ColorFormatter(Formatter):
 	def format(self, record:LogRecord) -> str:
 		if record.exc_text: # jank way to color the stacktrace but will do for now
 			record.exc_text = colored(record.exc_text, color='grey', attrs=['bold'])
-		return self.formatters.get(record.levelno).format(record)
+		fmt = self.formatters.get(record.levelno)
+		if fmt:
+			return fmt.format(record)
+		return Formatter().format(record) # This should never happen!
+
+def setup_logging(name:str, color:bool=True, level=INFO) -> None:
+	logger = getLogger()
+	logger.setLevel(level)
+	# create file handler which logs even debug messages
+	fh = RotatingFileHandler(f'data/{name}.log', maxBytes=1048576, backupCount=5) # 1MB files
+	fh.setLevel(level)
+	# create console handler with a higher log level
+	ch = StreamHandler()
+	ch.setLevel(max(INFO, level)) # so we never show DEBUG on stdout
+	# create formatter and add it to the handlers
+	file_formatter = Formatter("[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s", "%b %d %Y %H:%M:%S")
+	print_formatter = ColorFormatter("> %(message)s") if color else Formatter("> %(message)s")
+	fh.setFormatter(file_formatter)
+	ch.setFormatter(print_formatter)
+	# add the handlers to the logger
+	logger.addHandler(fh)
+	logger.addHandler(ch)
 
 def cleanhtml(raw_html):
 	cleanr = re.compile('<.*?>')
