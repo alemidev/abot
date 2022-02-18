@@ -16,8 +16,8 @@ from .util.permission import Authenticator
 class alemiBot(Client):
 	start_time : datetime
 	ctx : Context
-	config : ConfigParser
 	logger : logging.Logger
+	config : ConfigParser = None # TODO find another way
 
 	auth : Authenticator
 	sudoers : List[int]
@@ -32,6 +32,7 @@ class alemiBot(Client):
 		)
 		# Load config
 		self.config = ConfigParser()
+		alemiBot.config = self.config
 		self.config.read(f"{name}.ini")
 		# Set useful attributes
 		self.ctx = Context()
