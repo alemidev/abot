@@ -10,31 +10,13 @@ from configparser import ConfigParser
 
 from setproctitle import setproctitle
 
-from pyrogram import Client, ContinuePropagation, StopPropagation
-from pyrogram.handlers.handler import Handler
+from pyrogram import Client
 
+from .patches import OnReady
 from .util import get_username, Context
 from .util.permission import Authenticator
 
-class ReadyHandler(Handler):
-	"""The Ready handler class. Used to handle client signaling being ready. It is intended to be used with
-	:meth:`~pyrogram.Client.add_handler`
-	For a nicer way to register this handler, have a look at the
-	:meth:`~alemibot.alemiBot.on_ready` decorator.
-	Parameters:
-		callback (``callable``):
-			Pass a function that will be called when the client is ready. It takes *(client)*
-			as positional argument (look at the section below for a detailed description).
-	Other parameters:
-		client (:obj:`~pyrogram.Client`):
-			The Client itself. Useful, for example, when you want to change the proxy before a new connection
-			is established.
-	"""
-	def __init__(self, cb:Callable):
-		super().__init__(cb)
-
-
-class alemiBot(Client):
+class alemiBot(Client, OnReady):
 	start_time : datetime
 	ctx : Context
 	logger : logging.Logger
@@ -106,41 +88,3 @@ class alemiBot(Client):
 		self.logger.warning("Executing '%s'", str.join(' ', proc))
 		os.execv(sys.executable, proc) # This will replace current process
 	
-	@classmethod
-	def on_ready(cls, group: int = 0) -> Callable:
-		"""Decorator for handling client signaling being ready.
-		This does the same thing as :meth:`~pyrogram.Client.add_handler` using the
-		:obj:`~alemibot.bot.ReadyHandler`.
-		Parameters:
-			group (``int``, *optional*):
-				The group identifier, defaults to 0.
-		"""
-		def decorator(func: Callable) -> Callable:
-			if not hasattr(func, "handlers"):
-				setattr(func, "handlers", [])
-			func.handlers.append((ReadyHandler(func), group))
-			return func
-		return decorator
-
-	async def _process_ready_callbacks(self):
-		async with self.lock:
-			for group in self.dispatcher.groups.values():
-				for handler in group:
-					args = None
-					if isinstance(handler, ReadyHandler):
-						try:
-							if inspect.iscoroutinefunction(handler.callback):
-								await handler.callback(self)
-							else:
-								await self.dispatcher.loop.run_in_executor(
-									self.executor,
-									handler.callback,
-									self,
-								)
-						except StopPropagation:
-							raise
-						except ContinuePropagation:
-							continue
-						except Exception as e:
-							self.logger.error(e, exc_info=True)
-
