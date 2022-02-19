@@ -3,7 +3,6 @@ import sys
 import asyncio
 import subprocess
 import logging
-import inspect
 from typing import List, Callable
 from datetime import datetime
 from configparser import ConfigParser

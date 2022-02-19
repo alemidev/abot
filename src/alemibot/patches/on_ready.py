@@ -1,3 +1,4 @@
+import inspect
 from typing import Callable
 
 from pyrogram import Client, ContinuePropagation, StopPropagation
@@ -37,7 +38,7 @@ class OnReady(Scaffold):
 			else:
 				if not hasattr(func, "handlers"):
 					setattr(func, "handlers", [])
-				func.handlers.append()
+				func.handlers.append(handl)
 			return func
 		return decorator
 
