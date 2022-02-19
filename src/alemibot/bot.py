@@ -10,7 +10,7 @@ from configparser import ConfigParser
 
 from setproctitle import setproctitle
 
-from pyrogram import Client
+from pyrogram import Client, ContinuePropagation, StopPropagation
 from pyrogram.handlers.handler import Handler
 
 from .util import get_username, Context
@@ -88,9 +88,9 @@ class alemiBot(Client):
 	async def start(self):
 		await super().start()
 		self.dispatcher.locks_list.append(self.lock)
+		self.me = await self.get_me() # this is used to quickly parse /<cmd>@<who> format for commands
 		setproctitle(f"alemiBot[{get_username(self.me)}]")
 		self.logger.info("Running init callbacks")
-		self.me = await self.get_me() # this is used to quickly parse /<cmd>@<who> format for commands
 		await self._prepare_storage()
 		await self._process_ready_callbacks()
 		self.logger.info("Bot started")
@@ -118,7 +118,7 @@ class alemiBot(Client):
 		def decorator(func: Callable) -> Callable:
 			if not hasattr(func, "handlers"):
 				setattr(func, "handlers", [])
-			# func.handlers.append((ReadyHandler(func), group))
+			func.handlers.append((ReadyHandler(func), group))
 			return func
 		return decorator
 
@@ -137,9 +137,9 @@ class alemiBot(Client):
 									handler.callback,
 									self,
 								)
-						except pyrogram.StopPropagation:
+						except StopPropagation:
 							raise
-						except pyrogram.ContinuePropagation:
+						except ContinuePropagation:
 							continue
 						except Exception as e:
 							self.logger.error(e, exc_info=True)
