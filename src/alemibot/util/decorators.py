@@ -1,4 +1,5 @@
 import functools
+from typing import Callable
 
 from pyrogram.errors import ChatWriteForbidden, ChatSendMediaForbidden, FloodWait, SlowmodeWait
 from pyrogram.raw.functions.account import UpdateStatus
@@ -6,7 +7,7 @@ from pyrogram.raw.functions.account import UpdateStatus
 from .message import edit_or_reply
 from .getters import get_user, get_username, get_text
 
-def report_error(lgr):
+def report_error(lgr) -> Callable:
 	"""Will report errors back to user
 
 	This decorator will wrap the handler in a try/catch and
@@ -41,7 +42,7 @@ def report_error(lgr):
 		return wrapper
 	return deco
 
-def set_offline(func):
+def set_offline(func) -> Callable:
 	"""Will set user back offline when function is done"""
 	@functools.wraps(func)
 	async def wrapper(client, message, *args, **kwargs):
@@ -50,7 +51,7 @@ def set_offline(func):
 			await client.send(UpdateStatus(offline=True))
 	return wrapper
 
-def cancel_chat_action(func):
+def cancel_chat_action(func) -> Callable:
 	"""Will cancel any ongoing chat action once handler is done"""
 	@functools.wraps(func)
 	async def wrapper(client, message, *args, **kwargs):

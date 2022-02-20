@@ -26,7 +26,9 @@ class OnReady(Scaffold):
 	def on_ready(self=None, group:int=0) -> Callable:
 		"""Decorator for handling client signaling being ready.
 		This does the same thing as :meth:`~pyrogram.Client.add_handler` using the
-		:obj:`~alemibot.bot.ReadyHandler`.
+		:obj:`~alemibot.bot.ReadyHandler`. While only one pyrogram handler per group
+		will trigger, all OnReady callbacks in each group will be called. Groups
+		can be used to force a load order.
 		Parameters:
 			group (``int``, *optional*):
 				The group identifier, defaults to 0.
