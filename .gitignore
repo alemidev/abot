@@ -1,6 +1,6 @@
 *.session
 *.session-journal
-config.ini
+*.ini
 
 tags
 cscope.*
@@ -8,6 +8,7 @@ cscope.*
 downloads/
 data/
 
+*.egg-info/
 __pycache__/
+
 plugins/__pycache__/
-util/__pycache__/
