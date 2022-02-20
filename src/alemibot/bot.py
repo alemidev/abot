@@ -5,30 +5,36 @@ import subprocess
 import logging
 from typing import List, Callable
 from datetime import datetime
+from pathlib import Path
 from configparser import ConfigParser
 
 from setproctitle import setproctitle
 
 from pyrogram import Client
+from pyrogram.types import User
+from pyrogram.scaffold import Scaffold
 
-from .patches import OnReady
+from .patches import OnReady, DocumentFileStorage
 from .util import get_username, Context
 from .util.permission import Authenticator
 
 class alemiBot(Client, OnReady):
 	start_time : datetime
 	ctx : Context
+	me : User
 	logger : logging.Logger
 	config : ConfigParser
 
 	auth : Authenticator
+	storage : DocumentFileStorage
 	sudoers : List[int]
 	public : bool
 	_lock : asyncio.Lock
 
-	def __init__(self, name:str, app_version:str="0.5", workdir:str="./", config_file:str=None):
+	def __init__(self, name:str, app_version:str="0.5", workdir=Scaffold.WORKDIR, config_file:str=None):
+		storage = DocumentFileStorage(name, Path(workdir))
 		super().__init__(
-			name,
+			storage,
 			workdir=workdir,
 			app_version=app_version,
 			config_file=f'{name}.ini' if config_file is None else config_file,
@@ -48,23 +54,23 @@ class alemiBot(Client, OnReady):
 		self.sudoers = [ int(uid.strip()) for uid in self.config.get("perms", "sudo", fallback="").split() ]
 		self.public = self.config.getboolean("perms", "public", fallback=False) # util/permission
 		# Get current commit hash and append to app version
-		res = subprocess.run(["git", "rev-parse", "--short", "HEAD"],
-								stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+		res = subprocess.run(
+			["git", "rev-parse", "--short", "HEAD"],
+			stderr=subprocess.STDOUT, stdout=subprocess.PIPE
+		)
 		v_n = res.stdout.decode('utf-8').strip()
-		self.app_version += "-" + ('???' if v_n.startswith('fatal') else v_n)
+		if v_n.startswith("fatal"):
+			v_n = '???'
+		self.app_version = f"{self.app_version or '???'}-{v_n}"
 
-	async def _prepare_storage(self):
-		try: # TODO extend pyrogram Storage class to make fancy methods for custom stuff (like this)
-			# Setup storage TODO make fancier
-			self.storage.conn.execute("CREATE TABLE IF NOT EXISTS last_message ( chat_id LONG, message_id LONG );")
-			msg = self.storage.conn.execute("SELECT * FROM last_message").fetchone()
-			if msg:
-				message = await self.get_messages(msg[0], msg[1])
+	async def _edit_last(self):
+		last = self.storage._get_last_message()
+		if last:
+			try:
+				message = await self.get_messages(last[0], last[1])
 				await message.edit(message.text.markdown + " [`OK`]")
-		except Exception as e:
-			self.logger.exception("Error editing restart message")
-		finally:
-			self.storage.conn.execute("DELETE FROM last_message")
+			except Exception:
+				self.logger.exception("Error editing restart message")
 
 	async def start(self):
 		await super().start()
@@ -72,7 +78,7 @@ class alemiBot(Client, OnReady):
 		self.me = await self.get_me() # this is used to quickly parse /<cmd>@<who> format for commands
 		setproctitle(f"alemiBot[{get_username(self.me)}]")
 		self.logger.info("Running init callbacks")
-		await self._prepare_storage()
+		await self._edit_last()
 		await self._process_ready_callbacks()
 		self.logger.info("Bot started")
 

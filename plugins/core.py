@@ -237,7 +237,8 @@ async def update_cmd(client:alemiBot, message:Message):
 			out += f" [`{count} new`]"
 		out += "\n` → ` Restarting process"
 		await msg.edit(out) 
-		client.storage.conn.execute("INSERT INTO last_message VALUES (?, ?)", (msg.chat.id, msg.message_id))
+		if msg.chat:
+			client.storage._set_last_message(msg.chat.id, msg.message_id)
 		asyncio.get_event_loop().create_task(client.restart())
 	except Exception as e:
 		logger.exception("Error while updating")
