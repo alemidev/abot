@@ -25,12 +25,12 @@ if __name__ == "__main__":
 
 	args = parser.parse_args()
 
-	setup_logging(args.name, args.color)
-
 	if not os.path.isdir('data'):
 		os.mkdir('data')
 	if not os.path.isdir('log'):
 		os.mkdir('log')
+
+	setup_logging(args.name, args.color)
 
 	app = alemiBot(args.name)
 
