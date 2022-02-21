@@ -1,5 +1,0 @@
-pyrogram
-tgcrypto
-setproctitle
-termcolor
-psutil
