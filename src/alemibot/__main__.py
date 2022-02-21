@@ -1,3 +1,4 @@
+import os
 import argparse
 import logging
 from logging.handlers import RotatingFileHandler
@@ -25,6 +26,11 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 
 	setup_logging(args.name, args.color)
+
+	if not os.path.isdir('data'):
+		os.mkdir('data')
+	if not os.path.isdir('log'):
+		os.mkdir('log')
 
 	app = alemiBot(args.name)
 
