@@ -43,7 +43,7 @@ class alemiBot(Client, OnReady):
 		self.lock = asyncio.Lock()
 		# Load config
 		self.config = ConfigParser()
-		alemiBot.config = self.config
+		self.config.read(f"default.ini") # First load default
 		self.config.read(f"{name}.ini")
 		# Set useful attributes
 		self.ctx = Context()
@@ -76,9 +76,9 @@ class alemiBot(Client, OnReady):
 	async def start(self):
 		await super().start()
 		self.dispatcher.locks_list.append(self.lock)
+		self.logger.info("Running init callbacks")
 		self.me = await self.get_me() # this is used to quickly parse /<cmd>@<who> format for commands
 		setproctitle(f"alemiBot[{get_username(self.me)}]")
-		self.logger.info("Running init callbacks")
 		await self._edit_last()
 		await self._process_ready_callbacks()
 		self.logger.info("Bot started")
