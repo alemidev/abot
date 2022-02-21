@@ -39,6 +39,7 @@ class alemiBot(Client, OnReady):
 			app_version=app_version,
 			config_file=f'{name}.ini' if config_file is None else config_file,
 		)
+		self.session_name = name # override storage
 		self.lock = asyncio.Lock()
 		# Load config
 		self.config = ConfigParser()
