@@ -38,7 +38,7 @@ def report_error(lgr) -> Callable:
 					lgr.exception("[%s] Cannot send media in this chat and failed to notify", author)
 			except Exception as e:
 				lgr.exception("[%s] exception in '%s' started by '%s'", author, func.__name__, get_text(message))
-				await edit_or_reply(message, "`[!] → ` " + str(e))
+				await edit_or_reply(message, f"`[!] {type(e).__name__} → ` {str(e)}")
 		return wrapper
 	return deco
 
