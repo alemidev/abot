@@ -22,6 +22,7 @@ if __name__ == "__main__":
 
 	parser.add_argument('name', help='name to use for this client session')
 	parser.add_argument('--no-color', dest='color', action='store_const', default=True, const=False, help='disable colors for logger text')
+	parser.add_argument('--debug', dest='debug_level', action='store_const', default=logging.INFO, const=logging.DEBUG, help='Set logging to debug level')
 
 	args = parser.parse_args()
 
@@ -30,7 +31,7 @@ if __name__ == "__main__":
 	if not os.path.isdir('log'):
 		os.mkdir('log')
 
-	setup_logging(args.name, args.color)
+	setup_logging(args.name, level=args.debug_level, color=args.color)
 
 	app = alemiBot(args.name)
 

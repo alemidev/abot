@@ -35,7 +35,7 @@ class ColorFormatter(Formatter):
 			return fmt.format(record)
 		return Formatter().format(record) # This should never happen!
 
-def setup_logging(name:str, color:bool=True, level=INFO) -> None:
+def setup_logging(name:str, level=INFO, color:bool=True) -> None:
 	logger = getLogger()
 	logger.setLevel(level)
 	# create file handler which logs even debug messages
