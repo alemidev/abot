@@ -1,11 +1,16 @@
 import functools
-from typing import Callable
+from typing import Callable, TYPE_CHECKING
 
+from pyrogram.types import Message
 from pyrogram.errors import ChatWriteForbidden, ChatSendMediaForbidden, FloodWait, SlowmodeWait
 from pyrogram.raw.functions.account import UpdateStatus
+from pyrogram.enums import ChatAction
 
 from .message import edit_or_reply
 from .getters import get_user, get_username, get_text
+
+if TYPE_CHECKING:
+	from ..bot import alemiBot
 
 def report_error(lgr) -> Callable:
 	"""Will report errors back to user
@@ -45,16 +50,16 @@ def report_error(lgr) -> Callable:
 def set_offline(func) -> Callable:
 	"""Will set user back offline when function is done"""
 	@functools.wraps(func)
-	async def wrapper(client, message, *args, **kwargs):
+	async def wrapper(client:'alemiBot', message, *args, **kwargs):
 		await func(client, message, *args, **kwargs)
 		if not client.me.is_bot:
-			await client.send(UpdateStatus(offline=True))
+			await client.invoke(UpdateStatus(offline=True))
 	return wrapper
 
 def cancel_chat_action(func) -> Callable:
 	"""Will cancel any ongoing chat action once handler is done"""
 	@functools.wraps(func)
-	async def wrapper(client, message, *args, **kwargs):
+	async def wrapper(client:'alemiBot', message:Message, *args, **kwargs):
 		await func(client, message, *args, **kwargs)
-		await client.send_chat_action(message.chat.id, "cancel")
+		await client.send_chat_action(message.chat.id, ChatAction.CANCEL)
 	return wrapper

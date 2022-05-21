@@ -12,6 +12,7 @@ from datetime import datetime
 import psutil
 
 from pyrogram import filters
+from pyrogram.enums import ParseMode
 from pyrogram.errors import PeerIdInvalid
 from pyrogram.raw.functions import Ping
 from pyrogram.raw.functions.account import GetAuthorizations
@@ -56,7 +57,7 @@ async def help_cmd(client:alemiBot, message:Message):
 		return await edit_or_reply(message,
 			f"<code>ᚨᛚᛖᛗᛁᛒᛟᛏ</code> v<b>{client.app_version}</b>\n" + 
 				get_all_short_text(pref, sudo=sudo(client, message)),
-			parse_mode="html"
+			parse_mode=ParseMode.HTML
 		)
 	elif len(message.command) > 0:
 		arg = message.command[0]
@@ -66,11 +67,11 @@ async def help_cmd(client:alemiBot, message:Message):
 			cat = CATEGORIES[k]
 			if arg in cat.HELP_ENTRIES:
 				e = cat.HELP_ENTRIES[arg]
-				return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode="markdown", disable_web_page_preview=True)
+				return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
 			elif arg in ALIASES and ALIASES[arg] in cat.HELP_ENTRIES:
 				e = cat.HELP_ENTRIES[ALIASES[arg]]
-				return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode="markdown", disable_web_page_preview=True)
-		return await edit_or_reply(message, f"<code>[!] → </code> No command named <code>{arg}</code>", parse_mode="html")
+				return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
+		return await edit_or_reply(message, f"<code>[!] → </code> No command named <code>{arg}</code>", parse_mode=ParseMode.HTML)
 	else:
 		descr = client.config.get("customization", "desc", fallback="")
 		if descr:
@@ -78,7 +79,7 @@ async def help_cmd(client:alemiBot, message:Message):
 		return await edit_or_reply(message,
 			descr + _BASE_HELP_TEMPLATE.format(prefix=pref) +
 			f"based on <code>ᚨᛚᛖᛗᛁᛒᛟᛏ</code> v<b>{client.app_version}</b>\n",
-			parse_mode="html"
+			parse_mode=ParseMode.HTML
 		)
 
 @HELP.add(sudo=False)
@@ -91,7 +92,7 @@ async def ping_cmd(client:alemiBot, message:Message):
 	The ping command
 	"""
 	before = time.time()
-	await client.send(Ping(ping_id=69))
+	await client.invoke(Ping(ping_id=69))
 	after = time.time()
 	latency = (after - before) * 1000
 	answer = "a sunny day" if message.command.base == "asd" else "pong"
@@ -114,7 +115,7 @@ async def info_cmd(client:alemiBot, message:Message):
 	RAM total and used is calculated appropriately both for process and for system.
 	"""
 	before = time.time()
-	await client.send(Ping(ping_id=69))
+	await client.invoke(Ping(ping_id=69))
 	after = time.time()
 	latency = (after - before) * 1000
 	self_proc = psutil.Process(os.getpid())
@@ -131,11 +132,13 @@ async def info_cmd(client:alemiBot, message:Message):
 	cpu_load = psutil.cpu_percent() # total
 	cpu_count = psutil.cpu_count()
 	cpu_freq = max(psutil.cpu_freq().max, psutil.cpu_freq().current) # max might be 0 and current might be lower than max
-	with open(".gitmodules") as f: # not too nice but will do for now
-		plugin_count = f.read().count("[submodule")
+	plugin_count = 0
+	if os.path.isfile(".gitmodules"):
+		with open(".gitmodules") as f: # not too nice but will do for now
+			plugin_count = f.read().count("[submodule")
 	
 	if not client.me.is_bot:
-		sess = list(filter(lambda x : x.current , (await client.send(GetAuthorizations())).authorizations))[0]
+		sess = list(filter(lambda x : x.current , (await client.invoke(GetAuthorizations())).authorizations))[0]
 		session_age = datetime.now() - datetime.utcfromtimestamp(sess.date_created)
 	
 	await edit_or_reply(message,
@@ -148,7 +151,7 @@ async def info_cmd(client:alemiBot, message:Message):
 		f"<code> → </code> <b>cpu [</b><code>{cpu_count}x {cpu_freq/1000:.1f}GHz</code><b>] load</b> <code>{cpu_usage:.2f}%</code> (<code>{cpu_load:.2f}%</code> system)\n" +
 		f"<code> → </code> <b>mem [</b><code>{order_suffix(total_ram)}</code><b>] use</b> <code>{ram_usage:.2f}%</code> (<code>{ram_load:.2f}%</code> system)\n" +
 		f"<code>→ </code> <b>python</b> <code>{platform.python_version()}</code>\n",
-		parse_mode="html", disable_web_page_preview=True
+		parse_mode=ParseMode.HTML, disable_web_page_preview=True
 	)
 
 @HELP.add()
@@ -206,7 +209,7 @@ async def update_cmd(client:alemiBot, message:Message):
 		out += "\n` → ` Checking libraries"
 		await msg.edit(out) 
 		proc = await asyncio.create_subprocess_exec(
-			"pip", "install", "-r", "requirements.txt", "--upgrade",
+			"pip", "install", ".", "--upgrade",
 			stdout=asyncio.subprocess.PIPE,
 			stderr=asyncio.subprocess.STDOUT)
 		stdout, _stderr = await proc.communicate()
@@ -238,7 +241,7 @@ async def update_cmd(client:alemiBot, message:Message):
 		out += "\n` → ` Restarting process"
 		await msg.edit(out) 
 		if msg.chat:
-			client.storage._set_last_message(msg.chat.id, msg.message_id)
+			client.storage._set_last_message(msg.chat.id, msg.id)
 		asyncio.get_event_loop().create_task(client.restart())
 	except Exception as e:
 		logger.exception("Error while updating")
@@ -343,7 +346,7 @@ async def plugin_add_cmd(client:alemiBot, message:Message):
 			stderr=asyncio.subprocess.STDOUT
 		)
 
-		stdout, _sterr = await proc.communicate()
+		stdout, _stderr = await proc.communicate()
 		res = cleartermcolor(stdout.decode())
 		logger.info(res)
 		if not res.startswith("Cloning"):
@@ -374,7 +377,7 @@ async def plugin_add_cmd(client:alemiBot, message:Message):
 		out += f"\n` → ` Restarting process"
 		await msg.edit(out)
 		with open("data/lastmsg.json", "w") as f:
-			json.dump({"message_id": msg.message_id,
+			json.dump({"message_id": msg.id,
 						"chat_id": msg.chat.id}, f)
 		asyncio.get_event_loop().create_task(client.restart())
 	except Exception as e:
@@ -446,7 +449,7 @@ async def plugin_remove_cmd(client:alemiBot, message:Message):
 		out += f" [`OK`]\n` → ` Restarting process"
 		await msg.edit(out)
 		with open("data/lastmsg.json", "w") as f:
-			json.dump({"message_id": msg.message_id,
+			json.dump({"message_id": msg.id,
 						"chat_id": msg.chat.id}, f)
 		asyncio.get_event_loop().create_task(client.restart())
 	except Exception as e:
@@ -496,8 +499,8 @@ async def manage_allowed_cmd(client:alemiBot, message:Message):
 			return
 		users_to_manage.append(peer)
 	elif len(message.command) > 0:
-		if message.command[0] in ["@here", "@everyone"]:
-			async for u in client.iter_chat_members(message.chat.id):
+		if message.command[0] in ["@here", "@everyone"] and message.chat:
+			async for u in client.get_chat_members(message.chat.id):
 				if u.user.is_bot:
 					continue
 				users_to_manage.append(u.user)

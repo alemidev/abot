@@ -16,6 +16,7 @@ from pyrogram.raw.types import InputMessagesFilterEmpty
 from pyrogram.types import Message
 from pyrogram import Client
 from pyrogram.errors import ChatWriteForbidden, FloodWait
+from pyrogram.enums import ChatAction, MessageMediaType
 
 from .text import batchify
 from .getters import get_text
@@ -40,25 +41,16 @@ class ProgressChatAction:
 	a method which will not send another chat action until cooldown expired.
 	Can be used as context manager.
 	"""
-	ACTIONS = [
-		"typing", "upload_photo", "record_video", "upload_video",
-		"record_audio", "upload_audio", "upload_document", "find_location",
-		"record_video_note", "upload_video_note", "choose_contact",
-		"playing", "speaking", "cancel"
-	]
 	def __init__(
 			self,
 			client:Client,
 			chat_id:int,
-			action:str="upload_document",
-			random:bool=False,
+			action:ChatAction=ChatAction.TYPING,
 			interval:float=4.75
 	):
 		self.client = client
 		self.chat_id = chat_id
 		self.action = action
-		if random:
-			self.action = choice(list(set(self.ACTIONS) - {"speaking", "cancel"}))
 		self.interval = interval
 		self._running = False
 		self.last = 0
@@ -102,8 +94,11 @@ class ProgressChatAction:
 
 
 def is_me(message:Message) -> bool:
-	return message.outgoing or (message.from_user is not None 
-		and message.from_user.is_self and message.via_bot is None) # can't edit messages from inline bots
+	return message.outgoing or (
+		message.from_user is not None 
+		and message.from_user.is_self
+		and message.via_bot is None  # can't edit messages from inline bots
+	) or False
 
 async def edit_or_reply(message:Message, text:str, separator:str="\n", nomentions:bool=False, *args, **kwargs) -> Message:
 	"""Will edit provided message if possible, appending provided text separated by given separator (default \\n).
@@ -120,7 +115,7 @@ async def edit_or_reply(message:Message, text:str, separator:str="\n", nomention
 		text = get_text(message, **opts) + separator + text
 
 	fragments = batchify(text, 4096)
-	ret = None
+	ret : Message
 
 	if is_me(message): # If I sent this message, edit it with the first fragment
 		ret = await message.edit(fragments.pop(0), *args, **kwargs)
@@ -138,85 +133,20 @@ async def send_media(client:Client, chat_id:int, fname:str, **kwargs):
 	Will accept any arg that is valid for client.send_photo/video/sticker/voice/document.
 	"caption" will be removed from kwargs if sending a sticker or an audio."""
 	if fname.endswith((".jpg", ".jpeg", ".png")):
-		prog = ProgressChatAction(client, chat_id, action="upload_photo")
+		prog = ProgressChatAction(client, chat_id, action=ChatAction.UPLOAD_PHOTO)
 		await client.send_photo(chat_id, fname, progress=prog.tick, **kwargs)
 	elif fname.endswith((".gif", ".mp4", ".webm")):
-		prog = ProgressChatAction(client, chat_id, action="upload_video")
+		prog = ProgressChatAction(client, chat_id, action=ChatAction.UPLOAD_VIDEO)
 		await client.send_video(chat_id, fname, progress=prog.tick, **kwargs)
 	elif fname.endswith((".webp", ".tgs")):
-		prog = ProgressChatAction(client, chat_id, action="upload_photo")
+		prog = ProgressChatAction(client, chat_id, action=ChatAction.CHOOSE_STICKER)
 		kwargs.pop("caption") # would raise an exception, remove it so it's safe to use from send_media
 		await client.send_sticker(chat_id, fname, progress=prog.tick, **kwargs)
 	elif fname.endswith((".mp3", ".ogg", ".wav")):
-		prog = ProgressChatAction(client, chat_id, action="upload_audio")
+		prog = ProgressChatAction(client, chat_id, action=ChatAction.UPLOAD_AUDIO)
 		kwargs.pop("caption") # would raise an exception, remove it so it's safe to use from send_media
 		await client.send_voice(chat_id, fname, progress=prog.tick, **kwargs)
 	else:
-		prog = ProgressChatAction(client, chat_id, action="upload_document")
+		prog = ProgressChatAction(client, chat_id, action=ChatAction.UPLOAD_DOCUMENT)
 		await client.send_document(chat_id, fname, progress=prog.tick, **kwargs)
-	await client.send_chat_action(chat_id, "cancel")
-
-def parse_media_type(msg:Message) -> Optional[str]:
-	media_types = [
-		"voice", "audio", "photo", "dice", "sticker", "animation", "game",
-		"video_note", "video", "contact", "location", "venue", "poll", "document",
-	]
-	for t in media_types:
-		if hasattr(msg, t) and getattr(msg, t):
-			return t
-	return None
-
-def parse_sys_dict(msg):
-	events = []
-	if "new_chat_members" in msg:
-		events.append("new chat members")
-	if "left_chat_member" in msg:
-		events.append("member left")
-	if "new_chat_title" in msg:
-		events.append("chat title changed")
-	if "new_chat_photo" in msg:
-		events.append("chat photo changed")
-	if "delete_chat_photo" in msg:
-		events.append("chat photo deleted")
-	if "group_chat_created" in msg:
-		events.append("group chat created")
-	if "supergroup_chat_created" in msg:
-		events.append("supergroup created")
-	if "channel_chat_created" in msg:
-		events.append("channel created")
-	if "migrate_to_chat_id" in msg:
-		events.append("migrate to chat id")
-	if "migrate_from_chat_id" in msg:
-		events.append("migrate from chat id")
-	if "pinned_message" in msg:
-		events.append("pinned msg")
-	if "game_score" in msg:
-		events.append("game score")
-	return "SYS[ " + " | ".join(events) + " ]"
-
-async def edit_scheduled(client:Client, message:Message, text:str, *args, **kwargs): # Not really possible, we just delete and resend
-	if message.reply_to_message:
-		kwargs["reply_to_message_id"] = message.reply_to_message.message_id
-	peer = await client.resolve_peer(message.chat.id)
-	await client.send(DeleteScheduledMessages(peer=peer, id=[message.message_id]))
-	return await client.send_message(message.chat.id, message.text.markdown + "\n" + text, *args,
-										 schedule_date=message.date, **kwargs)
-
-async def count_messages(client:Client, chat:int, user:int, offset:int=0, query:str="") -> int:
-	messages : MessagesSlice = await client.send(
-				Search(
-					peer=await client.resolve_peer(chat),
-					from_id=await client.resolve_peer(user),
-					add_offset=offset,
-					filter=InputMessagesFilterEmpty(),
-					q=query,
-					min_date=0,
-					max_date=0,
-					offset_id=0,
-					limit=0,
-					max_id=0,
-					min_id=0,
-					hash=0,
-				)
-			)
-	return messages.count
+	await client.send_chat_action(chat_id, ChatAction.CANCEL)

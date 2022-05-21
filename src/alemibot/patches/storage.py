@@ -34,6 +34,11 @@ class DocumentFileStorage(FileStorage):
 		with self.lock:
 			self.conn.executescript(DOCUMENT_SCHEMA)
 
+	def create(self):
+		super().create()
+		with self.lock:
+			self.conn.executescript(DOCUMENT_SCHEMA)
+
 	def _get_last_message(self) -> Optional[Tuple[int, int]]:
 		res = self.conn.execute("SELECT * FROM last_message").fetchone()
 		if res:

@@ -1,29 +1,24 @@
-from pyrogram.types import Message
+from typing import Union
 
-def get_text(msg:Message, raw:bool = False, html:bool = False):
-	if hasattr(msg, "text") and msg.text:
+from pyrogram.types import Message, InlineQuery, Chat, User
+
+def get_text(msg:Union[Message, InlineQuery], raw:bool = False, html:bool = False) -> str:
+	if isinstance(msg, Message) and msg.text:
 		if not raw:
 			if html and hasattr(msg.text, "html"):
 				return msg.text.html
 			if not html and hasattr(msg.text, "markdown"):
 				return msg.text.markdown
 		return msg.text
-	if hasattr(msg, "caption") and msg.caption:
+	if isinstance(msg, Message) and msg.caption:
 		if not raw:
-			if html and hasattr(msg.caption, "html"):
+			if html and msg.caption.html:
 				return msg.caption.html
-			if not html and hasattr(msg.caption, "markdown"):
+			if not html and msg.caption.markdown:
 				return msg.caption.markdown
 		return msg.caption
-	if hasattr(msg, "query") and msg.query:
-		if not raw:
-			if html and hasattr(msg.query, "html"):
-				return msg.query.html
-			if not html and hasattr(msg.query, "markdown"):
-				return msg.query.markdown
+	if isinstance(msg, InlineQuery) and msg.query:
 		return msg.query
-	if raw:
-		return None
 	return ""
 
 def get_user(msg:Message):
@@ -33,7 +28,7 @@ def get_user(msg:Message):
 		return msg.sender_chat
 	return None
 
-def get_username(entity, mention=True, log=False):
+def get_username(entity:Union[Chat, User], mention=True, log=False):
 	"""Get username of chat or user. If no username is available, will return
 	   user first_name (+last_name if present) or chat title. If mention is True and target
 	   is mentionable, a mention will be returned (either with @ or with a tg deeplink).
@@ -68,7 +63,7 @@ def get_username(entity, mention=True, log=False):
 		return entity.title
 	return str(entity.id)
 
-def get_channel(chat):
+def get_channel(chat:Chat):
 	if chat.title is None:
 		return get_username(chat)
 	else:

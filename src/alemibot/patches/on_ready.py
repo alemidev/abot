@@ -2,7 +2,6 @@ import inspect
 from typing import Callable
 
 from pyrogram import Client, ContinuePropagation, StopPropagation
-from pyrogram.scaffold import Scaffold
 from pyrogram.handlers.handler import Handler
 
 class ReadyHandler(Handler):
@@ -22,7 +21,7 @@ class ReadyHandler(Handler):
 	def __init__(self, cb:Callable):
 		super().__init__(cb)
 
-class OnReady(Scaffold):
+class OnReady:
 	def on_ready(self=None, group:int=0) -> Callable:
 		"""Decorator for handling client signaling being ready.
 		This does the same thing as :meth:`~pyrogram.Client.add_handler` using the
@@ -45,7 +44,7 @@ class OnReady(Scaffold):
 		return decorator
 
 	async def _process_ready_callbacks(self):
-		async with self.lock:
+		async with self._lock:
 			for group in self.dispatcher.groups.values():
 				for handler in group:
 					args = None
