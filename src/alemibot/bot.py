@@ -30,7 +30,7 @@ class alemiBot(Client, OnReady):
 	public : bool
 	_lock : asyncio.Lock # for on_ready callback
 
-	def __init__(self, name:str, config_file:str=None, **kwargs):
+	def __init__(self, name:str, config_file:str=None, pyrogram_logs:bool=False, **kwargs):
 		# Load file config
 		self.config = ConfigParser()
 		self.config.read(f"default.ini") # First load default
@@ -77,6 +77,11 @@ class alemiBot(Client, OnReady):
 		self.auth = Authenticator(name)
 		self.sudoers = [ int(uid.strip()) for uid in self.config.get("perms", "sudo", fallback="").split() ]
 		self.public = self.config.getboolean("perms", "public", fallback=False) # util/permission
+		# Silence some pyrogram logging prints
+		if not pyrogram_logs:
+			logging.getLogger('pyrogram.session').setLevel(logging.WARNING)  # So it's less spammy
+			logging.getLogger('pyrogram.connection').setLevel(logging.WARNING)  # So it's less spammy
+
 
 	async def _edit_last(self):
 		last = self.storage._get_last_message()
