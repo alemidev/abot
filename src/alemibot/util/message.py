@@ -27,7 +27,7 @@ def _catch_errors(fun):
 		try:
 			await fun(self, args, kwargs)
 		except FloodWait as e:
-			logging.error("FloodWait too long (%d s), aborting", e.x)
+			logging.error("FloodWait too long (%d s), aborting", e.value)
 		except ChatWriteForbidden as e:
 			logging.error("Cannot write in this chat")
 		except Exception as e:

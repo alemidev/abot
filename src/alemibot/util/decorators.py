@@ -27,9 +27,9 @@ def report_error(lgr) -> Callable:
 				lgr.info("[%s] running '%s'", author, func.__name__)
 				await func(client, message, *args, **kwargs)
 			except FloodWait as e:
-				lgr.error("[%s] FloodWait too long (%d s), aborting", author, e.x)
+				lgr.error("[%s] FloodWait too long (%d s), aborting", author, e.value)
 			except SlowmodeWait as e:
-				lgr.error("[%s] SlowmodeWait too long (%d s), aborting", author, e.x)
+				lgr.error("[%s] SlowmodeWait too long (%d s), aborting", author, e.value)
 			except ChatWriteForbidden as e:
 				try: # It may come from another chat, still try to report it
 					await edit_or_reply(message, "`[!] → ` " + str(e))
