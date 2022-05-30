@@ -17,14 +17,14 @@ def batchify(str_in, size):
 	return out
 
 class ColorFormatter(Formatter):
-	def __init__(self, fmt:str):
+	def __init__(self, fmt:str, datefmt:str = None):
 		self.fmt : str = fmt
 		self.formatters : Dict[int, Formatter] = {
-			DEBUG: Formatter(colored(fmt, color='grey')),
-			INFO: Formatter(colored(fmt)),
-			WARNING: Formatter(colored(fmt, color='yellow')),
-			ERROR: Formatter(colored(fmt, color='red')),
-			CRITICAL: Formatter(colored(fmt, color='red', attrs=['bold'])),
+			DEBUG: Formatter(colored(fmt, color='grey'), datefmt=datefmt),
+			INFO: Formatter(colored(fmt), datefmt=datefmt),
+			WARNING: Formatter(colored(fmt, color='yellow'), datefmt=datefmt),
+			ERROR: Formatter(colored(fmt, color='red'), datefmt=datefmt),
+			CRITICAL: Formatter(colored(fmt, color='red', attrs=['bold']), datefmt=datefmt),
 		}
 
 	def format(self, record:LogRecord) -> str:
@@ -46,7 +46,7 @@ def setup_logging(name:str, level=INFO, color:bool=True) -> None:
 	ch.setLevel(max(INFO, level)) # so we never show DEBUG on stdout
 	# create formatter and add it to the handlers
 	file_formatter = Formatter("[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s", "%b %d %Y %H:%M:%S")
-	print_formatter = ColorFormatter("> %(message)s") if color else Formatter("> %(message)s")
+	print_formatter = ColorFormatter("%(asctime)s > %(message)s", "%H:%M:%S") if color else Formatter("%(asctime)s > %(message)s", "%H:%M:%S")
 	fh.setFormatter(file_formatter)
 	ch.setFormatter(print_formatter)
 	# add the handlers to the logger
