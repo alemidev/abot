@@ -16,7 +16,7 @@ from pyrogram.raw.types import InputMessagesFilterEmpty
 from pyrogram.types import Message
 from pyrogram import Client
 from pyrogram.errors import ChatWriteForbidden, FloodWait
-from pyrogram.enums import ChatAction, MessageMediaType
+from pyrogram.enums import ChatAction, MessageMediaType, ParseMode
 
 from .text import batchify
 from .getters import get_text
@@ -111,7 +111,7 @@ async def edit_or_reply(message:Message, text:str, separator:str="\n", nomention
 	if is_me(message):
 		opts = {}
 		if "parse_mode" in kwargs: # needed to properly get previous message text
-			opts = {"raw": bool(kwargs["parse_mode"] is None), "html": bool(kwargs["parse_mode"] == "html")}
+			opts = {"raw": bool(kwargs["parse_mode"] is None), "html": bool(kwargs["parse_mode"] == ParseMode.HTML)}
 		text = get_text(message, **opts) + separator + text
 
 	fragments = batchify(text, 4096)
