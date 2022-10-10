@@ -13,10 +13,10 @@ This repo contains the root for alemibot:
 * an help command which automatically extracts docstrings
 * a 2 role permission system (user/root)
 * a wrapper around pyrogram SQLite db, for easy storage of persistent data
-* a plugin manager (with git submodules), allowing plugins to access all above features
 * some common commands (/update, /ping, /info)
 * events for bot startup/shutdown
 * some utility functions to handle most common tasks
+* a plugin manager (with git submodules), allowing plugins to access all above features
 
 alemiBot simplifies my bot development, by providing a standardized and solid baseline, with common features to all projects, which can focus on their specific functionalities.
 
