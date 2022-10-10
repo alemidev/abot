@@ -89,13 +89,16 @@ class alemiBot(Client, OnReady):
 
 
 	async def _edit_last(self):
+		if not isinstance(self.storage, DocumentFileStorage):
+			return
 		last = self.storage._get_last_message()
-		if last:
-			try:
-				message = await self.get_messages(last[0], last[1])
-				await message.edit(message.text.markdown + " [`OK`]")
-			except Exception:
-				self.logger.exception("Error editing restart message")
+		if not last:
+			return
+		try:
+			message = await self.get_messages(last[0], last[1])
+			await message.edit(message.text.markdown + " [`OK`]")
+		except Exception:
+			self.logger.exception("Error editing restart message")
 
 	async def start(self):
 		await super().start()
