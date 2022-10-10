@@ -10,5 +10,6 @@ data/
 
 *.egg-info/
 __pycache__/
+build/
 
 plugins/__pycache__/
