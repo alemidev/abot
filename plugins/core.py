@@ -11,21 +11,19 @@ from datetime import datetime
 
 import psutil
 
-from pyrogram import filters
 from pyrogram.enums import ParseMode
 from pyrogram.errors import PeerIdInvalid
 from pyrogram.raw.functions import Ping
 from pyrogram.raw.functions.account import GetAuthorizations
 
 from alemibot import alemiBot
-
+from alemibot.util.help import CATEGORIES, ALIASES, get_all_short_text
+from alemibot.util.command import _Message as Message
+from alemibot.patches import DocumentFileStorage
 from alemibot.util import (
 	report_error, set_offline, is_allowed, sudo, filterCommand, edit_or_reply, is_me,
 	get_username, cleartermcolor, order_suffix, HelpCategory
 )
-
-from alemibot.util.help import CATEGORIES, ALIASES, get_all_short_text
-from alemibot.util.command import _Message as Message
 
 logger = logging.getLogger(__name__)
 
@@ -240,7 +238,7 @@ async def update_cmd(client:alemiBot, message:Message):
 			out += f" [`{count} new`]"
 		out += "\n` → ` Restarting process"
 		await msg.edit(out) 
-		if msg.chat:
+		if msg.chat and isinstance(client.storage, DocumentFileStorage):
 			client.storage._set_last_message(msg.chat.id, msg.id)
 		asyncio.get_event_loop().create_task(client.restart())
 	except Exception as e:
