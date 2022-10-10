@@ -122,7 +122,7 @@ if __name__ == "__main__":
 
 	logger.info("Installing dependancies")
 	proc = subprocess.Popen(
-			["pip", "install", "-r", "requirements.txt"],
+			["pip", "install", "."],
 			stdout=subprocess.PIPE, stderr=subprocess.STDOUT
 	)
 	stdout, _sterr = proc.communicate()
@@ -159,8 +159,8 @@ if __name__ == "__main__":
 	logger.info("Starting bot subprocess")
 
 	proc = subprocess.Popen(
-			[sys.executable, os.getcwd() + '/bot.py', os.environ["SESSION_STRING"]],
-			stdout=sys.stdout, stderr=sys.stderr
+		[sys.executable, "-m", "alemibot", "heroku", "--config", "config.ini", "--session", os.environ["SESSION_STRING"]],
+		stdout=sys.stdout, stderr=sys.stderr
 	)
 
 	def stop_bot(signum, frame):
