@@ -3,7 +3,8 @@ import sys
 import asyncio
 import subprocess
 import logging
-from typing import List, Callable
+
+from typing import List
 from datetime import datetime
 from pathlib import Path
 from configparser import ConfigParser
@@ -12,6 +13,7 @@ from setproctitle import setproctitle
 
 from pyrogram import Client
 from pyrogram.types import User
+from pyrogram.storage import MemoryStorage
 
 from .patches import OnReady, DocumentFileStorage
 from .util import get_username, Context
@@ -30,16 +32,19 @@ class alemiBot(Client, OnReady):
 	public : bool
 	_lock : asyncio.Lock # for on_ready callback
 
-	def __init__(self, name:str, config_file:str=None, pyrogram_logs:bool=False, **kwargs):
+	def __init__(self, name:str, config_file:str=None, pyrogram_logs:bool=False, session_string:str="", **kwargs):
 		# Load file config
 		self.config = ConfigParser()
-		self.config.read(f"default.ini") # First load default
-		self.config.read(f"{name}.ini")
+		self.config.read("default.ini") # First load default
+		self.config.read(config_file or f"{name}.ini")
 		# Merge it with kwargs, with those taking precedence
 		for k, v in self.config["pyrogram"].items():
 			if k not in kwargs:
 				kwargs[k] = v
-		storage = DocumentFileStorage(name, Path(kwargs['workdir']) if 'workdir' in kwargs else Client.WORKDIR)
+		if session_string:
+			storage = MemoryStorage(name, session_string)
+		else:
+			storage = DocumentFileStorage(name, Path(kwargs['workdir']) if 'workdir' in kwargs else Client.WORKDIR)
 		if 'app_version' not in kwargs: # generate app version automatically
 			# Get project version from setup.cfg
 			setup_cfg = ConfigParser()
