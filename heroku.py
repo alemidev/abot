@@ -47,10 +47,11 @@ def install_plugin(user_input):
 
 		logger.info("Checking branches")
 		proc = subprocess.Popen(
-		      ["git", "ls-remote", "--symref", link, "HEAD"],
-		      stdout=subprocess.PIPE,
-		      stderr=subprocess.STDOUT,
-			  env=custom_env)
+			["git", "ls-remote", "--symref", link, "HEAD"],
+			stdout=subprocess.PIPE,
+			stderr=subprocess.STDOUT,
+			env=custom_env
+		)
 		stdout, _sterr = proc.communicate()
 		res = stdout.decode()
 		logger.info(res)
@@ -65,10 +66,11 @@ def install_plugin(user_input):
 		logger.info("Fetching source code")
 
 		proc = subprocess.Popen( # Can't add as submodules on heroku since it's not a git repo!
-		  ["git", "submodule", "add", "-b", branch, link, f"plugins/{folder}"],
-		  stdout=subprocess.PIPE,
-		  stderr=subprocess.STDOUT,
-		  env=custom_env)
+			["git", "submodule", "add", "-b", branch, link, f"plugins/{folder}"],
+			stdout=subprocess.PIPE,
+			stderr=subprocess.STDOUT,
+			env=custom_env
+		)
 
 		stdout, _sterr = proc.communicate()
 		res = stdout.decode()
@@ -122,8 +124,8 @@ if __name__ == "__main__":
 
 	logger.info("Installing dependancies")
 	proc = subprocess.Popen(
-			["pip", "install", "."],
-			stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+		["pip", "install", "."],
+		stdout=subprocess.PIPE, stderr=subprocess.STDOUT
 	)
 	stdout, _sterr = proc.communicate()
 	logger.info(stdout.decode())
