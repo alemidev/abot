@@ -281,7 +281,7 @@ async def plugin_add_cmd(client:alemiBot, message:Message):
 	You can specify which branch to clone with `-b` option.
 	You can also specify a custom folder to clone into with `-d` option (this may break plugins relying on data stored in their directory!)
 	"""
-	if not client.config.getboolean("perms", "allowPlugins", fallback=True):
+	if not client._allow_plugins:
 		return await edit_or_reply(message, "`[!] → ` Plugin management is disabled")
 	out = message.text.markdown if is_me(message) else f"`→ ` {get_username(message.from_user)} requested plugin install"
 	msg = message if is_me(message) else await message.reply(out)
@@ -395,7 +395,7 @@ async def plugin_remove_cmd(client:alemiBot, message:Message):
 	plugin folder and all its content.
 	If flag `-lib` is added, libraries installed with pip will be removed too (may break dependancies of other plugins!)
 	"""
-	if not client.config.getboolean("perms", "allowPlugins", fallback=True):
+	if not client._allow_plugins:
 		return await edit_or_reply(message, "`[!] → ` Plugin management is disabled")
 	out = message.text.markdown if is_me(message) else f"`→ ` {get_username(message.from_user)} requested plugin removal"
 	msg = message if is_me(message) else await message.reply(out)

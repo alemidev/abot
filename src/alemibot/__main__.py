@@ -21,8 +21,14 @@ if __name__ == "__main__":
 	)
 
 	parser.add_argument('name', help='name to use for this client session')
-	parser.add_argument('--session', dest='session_string', metavar='STRING', type=str, default="", help='use given pre-authenticated session string for login')
-	parser.add_argument('--config', dest='config', metavar='PATH', type=str, default="", help='specify path for config file (default <name>.ini in cwd)')
+	parser.add_argument('--config', dest='config', metavar='PATH', type=str, default=None, help='specify path for config file (default <name>.ini in cwd)')
+
+	parser.add_argument('--api-id', dest='api_id', type=int, help="API ID to use for authentication, overrides config")
+	parser.add_argument('--api-hash', dest='api_hash', help="API HASH to use for authentication, overrides config")
+	parser.add_argument('--session', dest='session_string', metavar='STRING', help='use given pre-authenticated session string for login')
+	parser.add_argument('--prefix', dest='prefixes', help="prefixes for commands (each character is a distinct one)")
+	parser.add_argument('--sudo', dest='sudo', metavar="UID", type=int, nargs='+', help="user ids of those allowed to operate as owners, overrides config")
+	parser.add_argument('--allow-plugins', dest='allow_plugins', action='store_const', const=True, default=None, help="allow sudoers to install plugins (git submodules)")
 	parser.add_argument('--no-color', dest='color', action='store_const', default=True, const=False, help='disable colors for logger text')
 	parser.add_argument('--debug', dest='debug_level', action='store_const', default=logging.INFO, const=logging.DEBUG, help='Set logging to debug level')
 
@@ -35,10 +41,24 @@ if __name__ == "__main__":
 
 	setup_logging(args.name, level=args.debug_level, color=args.color)
 
+	kwargs = {}
+	if args.api_id is not None:
+		kwargs["api_id"] = args.api_id
+	if args.api_hash is not None:
+		kwargs["api_hash"] = args.api_hash
+	if args.session_string is not None:
+		kwargs["session_string"] = args.session_string
+	if args.prefixes is not None:
+		kwargs["prefixes"] = list(args.prefixes)
+	if args.sudo is not None:
+		kwargs["sudo"] = [ int(x) for x in args.sudo ]
+	if args.allow_plugins is not None:
+		kwargs["allowPlugins"] = args.allow_plugins
+
 	app = alemiBot(
 		args.name,
 		config_file=args.config,
-		session_string=args.session_string
+		**kwargs
 	)
 
 	app.run()

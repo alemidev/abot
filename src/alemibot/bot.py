@@ -31,20 +31,30 @@ class alemiBot(Client, OnReady):
 	sudoers : List[int]
 	public : bool
 	_lock : asyncio.Lock # for on_ready callback
+	_allow_plugins : bool
 
 	def __init__(self, name:str, config_file:str=None, pyrogram_logs:bool=False, session_string:str="", **kwargs):
 		# Load file config
 		self.config = ConfigParser()
-		self.config.read("default.ini") # First load default
 		self.config.read(config_file or f"{name}.ini")
+
 		# Merge it with kwargs, with those taking precedence
-		for k, v in self.config["pyrogram"].items():
-			if k not in kwargs:
-				kwargs[k] = v
+		if self.config.has_section("pyrogram"):
+			for k, v in self.config["pyrogram"].items():
+				if k not in kwargs:
+					# jank special cases for bools and ints, damn ini!
+					if k == "ipv6":
+						kwargs[k] = self.config.getboolean("pyrogram", "ipv6")
+					elif k in ("workers", "sleep_threshold"):
+						kwargs[k] = int(v)
+					else:
+						kwargs[k] = v
+
 		if session_string:
 			storage = MemoryStorage(name, session_string)
 		else:
 			storage = DocumentFileStorage(name, Path(kwargs['workdir']) if 'workdir' in kwargs else Client.WORKDIR)
+
 		if 'app_version' not in kwargs: # generate app version automatically
 			# Get project version from setup.cfg
 			setup_cfg = ConfigParser()
@@ -59,29 +69,48 @@ class alemiBot(Client, OnReady):
 			if v_git.startswith("fatal"):
 				v_git = '???'
 			kwargs['app_version'] = f"{v_base}-{v_git}"
-		if "plugins" not in kwargs and "plugins" in self.config.sections():
-			kwargs["plugins"] = dict(self.config["plugins"])
-			if "include" in kwargs["plugins"]:
-				kwargs["plugins"]["include"] = kwargs["plugins"]["include"].split()
-			if "exclude" in kwargs["plugins"]:
-				kwargs["plugins"]["exclude"] = kwargs["plugins"]["exclude"].split()
+
+		if "plugins" not in kwargs:
+			if self.config.has_section("plugins"):
+				kwargs["plugins"] = dict(self.config["plugins"])
+				if "include" in kwargs["plugins"]:
+					kwargs["plugins"]["include"] = kwargs["plugins"]["include"].split()
+				if "exclude" in kwargs["plugins"]:
+					kwargs["plugins"]["exclude"] = kwargs["plugins"]["exclude"].split()
+			else:
+				kwargs["plugins"] = { root: "plugins" }
+
 		super().__init__(
 			name,
 			in_memory=True,
 			**kwargs
 		)
+
 		self.storage = storage # we need to override pyrogram storage since we can't pass it anymore
 		self.session_name = name # override storage
 		self._lock = asyncio.Lock()
 		# Set useful attributes
 		self.ctx = Context()
 		self.logger = logging.getLogger(f"pyrogram.client.{name}")
-		self.prefixes = list(self.config.get("customization", "prefixes", fallback="./"))
 		self.start_time = datetime.now()
+		self.prefixes = (
+			kwargs["prefixes"] if "prefixes" in kwargs else
+			list(self.config.get("customization", "prefixes", fallback="./"))
+		)
+		self._allow_plugins = (
+			kwargs["allowPlugins"] if "allowPlugins" in kwargs else
+			self.config.get("perms", "allowPlugins", fallback=False)
+		)
 		# Load immutable perms from config
 		self.auth = Authenticator(name)
-		self.sudoers = [ int(uid.strip()) for uid in self.config.get("perms", "sudo", fallback="").split() ]
-		self.public = self.config.getboolean("perms", "public", fallback=False) # util/permission
+		self.sudoers = (
+			kwargs["sudo"] if "sudo" in kwargs else
+			[ int(uid.strip()) for uid in self.config.get("perms", "sudo", fallback="").split() ]
+		)
+		self.public = (
+			kwargs["public"] if "public" in kwargs else
+			self.config.getboolean("perms", "public", fallback=False) # util/permission
+		)
 		# Silence some pyrogram logging prints
 		if not pyrogram_logs:
 			logging.getLogger('pyrogram.session').setLevel(logging.WARNING)  # So it's less spammy
