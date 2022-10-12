@@ -1,6 +1,6 @@
 from .command import filterCommand
 from .context import Context
-from .decorators import report_error, set_offline, cancel_chat_action
+from .decorators import report_error, set_offline, cancel_chat_action, mark_failed
 from .getters import get_channel, get_text, get_user, get_username
 from .help import HelpCategory
 from .message import ProgressChatAction, is_me, edit_or_reply, send_media
