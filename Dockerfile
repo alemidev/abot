@@ -1,0 +1,19 @@
+FROM python:3
+
+WORKDIR /app
+
+COPY . .
+
+RUN pip install .
+
+ARG SESSION_STRING
+ARG NAME="alemibot"
+ARG PREFIX="./"
+ARG SUDO="0"
+
+ENV SESSION_STRING ${SESSION_STRING}
+ENV NAME ${NAME}
+ENV PREFIX ${PREFIX}
+ENV SUDO ${SUDO}
+
+CMD python -m alemibot $NAME --session $SESSION_STRING --sudo $SUDO --prefix $PREFIX
