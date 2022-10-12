@@ -1,4 +1,5 @@
 import functools
+import logging
 from typing import Callable, TYPE_CHECKING
 
 from pyrogram.types import Message
@@ -12,7 +13,7 @@ from .getters import get_user, get_username, get_text
 if TYPE_CHECKING:
 	from ..bot import alemiBot
 
-def report_error(lgr) -> Callable:
+def report_error(lgr:logging.Logger, mark_failed:bool=False) -> Callable:
 	"""Will report errors back to user
 
 	This decorator will wrap the handler in a try/catch and
@@ -21,8 +22,9 @@ def report_error(lgr) -> Callable:
 	"""
 	def deco(func):
 		@functools.wraps(func)
-		async def wrapper(client, message, *args, **kwargs):
+		async def wrapper(client:'alemiBot', message:Message, *args, **kwargs):
 			author = get_username(get_user(message), log=True)
+			pref = "[<code>FAIL</code>]" if mark_failed else ""
 			try:
 				lgr.info("[%s] running '%s'", author, func.__name__)
 				await func(client, message, *args, **kwargs)
@@ -32,30 +34,24 @@ def report_error(lgr) -> Callable:
 				lgr.error("[%s] SlowmodeWait too long (%d s), aborting", author, e.value)
 			except ChatWriteForbidden as e:
 				try: # It may come from another chat, still try to report it
-					await edit_or_reply(message, "<code>[!] → </code> " + str(e))
+					await edit_or_reply(message, f"{pref}\n<code>[!] → </code> " + str(e), separator=" ")
 				except ChatWriteForbidden: # Can't write messages here, prevent the double stacktrace
 					lgr.error("[%s] Cannot send messages in this chat", author)
 			except ChatSendMediaForbidden as e:
 				try: # It may come from another chat, still try to report it
-					await edit_or_reply(message, "<code>[!] → </code> cannot send media in this chat")
+					await edit_or_reply(message, f"{pref}\n<code>[!] → </code> cannot send media in this chat", separator=" ")
 					lgr.warning("[%s] Cannot send media in this chat", author)
 				except Exception:
 					lgr.exception("[%s] Cannot send media in this chat and failed to notify", author)
 			except Exception as e:
-				lgr.exception("[%s] exception in '%s' started by '%s'", author, func.__name__, get_text(message))
-				await edit_or_reply(message, f"<code>[!] {type(e).__name__} → </code> {str(e)}")
+				try:
+					msg = await client.get_messages(message.chat.id, message.id) # fetch message again because text may have changed
+					await edit_or_reply(msg, f"{pref}\n<code>[!] {type(e).__name__} → </code> {str(e)}", separator=" ")
+					lgr.exception("[%s] exception in '%s' started by '%s'", author, func.__name__, get_text(message))
+				except Exception:
+					lgr.exception("[%s] exception in '%s' started by '%s' (and failed notifying)", author, func.__name__, get_text(message))
 		return wrapper
 	return deco
-
-def mark_failed(func) -> Callable:
-	@functools.wraps(func)
-	async def wrapper(client, message, *args, **kwargs):
-		try:
-			await func(client, message, *args, **kwargs)
-		except Exception as e:
-			await edit_or_reply(message, "[`FAIL`]", separator=" ")
-			raise e # propagate it for raise_error
-	return wrapper
 
 def set_offline(func) -> Callable:
 	"""Will set user back offline when function is done"""
