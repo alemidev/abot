@@ -1,20 +1,21 @@
 from typing import Union
 
 from pyrogram.types import Message, InlineQuery, Chat, User
+from pyrogram.enums import ParseMode
 
-def get_text(msg:Union[Message, InlineQuery], raw:bool = False, html:bool = False) -> str:
+def get_text(msg:Union[Message, InlineQuery], raw:bool = False, parse_mode:ParseMode=ParseMode.HTML) -> str:
 	if isinstance(msg, Message) and msg.text:
 		if not raw:
-			if html and hasattr(msg.text, "html"):
+			if parse_mode == ParseMode.HTML and hasattr(msg.text, "html"):
 				return msg.text.html
-			if not html and hasattr(msg.text, "markdown"):
+			if parse_mode == ParseMode.MARKDOWN and hasattr(msg.text, "markdown"):
 				return msg.text.markdown
 		return msg.text
 	if isinstance(msg, Message) and msg.caption:
 		if not raw:
-			if html and msg.caption.html:
+			if parse_mode == ParseMode.HTML and msg.caption.html:
 				return msg.caption.html
-			if not html and msg.caption.markdown:
+			if parse_mode == ParseMode.MARKDOWN and msg.caption.markdown:
 				return msg.caption.markdown
 		return msg.caption
 	if isinstance(msg, InlineQuery) and msg.query:

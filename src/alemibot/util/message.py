@@ -1,22 +1,13 @@
-import re
-import json
 import asyncio
 import logging
 import functools
-from random import choice
-
-from typing import Union, Optional, List
 
 from time import time
 
-from pyrogram.raw.functions.messages import DeleteScheduledMessages
-from pyrogram.raw.functions.messages import Search
-from pyrogram.raw.types.messages import MessagesSlice
-from pyrogram.raw.types import InputMessagesFilterEmpty
 from pyrogram.types import Message
 from pyrogram import Client
 from pyrogram.errors import ChatWriteForbidden, FloodWait
-from pyrogram.enums import ChatAction, MessageMediaType, ParseMode
+from pyrogram.enums import ChatAction, ParseMode
 
 from .text import batchify
 from .getters import get_text
@@ -28,9 +19,9 @@ def _catch_errors(fun):
 			await fun(self, args, kwargs)
 		except FloodWait as e:
 			logging.error("FloodWait too long (%d s), aborting", e.value)
-		except ChatWriteForbidden as e:
+		except ChatWriteForbidden:
 			logging.error("Cannot write in this chat")
-		except Exception as e:
+		except Exception:
 			logging.exception("ignoring exception in '%s'", fun.__name__)
 	return wrapper
 
@@ -111,7 +102,7 @@ async def edit_or_reply(message:Message, text:str, separator:str="\n", nomention
 	if is_me(message):
 		opts = {}
 		if "parse_mode" in kwargs: # needed to properly get previous message text
-			opts = {"raw": bool(kwargs["parse_mode"] is None), "html": bool(kwargs["parse_mode"] == ParseMode.HTML)}
+			opts['parse_mode'] = kwargs['parse_mode']
 		text = get_text(message, **opts) + separator + text
 
 	fragments = batchify(text, 4096)
