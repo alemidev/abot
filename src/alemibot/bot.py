@@ -19,6 +19,7 @@ from pyrogram.enums import ParseMode
 from .patches import OnReady, DocumentFileStorage
 from .util import get_username, Context
 from .util.permission import Authenticator
+from .util.plugins import install_dependancies, install_plugin
 
 class alemiBot(Client, OnReady):
 	start_time : datetime
@@ -33,6 +34,7 @@ class alemiBot(Client, OnReady):
 	public : bool
 	_lock : asyncio.Lock # for on_ready callback
 	_allow_plugins : bool
+	_preloaded_plugins: List[str]
 
 	def __init__(
 			self,
@@ -41,6 +43,7 @@ class alemiBot(Client, OnReady):
 			allow_plugins:bool=False,
 			sudoers:List[int]=None,
 			prefixes:str=None,
+			install:List[str]=None,
 			pyrogram_logs:bool=False,
 			**kwargs
 	):
@@ -108,6 +111,7 @@ class alemiBot(Client, OnReady):
 		self.start_time = datetime.now()
 		self.prefixes = prefixes or list(self.config.get("customization", "prefixes", fallback="./"))
 		self._allow_plugins = allow_plugins or self.config.get("perms", "allowPlugins", fallback=False)
+		self._preloaded_plugins = install or []
 		# Load immutable perms from config
 		self.auth = Authenticator(name)
 		self.sudoers = sudoers or [ int(uid.strip()) for uid in self.config.get("perms", "sudo", fallback="").split() ]
@@ -116,7 +120,7 @@ class alemiBot(Client, OnReady):
 		if not pyrogram_logs:
 			logging.getLogger('pyrogram.session').setLevel(logging.WARNING)  # So it's less spammy
 			logging.getLogger('pyrogram.connection').setLevel(logging.WARNING)  # So it's less spammy
-
+		# Install pre-loaded plugins
 
 	async def _edit_last(self):
 		if not isinstance(self.storage, DocumentFileStorage):
@@ -131,6 +135,14 @@ class alemiBot(Client, OnReady):
 			self.logger.exception("Error editing restart message")
 
 	async def start(self):
+		for plugin in self._preloaded_plugins:
+			try:
+				await install_plugin(plugin)
+				deps = await install_dependancies(plugin)
+				self.logger.info("Installed %s (%d deps)", plugin, deps)
+			except Exception:
+				self.logger.exception("Could not preinstall plugin '%s'", plugin)
+		self._preloaded_plugins = []
 		await super().start()
 		self.dispatcher.locks_list.append(self._lock)
 		self.logger.info("Running init callbacks")

@@ -21,7 +21,7 @@ from alemibot.util.help import CATEGORIES, ALIASES, get_all_short_text
 from alemibot.util.command import _Message as Message
 from alemibot.patches import DocumentFileStorage
 from alemibot.util import (
-	report_error, mark_failed, set_offline, is_allowed, sudo, filterCommand, edit_or_reply, is_me,
+	report_error, set_offline, is_allowed, sudo, filterCommand, edit_or_reply, is_me,
 	get_username, cleartermcolor, order_suffix, HelpCategory
 )
 from alemibot.util.plugins import *
@@ -66,10 +66,10 @@ async def help_cmd(client:alemiBot, message:Message):
 			cat = CATEGORIES[k]
 			if arg in cat.HELP_ENTRIES:
 				e = cat.HELP_ENTRIES[arg]
-				return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
+				return await edit_or_reply(message, f"<code>→ {e.title} {e.args} </code>\n{e.longtext}", parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
 			elif arg in ALIASES and ALIASES[arg] in cat.HELP_ENTRIES:
 				e = cat.HELP_ENTRIES[ALIASES[arg]]
-				return await edit_or_reply(message, f"`→ {e.title} {e.args} `\n{e.longtext}", parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
+				return await edit_or_reply(message, f"<code>→ {e.title} {e.args} </code>\n{e.longtext}", parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
 		return await edit_or_reply(message, f"<code>[!] → </code> No command named <code>{arg}</code>", parse_mode=ParseMode.HTML)
 	else:
 		descr = client.config.get("customization", "desc", fallback="")
@@ -155,6 +155,8 @@ async def info_cmd(client:alemiBot, message:Message):
 
 @HELP.add()
 @alemiBot.on_message(sudo & filterCommand("update", flags=["-force"]))
+@report_error(logger, mark_failed=True)
+@set_offline
 async def update_cmd(client:alemiBot, message:Message):
 	"""fetch updates and restart client
 
@@ -162,90 +164,53 @@ async def update_cmd(client:alemiBot, message:Message):
 	and then restart process with an `execv` call.
 	If nothing gets pulled from `git`, update will stop unless the `-force` flag was given.
 	"""
-	out = message.text.markdown if is_me(message) else f"`→ ` {get_username(message.from_user)} requested update"
-	msg = message if is_me(message) else await message.reply(out)
-	uptime = str(datetime.now() - client.start_time)
-	out += f"\n`→ ` --runtime-- `{uptime}`"
-	try:
-		out += "\n` → ` Fetching updates"
-		pulled = False
-		await msg.edit(out)
-		proc = await asyncio.create_subprocess_exec(
-			"git", "pull",
-			stdout=asyncio.subprocess.PIPE,
-			stderr=asyncio.subprocess.STDOUT)
-		stdout, _stderr = await proc.communicate()
-		logger.info(stdout.decode())
-		if b"Aborting" in stdout:
-			out += " [`FAIL`]\n"
-			if not message.command["-force"]:
-				return await msg.edit(out)
-		elif b"Already up to date" in stdout:
-			out += " [`N/A`]"
-		else:
+	pulled = False
+	result = ""  # to avoid editing message too much, sometimes we put a result here and write it together with next step
+	force_update = message.command['-force']
+
+	if not is_me(message):
+		message = await message.reply(f"<code>→ </code> {get_username(message.from_user)} requested update")
+	message = await edit_or_reply(message,
+		f"<code>→ </code> <u>runtime</u> <code>{datetime.now() - client.start_time}</code>\n" +
+		"<code> → </code> Fetching updates"
+	)
+
+	pulled = await update_alemibot()
+
+	if pulled:
+		result = "[<code>OK</code>]"
+	else:
+		result = "[<code>N/A</code>]"
+
+	if has_plugins(): # Also update plugins
+		message = await edit_or_reply(message, result + "\n<code>  → </code> Submodules", separator=" ")
+		sub_count = await update_plugins()
+		if sub_count > 0:
+			result = f"[<code>{sub_count}</code>]"
 			pulled = True
-			out += " [`OK`]"
-
-		if os.path.isfile(".gitmodules"): # Also update plugins
-			out += "\n`  → ` Submodules"
-			await msg.edit(out)
-			sub_proc = await asyncio.create_subprocess_exec(
-				"git", "submodule", "update", "--remote",
-				stdout=asyncio.subprocess.PIPE,
-				stderr=asyncio.subprocess.STDOUT)
-			sub_stdout, _sub_stderr = await sub_proc.communicate()
-			logger.info(sub_stdout.decode())
-			sub_count = sub_stdout.count(b"checked out")
-			if sub_count > 0:
-				out += f" [`{sub_count}`]"
-				pulled = True
-			else:
-				out += " [`N/A`]"
-
-		if not pulled and not message.command["-force"]:
-			return await msg.edit(out)
-
-		out += "\n` → ` Checking libraries"
-		await msg.edit(out) 
-		proc = await asyncio.create_subprocess_exec(
-			"pip", "install", ".", "--upgrade",
-			stdout=asyncio.subprocess.PIPE,
-			stderr=asyncio.subprocess.STDOUT)
-		stdout, _stderr = await proc.communicate()
-		logger.info(stdout.decode())
-		if b"ERROR" in stdout:
-			out += " [`WARN`]"
 		else:
-			out += f" [`{stdout.count(b'Collecting')} new`]"
-		if os.path.isfile(".gitmodules"): # Also install dependancies from plugins
-			out += "\n`  → ` Submodules"
-			await msg.edit(out)
-			with open(".gitmodules") as f:
-				modules = f.read()
-			matches = re.findall(r"path = (?P<path>plugins/[^ ]+)\n", modules)
-			count = 0
-			for match in matches:
-				if os.path.isfile(f"{match}/requirements.txt"):
-					proc = await asyncio.create_subprocess_exec(
-						"pip", "install", "-r", f"{match}/requirements.txt", "--upgrade",
-						stdout=asyncio.subprocess.PIPE,
-						stderr=asyncio.subprocess.STDOUT)
-					stdout, _stderr = await proc.communicate()
-					logger.info(stdout.decode())
-					if b"ERROR" in stdout:
-						out += " [`WARN`]"
-					else:
-						count += stdout.count(b'Collecting')
-			out += f" [`{count} new`]"
-		out += "\n` → ` Restarting process"
-		await msg.edit(out) 
-		if msg.chat and isinstance(client.storage, DocumentFileStorage):
-			client.storage._set_last_message(msg.chat.id, msg.id)
-		asyncio.get_event_loop().create_task(client.restart())
-	except Exception as e:
-		logger.exception("Error while updating")
-		out += " [`FAIL`]\n`[!] → ` " + str(e)
-		await msg.edit(out) 
+			result = "[<code>N/A</code>]"
+
+	if not pulled and not force_update:
+		return await edit_or_reply(message, result, separator=" ")
+
+	message = await edit_or_reply(message, result + "\n<code> → </code> Checking libraries", separator=" ")
+
+	try:
+		core_deps = await update_alemibot_dependancies()
+		result = f"[<code>{core_deps} new</code>]"
+	except PipException:
+		result = "[<code>WARN</code>]"
+
+	if has_plugins(): # Also install dependancies from plugins
+		message = await edit_or_reply(message, result + "\n<code>  → </code> Submodules", separator=" ")
+		count = await update_plugins_dependancies()
+		result = f"[<code>{count} new</code>]"
+
+	await edit_or_reply(message, result + "\n<code> → </code> Restarting process", separator=" ")
+	if msg.chat and isinstance(client.storage, DocumentFileStorage):
+		client.storage._set_last_message(msg.chat.id, msg.id)
+	asyncio.get_event_loop().create_task(client.restart())
 
 PLUGIN_HTTPS = re.compile(r"http(?:s|):\/\/(?:.*)\/(?P<author>[^ ]+)\/(?P<plugin>[^ \.]+)(?:\.git|)")
 PLUGIN_SSH = re.compile(r"git@(?:.*)\.(?:.*):(?P<author>[^ ]+)\/(?P<plugin>[^ \.]+)(?:\.git|)")
@@ -264,8 +229,8 @@ def split_url(url):
 	"dir": ["-d", "--dir"],
 	"branch": ["-b", "--branch"],
 }, flags=["-ssh"]))
-@report_error(logger)
-@mark_failed
+@report_error(logger, mark_failed=True)
+@set_offline
 async def plugin_add_cmd(client:alemiBot, message:Message):
 	"""install a plugin
 
@@ -284,18 +249,19 @@ async def plugin_add_cmd(client:alemiBot, message:Message):
 	You can specify which branch to clone with `-b` option.
 	You can also specify a custom folder to clone into with `-d` option (this may break plugins relying on data stored in their directory!)
 	"""
-	if not client._allow_plugins:
-		return await edit_or_reply(message, "`[!] → ` Plugin management is disabled")
+	user_input = message.command[0]
+	branch = message.command["branch"]
+	folder = message.command["dir"]
+	result = ""  # to avoid editing message too much, sometimes we put a result here and write it together with next step
 
-	if not is_me(message):
-		message = await edit_or_reply(message, f"<code>→ </code> {get_username(message.from_user)} requested plugin install")
+	if not client._allow_plugins:
+		return await edit_or_reply(message, "<code>[!] → </code> Plugin management is disabled")
 
 	if len(message.command) < 1:
 		return await edit_or_reply(message, "<code>[!] → </code> No input")
 
-	user_input = message.command[0]
-	branch = message.command["branch"]
-	folder = message.command["dir"]
+	if not is_me(message):
+		message = await edit_or_reply(message, f"<code>→ </code> {get_username(message.from_user)} requested plugin install")
 
 	plugin, author = split_url(user_input) # clear url or stuff around
 	if folder is None:
@@ -312,35 +278,26 @@ async def plugin_add_cmd(client:alemiBot, message:Message):
 	if f"{author}/{plugin}" in get_plugin_list():
 		return await edit_or_reply(message, "<code>[!] → </code> Plugin already installed")
 
-	message = await edit_or_reply(message, f"<code>→ <code> Installing `{author}/{plugin}`")
+	message = await edit_or_reply(message, f"<code>→ <code> Installing <code>{author}/{plugin}</code>")
 
 	if branch is None:
 		branch = await get_repo_head(link) or 'main'
 
 	message = await edit_or_reply(message, "<code> → </code> Fetching source code")
-
-	try:
-		await install_plugin(link, branch=branch, path=f"plugins/{folder}")
-	except BranchNotExistingException:
-		return await edit_or_reply(message, f"[<code>FAIL</code>]\n<code>[!] → </code> Non existing branch <code>{branch}</code> for <code>{author}/{plugin}</code>", separator=" ")
-	except RepositoryNotExistingException:
-		return await edit_or_reply(message, f"[<code>FAIL</code>]\n<code>[!] → </code> No plugin <code>{author}/{plugin}</code> could be found", separator=" ")
-	except GitException:
-		return await edit_or_reply(message, f"[<code>FAIL</code>]\n<code>[!] → </code> Could not install plugin `{author}/{plugin}`", separator=" ")
-
+	await install_plugin(link, branch=branch, path=f"plugins/{folder}")
 	client.logger.info(f"Installed \"{author}/{plugin}\"")
 
 	message = await edit_or_reply(message, "[<code>OK</code>]\n<code> → </code> Checking dependancies", separator=" ")
-
 	if os.path.isfile(f"plugins/{plugin}/requirements.txt"):
 		try:
 			count = await install_dependancies(plugin)
-			message = await edit_or_reply(message, f"[<code>{count} new</code>]", separator=" ")
+			result = f"[<code>{count} new</code>]"
 		except PipException:
-			message = await edit_or_reply(message, "[<code>WARN</code>]", separator=" ")
+			result = "[<code>WARN</code>]"
 	else:
-		message = await edit_or_reply(message, "[<code>N/A</code>]", separator=" ")
-	message = await edit_or_reply(message, "<code> → </code> Restarting process")
+		result = "[<code>N/A</code>]"
+
+	await edit_or_reply(message, result + "\n<code> → </code> Restarting process", separator=" ")
 	if isinstance(client.storage, DocumentFileStorage):
 		client.storage._set_last_message(message.id, message.chat.id)
 
@@ -350,6 +307,8 @@ async def plugin_add_cmd(client:alemiBot, message:Message):
 
 @HELP.add(cmd="<plugin>")
 @alemiBot.on_message(sudo & filterCommand(["uninstall", "plugin_remove"], flags=["-lib"]))
+@report_error(logger, mark_failed=True)
+@set_offline
 async def plugin_remove_cmd(client:alemiBot, message:Message):
 	"""remove an installed plugin.
 
@@ -358,65 +317,38 @@ async def plugin_remove_cmd(client:alemiBot, message:Message):
 	plugin folder and all its content.
 	If flag `-lib` is added, libraries installed with pip will be removed too (may break dependancies of other plugins!)
 	"""
+	result = ""  # to avoid editing message too much, sometimes we put a result here and write it together with next step
+	remove_libraries = message.command["-lib"]
 	if not client._allow_plugins:
-		return await edit_or_reply(message, "`[!] → ` Plugin management is disabled")
-	out = message.text.markdown if is_me(message) else f"`→ ` {get_username(message.from_user)} requested plugin removal"
-	msg = message if is_me(message) else await message.reply(out)
+		return await edit_or_reply(message, "<code>[!] → </code> Plugin management is disabled")
+	msg = message if is_me(message) else await message.reply(f"<code>→ </code> {get_username(message.from_user)} requested plugin removal")
 
-	try:
-		if len(message.command) < 1:
-			out += "\n`[!] → ` No input"
-			return await msg.edit(out)
-		plugin = message.command[0]
+	if len(message.command) < 1:
+		message = await edit_or_reply(message, "<code>[!] → </code> No input")
+	plugin = message.command[0]
 
-		out += f"\n`→ ` Uninstalling `{plugin}`"
+	message = await edit_or_reply(message, f"<code>→ </code> Uninstalling <code>{plugin}</code>")
 
-		if "/" in plugin: # If user passes <user>/<repo> here too, get just repo name
-			plugin = plugin.split("/")[1]
-	
-		logger.info(f"Removing plugin \"{plugin}\"")
-		if message.command["-lib"]:
-			out += "\n` → ` Removing libraries"
-			await msg.edit(out)
-			if os.path.isfile(f"plugins/{plugin}/requirements.txt"):
-				proc = await asyncio.create_subprocess_exec(
-					"pip", "uninstall", "-y", "-r", f"plugins/{plugin}/requirements.txt",
-					stdout=asyncio.subprocess.PIPE,
-					stderr=asyncio.subprocess.STDOUT)
-				stdout, _stderr = await proc.communicate()
-				logger.info(stdout.decode())
-				if b"ERROR" in stdout:
-					out += " [`WARN`]"
-				else:
-					out += f" [`{stdout.count(b'Uninstalling')} del`]"
-		out += "\n` → ` Removing source code" 
-		await msg.edit(out)
-		proc = await asyncio.create_subprocess_shell(
-		  f"git submodule deinit -f plugins/{plugin} && rm -rf .git/modules/plugins/{plugin} && git rm -f plugins/{plugin}",
-		  stdout=asyncio.subprocess.PIPE,
-		  stderr=asyncio.subprocess.STDOUT)
+	if "/" in plugin: # If user passes <user>/<repo> here too, get just repo name
+		plugin = plugin.split("/")[1]
+	logger.info(f"Removing plugin \"{plugin}\"")
 
-		stdout, _stderr = await proc.communicate()
-		res = cleartermcolor(stdout.decode())
-		logger.info(res)
-		if not res.startswith("Cleared"):
-			logger.error(res)
-			out += f" [`FAIL`]\n`[!] → ` Could not deinit `{plugin}`"
-			return await msg.edit(out)
-		if f"rm 'plugins/{plugin}'" not in res:
-			logger.error(res)
-			out += f" [`FAIL`]\n`[!] → ` Could not delete `{plugin}`"
-			return await msg.edit(out)
-		out += f" [`OK`]\n` → ` Restarting process"
-		await msg.edit(out)
-		with open("data/lastmsg.json", "w") as f:
-			json.dump({"message_id": msg.id,
-						"chat_id": msg.chat.id}, f)
-		asyncio.get_event_loop().create_task(client.restart())
-	except Exception as e:
-		logger.exception("Error while installing plugin")
-		out += " [`FAIL`]\n`[!] → ` " + str(e)
-		await msg.edit(out) 
+	if remove_libraries:
+		message = await edit_or_reply(message, "<code> → </code> Removing libraries")
+		count = await remove_dependancies(plugin)
+		result = f" [<code>{count} del</code>]"
+
+	message = await edit_or_reply(message, result + "\n<code> → </code> Removing source code", separator=" ")
+
+	if not await remove_plugin(plugin):
+		client.logger.error(res)
+		return await edit_or_reply(message, f"[<code>FAIL</code>]\n<code>[!] → </code> Could not deinit <code>{plugin}</code>", separator=" ")
+
+	await edit_or_reply(message, f"[<code>OK</code>]\n<code> → </code> Restarting process", separator=" ")
+
+	if isinstance(client.storage, DocumentFileStorage):
+		client.storage._set_last_message(msg.chat.id, msg.id)
+	asyncio.get_event_loop().create_task(client.restart())
 
 @HELP.add()
 @alemiBot.on_message(sudo & filterCommand(["plugins", "plugin", "plugin_list"]))
@@ -432,13 +364,13 @@ async def plugin_list_cmd(client:alemiBot, message:Message):
 		with open(".gitmodules") as f:
 			modules = f.read()
 		matches = re.findall(r"url = (?:git@|https:\/\/(?:www\.|))github\.com(?::|\/)(?P<p>[^ \.]+)(?:\.git|)", modules)
-		text = "`→ ` Installed plugins:\n"
+		text = "<code>→ </code> Installed plugins:\n"
 		for match in matches:
 			if match not in hidden:
-				text += f"` → ` `{match}`\n"
+				text += f"<code> → </code> <code>{match}</code>\n"
 		await edit_or_reply(message, text)
 	else:
-		await edit_or_reply(message, "`[!] → ` No plugins installed")
+		await edit_or_reply(message, "<code>[!] → </code> No plugins installed")
 
 @HELP.add(cmd="[<target>]")
 @alemiBot.on_message(sudo & filterCommand(["allow", "disallow", "revoke"], options={
@@ -470,23 +402,23 @@ async def manage_allowed_cmd(client:alemiBot, message:Message):
 			try:
 				users = await client.get_users(lookup)
 				if users is None:
-					return await edit_or_reply(message, "`[!] → ` No user matched")
+					return await edit_or_reply(message, "<code>[!] → </code> No user matched")
 				users_to_manage += users
 			except ValueError:
-				return await edit_or_reply(message, "`[!] → ` Lookup failed")
+				return await edit_or_reply(message, "<code>[!] → </code> Lookup failed")
 	else:
-		return await edit_or_reply(message, "`[!] → ` Provide an ID or reply to a msg")
+		return await edit_or_reply(message, "<code>[!] → </code> Provide an ID or reply to a msg")
 	logger.info("Changing permissions")
 	out = ""
 	action = client.auth.put if message.command.base == "allow" else client.auth.pop
 	action_str = "Allowed" if message.command.base == "allow" else "Disallowed"
 	for u in users_to_manage:
 		if action(u.id, message.command['group'] or '_'):
-			out += f"` → ` {action_str} **{get_username(u, mention=True)}**\n"
+			out += f"<code> → </code> {action_str} <b>{get_username(u, mention=True)}</b>\n"
 	if out != "":
 		await edit_or_reply(message, out)
 	else:
-		await edit_or_reply(message, "` → ` No changes")
+		await edit_or_reply(message, "<code> → </code> No changes")
 
 @HELP.add()
 @alemiBot.on_message(sudo & filterCommand(["trusted", "plist", "permlist"]))
@@ -500,7 +432,7 @@ async def trusted_list_cmd(client:alemiBot, message:Message):
 	searchable (no username and ubot hasn't interacted with it yet), it will lookup users \
 	one by one and append non searchable ids at the end.
 	"""
-	text = "`[` "
+	text = "<code>[</code> "
 	issues = ""
 	try:
 		users = await client.get_users(client.auth.all()) # raises PeerIdInvalid exc if even one of the ids has not been interacted with
@@ -511,6 +443,6 @@ async def trusted_list_cmd(client:alemiBot, message:Message):
 			try:
 				text += get_username(await client.get_users(uid), mention=True) + ", "
 			except PeerIdInvalid:
-				issues += f"~~[{uid}]~~ "
-	text += "`]`"
-	await edit_or_reply(message, f"` → ` Allowed Users :\n{text}\n{issues}") 
+				issues += f"<del>[{uid}]</del> "
+	text += "<code>]</code>"
+	await edit_or_reply(message, f"<code> → </code> Allowed Users :\n{text}\n{issues}") 

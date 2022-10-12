@@ -26,6 +26,7 @@ if __name__ == "__main__":
 	parser.add_argument('--api-id', dest='api_id', type=int, help="API ID to use for authentication, overrides config")
 	parser.add_argument('--api-hash', dest='api_hash', help="API HASH to use for authentication, overrides config")
 	parser.add_argument('--session', dest='session_string', metavar='STRING', help='use given pre-authenticated session string for login')
+	parser.add_argument('--install', dest='install', metavar='PLUGIN', nargs='+', help='install requested plugins at first startup')
 	parser.add_argument('--prefix', dest='prefixes', help="prefixes for commands (each character is a distinct one)")
 	parser.add_argument('--sudo', dest='sudo', metavar="UID", type=int, nargs='+', help="user ids of those allowed to operate as owners, overrides config")
 	parser.add_argument('--allow-plugins', dest='allow_plugins', action='store_const', const=True, default=False, help="allow sudoers to install plugins (git submodules)")
@@ -55,6 +56,7 @@ if __name__ == "__main__":
 		allow_plugins=args.allow_plugins,
 		sudoers=[ int(x) for x in args.sudo ] if args.sudo is not None else None,
 		prefixes=list(args.prefixes) if args.prefixes is not None else None,
+		install=args.install or [],
 		**kwargs
 	)
 
