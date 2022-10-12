@@ -89,6 +89,8 @@ class alemiBot(Client, OnReady):
 					kwargs["plugins"]["exclude"] = kwargs["plugins"]["exclude"].split()
 			else:
 				kwargs["plugins"] = { "root": "plugins" }
+		if 'root' not in kwargs['plugins']:
+			kwargs['plugins']['root'] = 'plugins'
 
 		super().__init__(
 			name,
