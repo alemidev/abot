@@ -28,7 +28,7 @@ if __name__ == "__main__":
 	parser.add_argument('--session', dest='session_string', metavar='STRING', help='use given pre-authenticated session string for login')
 	parser.add_argument('--prefix', dest='prefixes', help="prefixes for commands (each character is a distinct one)")
 	parser.add_argument('--sudo', dest='sudo', metavar="UID", type=int, nargs='+', help="user ids of those allowed to operate as owners, overrides config")
-	parser.add_argument('--allow-plugins', dest='allow_plugins', action='store_const', const=True, default=None, help="allow sudoers to install plugins (git submodules)")
+	parser.add_argument('--allow-plugins', dest='allow_plugins', action='store_const', const=True, default=False, help="allow sudoers to install plugins (git submodules)")
 	parser.add_argument('--no-color', dest='color', action='store_const', default=True, const=False, help='disable colors for logger text')
 	parser.add_argument('--debug', dest='debug_level', action='store_const', default=logging.INFO, const=logging.DEBUG, help='Set logging to debug level')
 
@@ -48,16 +48,13 @@ if __name__ == "__main__":
 		kwargs["api_hash"] = args.api_hash
 	if args.session_string is not None:
 		kwargs["session_string"] = args.session_string
-	if args.prefixes is not None:
-		kwargs["prefixes"] = list(args.prefixes)
-	if args.sudo is not None:
-		kwargs["sudo"] = [ int(x) for x in args.sudo ]
-	if args.allow_plugins is not None:
-		kwargs["allowPlugins"] = args.allow_plugins
 
 	app = alemiBot(
 		args.name,
 		config_file=args.config,
+		allow_plugins=args.allow_plugins,
+		sudoers=[ int(x) for x in args.sudo ] if args.sudo is not None else None,
+		prefixes=list(args.prefixes) if args.prefixes is not None else None,
 		**kwargs
 	)
 

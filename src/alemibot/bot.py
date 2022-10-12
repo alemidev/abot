@@ -14,6 +14,7 @@ from setproctitle import setproctitle
 from pyrogram import Client
 from pyrogram.types import User
 from pyrogram.storage import MemoryStorage
+from pyrogram.enums import ParseMode
 
 from .patches import OnReady, DocumentFileStorage
 from .util import get_username, Context
@@ -33,7 +34,16 @@ class alemiBot(Client, OnReady):
 	_lock : asyncio.Lock # for on_ready callback
 	_allow_plugins : bool
 
-	def __init__(self, name:str, config_file:str=None, pyrogram_logs:bool=False, session_string:str="", **kwargs):
+	def __init__(
+			self,
+			name:str,
+			config_file:str=None,
+			allow_plugins:bool=False,
+			sudoers:List[int]=None,
+			prefixes:str=None,
+			pyrogram_logs:bool=False,
+			**kwargs
+	):
 		# Load file config
 		self.config = ConfigParser()
 		self.config.read(config_file or f"{name}.ini")
@@ -50,8 +60,8 @@ class alemiBot(Client, OnReady):
 					else:
 						kwargs[k] = v
 
-		if session_string:
-			storage = MemoryStorage(name, session_string)
+		if "session_string" in kwargs:
+			storage = MemoryStorage(name, kwargs["session_string"])
 		else:
 			storage = DocumentFileStorage(name, Path(kwargs['workdir']) if 'workdir' in kwargs else Client.WORKDIR)
 
@@ -59,7 +69,7 @@ class alemiBot(Client, OnReady):
 			# Get project version from setup.cfg
 			setup_cfg = ConfigParser()
 			setup_cfg.read("setup.cfg")
-			v_base = setup_cfg['metadata'].get('version', fallback="0")
+			v_base = setup_cfg.get('metadata', 'version', fallback="0")
 			# Get current commit hash and append to app version
 			res = subprocess.run(
 				["git", "rev-parse", "--short", "HEAD"],
@@ -78,11 +88,12 @@ class alemiBot(Client, OnReady):
 				if "exclude" in kwargs["plugins"]:
 					kwargs["plugins"]["exclude"] = kwargs["plugins"]["exclude"].split()
 			else:
-				kwargs["plugins"] = { root: "plugins" }
+				kwargs["plugins"] = { "root": "plugins" }
 
 		super().__init__(
 			name,
 			in_memory=True,
+			parse_mode=ParseMode.HTML,
 			**kwargs
 		)
 
@@ -93,24 +104,12 @@ class alemiBot(Client, OnReady):
 		self.ctx = Context()
 		self.logger = logging.getLogger(f"pyrogram.client.{name}")
 		self.start_time = datetime.now()
-		self.prefixes = (
-			kwargs["prefixes"] if "prefixes" in kwargs else
-			list(self.config.get("customization", "prefixes", fallback="./"))
-		)
-		self._allow_plugins = (
-			kwargs["allowPlugins"] if "allowPlugins" in kwargs else
-			self.config.get("perms", "allowPlugins", fallback=False)
-		)
+		self.prefixes = prefixes or list(self.config.get("customization", "prefixes", fallback="./"))
+		self._allow_plugins = allow_plugins or self.config.get("perms", "allowPlugins", fallback=False)
 		# Load immutable perms from config
 		self.auth = Authenticator(name)
-		self.sudoers = (
-			kwargs["sudo"] if "sudo" in kwargs else
-			[ int(uid.strip()) for uid in self.config.get("perms", "sudo", fallback="").split() ]
-		)
-		self.public = (
-			kwargs["public"] if "public" in kwargs else
-			self.config.getboolean("perms", "public", fallback=False) # util/permission
-		)
+		self.sudoers = sudoers or [ int(uid.strip()) for uid in self.config.get("perms", "sudo", fallback="").split() ]
+		self.public = self.config.getboolean("perms", "public", fallback=False) # util/permission
 		# Silence some pyrogram logging prints
 		if not pyrogram_logs:
 			logging.getLogger('pyrogram.session').setLevel(logging.WARNING)  # So it's less spammy
