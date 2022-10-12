@@ -21,9 +21,10 @@ from alemibot.util.help import CATEGORIES, ALIASES, get_all_short_text
 from alemibot.util.command import _Message as Message
 from alemibot.patches import DocumentFileStorage
 from alemibot.util import (
-	report_error, set_offline, is_allowed, sudo, filterCommand, edit_or_reply, is_me,
+	report_error, mark_failed, set_offline, is_allowed, sudo, filterCommand, edit_or_reply, is_me,
 	get_username, cleartermcolor, order_suffix, HelpCategory
 )
+from alemibot.util.plugins import *
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +95,7 @@ async def ping_cmd(client:alemiBot, message:Message):
 	after = time.time()
 	latency = (after - before) * 1000
 	answer = "a sunny day" if message.command.base == "asd" else "pong"
-	await edit_or_reply(message, f"` → ` {answer} (`{latency:.1f}` ms)")
+	await edit_or_reply(message, f"<code> → </code> {answer} (<code>{latency:.1f}</code> ms)")
 
 @HELP.add()
 @alemiBot.on_message(sudo & filterCommand(["info", "about", "flex"]))
@@ -263,6 +264,8 @@ def split_url(url):
 	"dir": ["-d", "--dir"],
 	"branch": ["-b", "--branch"],
 }, flags=["-ssh"]))
+@report_error(logger)
+@mark_failed
 async def plugin_add_cmd(client:alemiBot, message:Message):
 	"""install a plugin
 
@@ -283,105 +286,65 @@ async def plugin_add_cmd(client:alemiBot, message:Message):
 	"""
 	if not client._allow_plugins:
 		return await edit_or_reply(message, "`[!] → ` Plugin management is disabled")
-	out = message.text.markdown if is_me(message) else f"`→ ` {get_username(message.from_user)} requested plugin install"
-	msg = message if is_me(message) else await message.reply(out)
+
+	if not is_me(message):
+		message = await edit_or_reply(message, f"<code>→ </code> {get_username(message.from_user)} requested plugin install")
+
+	if len(message.command) < 1:
+		return await edit_or_reply(message, "<code>[!] → </code> No input")
+
+	user_input = message.command[0]
+	branch = message.command["branch"]
+	folder = message.command["dir"]
+
+	plugin, author = split_url(user_input) # clear url or stuff around
+	if folder is None:
+		folder = plugin
+
+	if user_input.startswith("http") or user_input.startswith("git@"):
+		link = user_input
+	else:
+		if client.config.getboolean("customization", "useSsh", fallback=False) or message.command["-ssh"]:
+			link = f"git@github.com:{author}/{plugin}.git"
+		else:
+			link = f"https://github.com/{author}/{plugin}.git"
+
+	if f"{author}/{plugin}" in get_plugin_list():
+		return await edit_or_reply(message, "<code>[!] → </code> Plugin already installed")
+
+	message = await edit_or_reply(message, f"<code>→ <code> Installing `{author}/{plugin}`")
+
+	if branch is None:
+		branch = await get_repo_head(link) or 'main'
+
+	message = await edit_or_reply(message, "<code> → </code> Fetching source code")
+
 	try:
-		if len(message.command) < 1:
-			out += "\n`[!] → ` No input"
-			return await msg.edit(out)
-		user_input = message.command[0]
-		branch = message.command["branch"]
-		folder = message.command["dir"]
+		await install_plugin(link, branch=branch, path=f"plugins/{folder}")
+	except BranchNotExistingException:
+		return await edit_or_reply(message, f"[<code>FAIL</code>]\n<code>[!] → </code> Non existing branch <code>{branch}</code> for <code>{author}/{plugin}</code>", separator=" ")
+	except RepositoryNotExistingException:
+		return await edit_or_reply(message, f"[<code>FAIL</code>]\n<code>[!] → </code> No plugin <code>{author}/{plugin}</code> could be found", separator=" ")
+	except GitException:
+		return await edit_or_reply(message, f"[<code>FAIL</code>]\n<code>[!] → </code> Could not install plugin `{author}/{plugin}`", separator=" ")
 
-		plugin, author = split_url(user_input) # clear url or stuff around
-		if folder is None:
-			folder = plugin
+	client.logger.info(f"Installed \"{author}/{plugin}\"")
 
-		if user_input.startswith("http") or user_input.startswith("git@"):
-			link = user_input
-		else:
-			if client.config.getboolean("customization", "useSsh", fallback=False) or message.command["-ssh"]:
-				link = f"git@github.com:{author}/{plugin}.git"
-			else:
-				link = f"https://github.com/{author}/{plugin}.git"
+	message = await edit_or_reply(message, "[<code>OK</code>]\n<code> → </code> Checking dependancies", separator=" ")
 
-		out += f"\n`→ ` Installing `{author}/{plugin}`"
-		logger.info(f"Installing \"{author}/{plugin}\"")
+	if os.path.isfile(f"plugins/{plugin}/requirements.txt"):
+		try:
+			count = await install_dependancies(plugin)
+			message = await edit_or_reply(message, f"[<code>{count} new</code>]", separator=" ")
+		except PipException:
+			message = await edit_or_reply(message, "[<code>WARN</code>]", separator=" ")
+	else:
+		message = await edit_or_reply(message, "[<code>N/A</code>]", separator=" ")
+	message = await edit_or_reply(message, "<code> → </code> Restarting process")
+	if isinstance(client.storage, DocumentFileStorage):
+		client.storage._set_last_message(message.id, message.chat.id)
 
-		if os.path.isfile(".gitmodules"):
-			with open(".gitmodules") as f:
-				modules = f.read()
-			matches = re.findall(r"url = git@github.com:(?P<p>.*).git", modules)
-			for match in matches:
-				if match == plugin:
-					out += "`[!] → ` Plugin already installed"
-					return await msg.edit(out)
-
-		if branch is None:
-			out += "\n` → ` Checking branches"
-			await msg.edit(out)
-			proc = await asyncio.create_subprocess_shell(
-				f"GIT_TERMINAL_PROMPT=0 git ls-remote --symref {link} HEAD",
-				stdout=asyncio.subprocess.PIPE,
-				stderr=asyncio.subprocess.STDOUT
-			)
-			stdout, _sterr = await proc.communicate()
-			res = cleartermcolor(stdout.decode())
-			logger.info(res)
-			if res.startswith(("ERROR", "fatal", "remote: Not Found")):
-				out += f" [`FAIL`]\n`[!] → ` Could not find `{link}`"
-				return await msg.edit(out)
-			out += " [`OK`]"
-			match = re.search(r"refs\/heads\/(?P<branch>[^\s]+)(?:\s+)HEAD", res)
-			branch = match['branch'] if match else 'UNKNOWN'
-
-		out += "\n` → ` Fetching source code"
-		await msg.edit(out)
-
-		proc = await asyncio.create_subprocess_shell(
-			f"GIT_TERMINAL_PROMPT=0 git submodule add -b {branch} {link} plugins/{folder}",
-			stdout=asyncio.subprocess.PIPE,
-			stderr=asyncio.subprocess.STDOUT
-		)
-
-		stdout, _stderr = await proc.communicate()
-		res = cleartermcolor(stdout.decode())
-		logger.info(res)
-		if not res.startswith("Cloning"):
-			out += f" [`FAIL`]\n`[!] → ` Plugin `{author}/{plugin}` was wrongly uninstalled"
-			return await msg.edit(out)
-		if "ERROR: Repository not found" in res:
-			out += f" [`FAIL`]\n`[!] → ` No plugin `{author}/{plugin}` could be found"
-			return await msg.edit(out)
-		if re.search(r"fatal: '(.*)' is not a commit", res):
-			out += f" [`FAIL`]\n`[!] → ` Non existing branch `{branch}` for `{author}/{plugin}`"
-			return await msg.edit(out)
-		out += f" [`OK`]\n` → ` Checking dependancies"
-		await msg.edit(out)
-		if os.path.isfile(f"plugins/{plugin}/requirements.txt"):
-			proc = await asyncio.create_subprocess_exec(
-				"pip", "install", "-r", f"plugins/{plugin}/requirements.txt", "--upgrade",
-				stdout=asyncio.subprocess.PIPE,
-				stderr=asyncio.subprocess.STDOUT)
-			stdout, _stderr = await proc.communicate()
-			logger.info(stdout.decode())
-			if b"ERROR" in stdout:
-				logger.warn(stdout.decode())
-				out += " [`WARN`]"
-			else:
-				out += f" [`{stdout.count(b'Uninstalling')} new`]"
-		else:
-			out += " [`N/A`]"
-		out += f"\n` → ` Restarting process"
-		await msg.edit(out)
-		with open("data/lastmsg.json", "w") as f:
-			json.dump({"message_id": msg.id,
-						"chat_id": msg.chat.id}, f)
-		asyncio.get_event_loop().create_task(client.restart())
-	except Exception as e:
-		logger.exception("Error while installing plugin")
-		out += " [`FAIL`]\n`[!] → ` " + str(e)
-		await msg.edit(out) 
+	asyncio.get_event_loop().create_task(client.restart())
 
 # TODO maybe I can merge these 2 commands like trust/revoke ?
 
