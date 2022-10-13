@@ -10,10 +10,12 @@ ARG SESSION_STRING
 ARG NAME="alemibot"
 ARG PREFIX="./"
 ARG SUDO="0"
+ARG INSTALL=""
 
 ENV SESSION_STRING ${SESSION_STRING}
 ENV NAME ${NAME}
 ENV PREFIX ${PREFIX}
 ENV SUDO ${SUDO}
+ENV INSTALL ${INSTALL}
 
-CMD python -m alemibot $NAME --session $SESSION_STRING --sudo $SUDO --prefix $PREFIX
+CMD python -m alemibot $NAME --session="$SESSION_STRING" --sudo="$SUDO" --prefix="$PREFIX" --install="$INSTALL"
