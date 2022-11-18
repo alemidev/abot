@@ -6,7 +6,6 @@ import platform
 import resource
 import os
 import re
-import json
 from datetime import datetime
 
 import psutil
@@ -22,9 +21,12 @@ from alemibot.util.command import _Message as Message
 from alemibot.patches import DocumentFileStorage
 from alemibot.util import (
 	report_error, set_offline, is_allowed, sudo, filterCommand, edit_or_reply, is_me,
-	get_username, cleartermcolor, order_suffix, HelpCategory
+	get_username, order_suffix, HelpCategory
 )
-from alemibot.util.plugins import *
+from alemibot.util.plugins import (
+	install_dependancies, update_alemibot, update_alemibot_dependancies, update_plugins, update_plugins_dependancies,
+	has_plugins, remove_dependancies, remove_plugin, get_plugin_list, get_repo_head, install_plugin, PipException
+)
 
 logger = logging.getLogger(__name__)
 
@@ -169,7 +171,7 @@ async def update_cmd(client:alemiBot, message:Message):
 	force_update = message.command['-force']
 
 	if not is_me(message):
-		message = await message.reply(f"<code>→ </code> {get_username(message.from_user)} requested update")
+		message = await edit_or_reply(message, f"<code>→ </code> {get_username(message.from_user)} requested update")
 	message = await edit_or_reply(message,
 		f"<code>→ </code> <u>runtime</u> <code>{datetime.now() - client.start_time}</code>\n" +
 		"<code> → </code> Fetching updates"
@@ -208,8 +210,8 @@ async def update_cmd(client:alemiBot, message:Message):
 		result = f"[<code>{count} new</code>]"
 
 	await edit_or_reply(message, result + "\n<code> → </code> Restarting process", separator=" ")
-	if msg.chat and isinstance(client.storage, DocumentFileStorage):
-		client.storage._set_last_message(msg.chat.id, msg.id)
+	if message.chat and isinstance(client.storage, DocumentFileStorage):
+		client.storage._set_last_message(message.chat.id, message.id)
 	asyncio.get_event_loop().create_task(client.restart())
 
 PLUGIN_HTTPS = re.compile(r"http(?:s|):\/\/(?:.*)\/(?P<author>[^ ]+)\/(?P<plugin>[^ \.]+)(?:\.git|)")
@@ -298,7 +300,7 @@ async def plugin_add_cmd(client:alemiBot, message:Message):
 		result = "[<code>N/A</code>]"
 
 	await edit_or_reply(message, result + "\n<code> → </code> Restarting process", separator=" ")
-	if isinstance(client.storage, DocumentFileStorage):
+	if message.chat and isinstance(client.storage, DocumentFileStorage):
 		client.storage._set_last_message(message.id, message.chat.id)
 
 	asyncio.get_event_loop().create_task(client.restart())
@@ -321,7 +323,8 @@ async def plugin_remove_cmd(client:alemiBot, message:Message):
 	remove_libraries = message.command["-lib"]
 	if not client._allow_plugins:
 		return await edit_or_reply(message, "<code>[!] → </code> Plugin management is disabled")
-	msg = message if is_me(message) else await message.reply(f"<code>→ </code> {get_username(message.from_user)} requested plugin removal")
+	if not is_me(message):
+		message = await edit_or_reply(message, f"<code>→ </code> {get_username(message.from_user)} requested plugin removal")
 
 	if len(message.command) < 1:
 		message = await edit_or_reply(message, "<code>[!] → </code> No input")
@@ -341,13 +344,13 @@ async def plugin_remove_cmd(client:alemiBot, message:Message):
 	message = await edit_or_reply(message, result + "\n<code> → </code> Removing source code", separator=" ")
 
 	if not await remove_plugin(plugin):
-		client.logger.error(res)
+		client.logger.error(f"Could not deinit {plugin}")
 		return await edit_or_reply(message, f"[<code>FAIL</code>]\n<code>[!] → </code> Could not deinit <code>{plugin}</code>", separator=" ")
 
-	await edit_or_reply(message, f"[<code>OK</code>]\n<code> → </code> Restarting process", separator=" ")
+	await edit_or_reply(message, "[<code>OK</code>]\n<code> → </code> Restarting process", separator=" ")
 
-	if isinstance(client.storage, DocumentFileStorage):
-		client.storage._set_last_message(msg.chat.id, msg.id)
+	if message.chat and isinstance(client.storage, DocumentFileStorage):
+		client.storage._set_last_message(message.chat.id, message.id)
 	asyncio.get_event_loop().create_task(client.restart())
 
 @HELP.add()
@@ -393,7 +396,7 @@ async def manage_allowed_cmd(client:alemiBot, message:Message):
 		users_to_manage.append(peer)
 	elif len(message.command) > 0:
 		if message.command[0] in ["@here", "@everyone"] and message.chat:
-			async for u in client.get_chat_members(message.chat.id):
+			async for u in client.get_chat_members(message.chat.id):  # TODO how do I make mypy fine with this?
 				if u.user.is_bot:
 					continue
 				users_to_manage.append(u.user)
@@ -403,6 +406,8 @@ async def manage_allowed_cmd(client:alemiBot, message:Message):
 				users = await client.get_users(lookup)
 				if users is None:
 					return await edit_or_reply(message, "<code>[!] → </code> No user matched")
+				if not isinstance(users, list):
+					users = [ users ]
 				users_to_manage += users
 			except ValueError:
 				return await edit_or_reply(message, "<code>[!] → </code> Lookup failed")
@@ -436,6 +441,8 @@ async def trusted_list_cmd(client:alemiBot, message:Message):
 	issues = ""
 	try:
 		users = await client.get_users(client.auth.all()) # raises PeerIdInvalid exc if even one of the ids has not been interacted with
+		if not isinstance(users, list):
+			users = [ users ]
 		for u in users:
 			text += get_username(u, mention=True) + ", "
 	except PeerIdInvalid:
