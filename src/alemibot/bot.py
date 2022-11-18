@@ -102,7 +102,7 @@ class alemiBot(Client, OnReady):
 			**kwargs
 		)
 
-		self.storage = storage # we need to override pyrogram storage since we can't pass it anymore
+		self.storage : DocumentFileStorage = storage # we need to override pyrogram storage since we can't pass it anymore
 		self.session_name = name # override storage
 		self._lock = asyncio.Lock()
 		# Set useful attributes
@@ -110,7 +110,7 @@ class alemiBot(Client, OnReady):
 		self.logger = logging.getLogger(f"pyrogram.client.{name}")
 		self.start_time = datetime.now()
 		self.prefixes = prefixes or list(self.config.get("customization", "prefixes", fallback="./"))
-		self._allow_plugins = allow_plugins or self.config.get("perms", "allowPlugins", fallback=False)
+		self._allow_plugins = allow_plugins or self.config.getboolean("perms", "allowPlugins", fallback=False)
 		self._preloaded_plugins = install or []
 		# Load immutable perms from config
 		self.auth = Authenticator(name)
