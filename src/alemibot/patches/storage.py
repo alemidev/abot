@@ -31,12 +31,12 @@ class DocumentFileStorage(FileStorage):
 
 	def update(self):
 		super().update()
-		with self.lock:
+		with self.conn:
 			self.conn.executescript(DOCUMENT_SCHEMA)
 
 	def create(self):
 		super().create()
-		with self.lock:
+		with self.conn:
 			self.conn.executescript(DOCUMENT_SCHEMA)
 
 	def _get_last_message(self) -> Optional[Tuple[int, int]]:
@@ -51,7 +51,7 @@ class DocumentFileStorage(FileStorage):
 		self.conn.execute("INSERT INTO last_message VALUES (?, ?)", (chat_id, message_id,))
 
 	def get_doc(self, key:str) -> Dict[str, Any]:
-		with self.lock:
+		with self.conn:
 			return json.loads(
 				self.conn.execute(
 					"SELECT doc FROM documents WHERE key = ?", (key,)
@@ -59,7 +59,7 @@ class DocumentFileStorage(FileStorage):
 			)
 
 	def put_doc(self, key:str, doc:Dict[str, Any]) -> None:
-		with self.lock:
+		with self.conn:
 			self.conn.execute("DELETE FROM documents WHERE key = ?", (key, ))
 			self.conn.execute("INSERT INTO documents VALUES (?, ?)", (key, json.dumps(doc), ))
 
