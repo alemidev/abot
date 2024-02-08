@@ -21,7 +21,7 @@ from .util import get_username, Context
 from .util.permission import Authenticator
 from .util.plugins import install_dependancies, install_plugin
 
-class alemiBot(Client, OnReady):
+class aBot(Client, OnReady):
 	start_time : datetime
 	ctx : Context
 	me : User
@@ -147,7 +147,7 @@ class alemiBot(Client, OnReady):
 		self.dispatcher.locks_list.append(self._lock)
 		self.logger.info("Running init callbacks")
 		self.me = await self.get_me() # this is used to quickly parse /<cmd>@<who> format for commands
-		setproctitle(f"alemiBot[{get_username(self.me)}]")
+		setproctitle(f"aBot[{get_username(self.me)}]")
 		await self._edit_last()
 		await self._process_ready_callbacks()
 		self.logger.info("Bot started")
@@ -159,7 +159,7 @@ class alemiBot(Client, OnReady):
 
 	async def restart(self):
 		await self.stop()
-		proc = ['python', '-m', 'alemibot'] + sys.argv[1:]
+		proc = ['python', '-m', 'abot'] + sys.argv[1:]
 		self.logger.warning("Executing '%s'", str.join(' ', proc))
 		os.execv(sys.executable, proc) # This will replace current process
 	

@@ -66,7 +66,7 @@ async def get_repo_head(repo:str) -> Optional[str]:
 	match = REPO_HEAD_MATCHER.search(res)
 	return match['branch'] if match else None
 
-async def update_alemibot() -> bool:
+async def update_abot() -> bool:
 	proc = await asyncio.create_subprocess_exec(
 		"git", "pull",
 		stdout=asyncio.subprocess.PIPE,
@@ -162,7 +162,7 @@ async def install_dependancies(plugin:str) -> int:
 		raise PipException(res)
 	return res.count('Uninstalling')  # TODO why did I decide to count 'Uninstalling' ?!??!
 
-async def update_alemibot_dependancies() -> int:
+async def update_abot_dependancies() -> int:
 	proc = await asyncio.create_subprocess_exec(
 		"pip", "install", ".", "--upgrade",
 		stdout=asyncio.subprocess.PIPE,

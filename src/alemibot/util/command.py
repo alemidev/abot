@@ -92,7 +92,7 @@ def filterCommand(commands: Union[str,List[str]], prefixes: Optional[Union[str,L
 			A prefix or a list of prefixes as string the filter should look for.
 			Defaults to "/" (slash). Examples: ".", "!", ["/", "!", "."], list(".:!").
 			Pass "" (empty string) to allow commands with no prefix at all.
-			Pass None to use alemiBot default prefixes.
+			Pass None to use aBot default prefixes.
 		options (``dict { str : list }``, *optional*):
 			A dictionary with name and list of keywords to match. If a keyword is matched 
 			in the commands, it will be consumed together with next element and put in the 
@@ -110,7 +110,7 @@ def filterCommand(commands: Union[str,List[str]], prefixes: Optional[Union[str,L
 		options = {}
 	command_re = re.compile(r"([\"'])(.*?)(?<!\\)\1|(\S+)")
 
-	async def func(flt, client:'alemiBot', message: Message):
+	async def func(flt, client:'aBot', message: Message):
 		if message.scheduled: # allow to trigger commands!
 			return False # don't get triggered when the message is scheduled, only when it's sent! This allows scheduling actions
 

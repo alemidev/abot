@@ -1,1 +1,1 @@
-from .bot import alemiBot
+from .bot import aBot

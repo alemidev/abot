@@ -8,7 +8,7 @@ class ReadyHandler(Handler):
 	"""The Ready handler class. Used to handle client signaling being ready. It is intended to be used with
 	:meth:`~pyrogram.Client.add_handler`
 	For a nicer way to register this handler, have a look at the
-	:meth:`~alemibot.alemiBot.on_ready` decorator.
+	:meth:`~abot.aBot.on_ready` decorator.
 	Parameters:
 		callback (``callable``):
 			Pass a function that will be called when the client is ready. It takes *(client)*
@@ -25,7 +25,7 @@ class OnReady:
 	def on_ready(self=None, group:int=0) -> Callable:
 		"""Decorator for handling client signaling being ready.
 		This does the same thing as :meth:`~pyrogram.Client.add_handler` using the
-		:obj:`~alemibot.bot.ReadyHandler`. While only one pyrogram handler per group
+		:obj:`~abot.bot.ReadyHandler`. While only one pyrogram handler per group
 		will trigger, all OnReady callbacks in each group will be called. Groups
 		can be used to force a load order.
 		Parameters:

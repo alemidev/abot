@@ -84,7 +84,7 @@ class Authenticator:
 		return set(uid for grp in self.storage.data for uid in self.storage.data[grp])
 
 @create
-def sudo(flt:Filter, client:'alemiBot', update:Update):
+def sudo(flt:Filter, client:'aBot', update:Update):
 	if hasattr(update, "from_user") and update.from_user:
 		return update.from_user.is_self or update.from_user.id in client.sudoers
 	elif hasattr(update, "sender_chat") and update.sender_chat:
@@ -98,7 +98,7 @@ class PermsFilter(Filter):
 	def __init__(self, group:str = "_"):
 		self.group = group
 
-	async def __call__(self, client: 'alemiBot', update: Update):
+	async def __call__(self, client: 'aBot', update: Update):
 		if sudo(client, update) or (self.group == "_" and client.public):
 			return True
 		if hasattr(update, "from_user") and update.from_user:

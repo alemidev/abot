@@ -11,7 +11,7 @@ from .message import edit_or_reply
 from .getters import get_user, get_username, get_text
 
 if TYPE_CHECKING:
-	from ..bot import alemiBot
+	from ..bot import aBot
 
 def report_error(lgr:logging.Logger, mark_failed:bool=False) -> Callable:
 	"""Will report errors back to user
@@ -22,7 +22,7 @@ def report_error(lgr:logging.Logger, mark_failed:bool=False) -> Callable:
 	"""
 	def deco(func):
 		@functools.wraps(func)
-		async def wrapper(client:'alemiBot', message:Message, *args, **kwargs):
+		async def wrapper(client:'aBot', message:Message, *args, **kwargs):
 			author = get_username(get_user(message), log=True)
 			pref = "[<code>FAIL</code>]" if mark_failed else ""
 			try:
@@ -56,7 +56,7 @@ def report_error(lgr:logging.Logger, mark_failed:bool=False) -> Callable:
 def set_offline(func) -> Callable:
 	"""Will set user back offline when function is done"""
 	@functools.wraps(func)
-	async def wrapper(client:'alemiBot', message, *args, **kwargs):
+	async def wrapper(client:'aBot', message, *args, **kwargs):
 		await func(client, message, *args, **kwargs)
 		if not client.me.is_bot:
 			await client.invoke(UpdateStatus(offline=True))
@@ -65,7 +65,7 @@ def set_offline(func) -> Callable:
 def cancel_chat_action(func) -> Callable:
 	"""Will cancel any ongoing chat action once handler is done"""
 	@functools.wraps(func)
-	async def wrapper(client:'alemiBot', message:Message, *args, **kwargs):
+	async def wrapper(client:'aBot', message:Message, *args, **kwargs):
 		await func(client, message, *args, **kwargs)
 		await client.send_chat_action(message.chat.id, ChatAction.CANCEL)
 	return wrapper

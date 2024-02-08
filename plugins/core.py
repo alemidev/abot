@@ -15,16 +15,16 @@ from pyrogram.errors import PeerIdInvalid
 from pyrogram.raw.functions import Ping
 from pyrogram.raw.functions.account import GetAuthorizations
 
-from alemibot import alemiBot
-from alemibot.util.help import CATEGORIES, ALIASES, get_all_short_text
-from alemibot.util.command import _Message as Message
-from alemibot.patches import DocumentFileStorage
-from alemibot.util import (
+from abot import aBot
+from abot.util.help import CATEGORIES, ALIASES, get_all_short_text
+from abot.util.command import _Message as Message
+from abot.patches import DocumentFileStorage
+from abot.util import (
 	report_error, set_offline, is_allowed, sudo, filterCommand, edit_or_reply, is_me,
 	get_username, order_suffix, HelpCategory
 )
-from alemibot.util.plugins import (
-	install_dependancies, update_alemibot, update_alemibot_dependancies, update_plugins, update_plugins_dependancies,
+from abot.util.plugins import (
+	install_dependancies, update_abot, update_abot_dependancies, update_plugins, update_plugins_dependancies,
 	has_plugins, remove_dependancies, remove_plugin, get_plugin_list, get_repo_head, install_plugin, PipException
 )
 
@@ -44,10 +44,10 @@ _BASE_HELP_TEMPLATE = """
 """
 
 @HELP.add(cmd="[<cmd>]", sudo=False)
-@alemiBot.on_message(is_allowed & filterCommand(["help"], flags=["-l", "--list"]))
+@aBot.on_message(is_allowed & filterCommand(["help"], flags=["-l", "--list"]))
 @report_error(logger)
 @set_offline
-async def help_cmd(client:alemiBot, message:Message):
+async def help_cmd(client:aBot, message:Message):
 	"""get help on cmd or list all cmds
 
 	Without args, will print all available commands.
@@ -84,10 +84,10 @@ async def help_cmd(client:alemiBot, message:Message):
 		)
 
 @HELP.add(sudo=False)
-@alemiBot.on_message(is_allowed & filterCommand(["asd", "ping"]))
+@aBot.on_message(is_allowed & filterCommand(["asd", "ping"]))
 @report_error(logger)
 @set_offline
-async def ping_cmd(client:alemiBot, message:Message):
+async def ping_cmd(client:aBot, message:Message):
 	"""a sunny day!
 
 	The ping command
@@ -100,10 +100,10 @@ async def ping_cmd(client:alemiBot, message:Message):
 	await edit_or_reply(message, f"<code> → </code> {answer} (<code>{latency:.1f}</code> ms)")
 
 @HELP.add()
-@alemiBot.on_message(sudo & filterCommand(["info", "about", "flex"]))
+@aBot.on_message(sudo & filterCommand(["info", "about", "flex"]))
 @report_error(logger)
 @set_offline
-async def info_cmd(client:alemiBot, message:Message):
+async def info_cmd(client:aBot, message:Message):
 	"""info about project and client status
 
 	Will show project version+link, current uptime, session age (for users), latency, plugins count and system+load specs.
@@ -143,7 +143,7 @@ async def info_cmd(client:alemiBot, message:Message):
 		session_age = datetime.now() - datetime.utcfromtimestamp(sess.date_created)
 	
 	await edit_or_reply(message,
-		f'<code>→ </code> <a href="https://github.com/alemidev/alemibot">ᚨᛚᛖᛗᛁᛒᛟᛏ</a> <code>v{client.app_version}</code>\n' +
+		f'<code>→ </code> <a href="https://github.com/adev/abot">ᚨᛚᛖᛗᛁᛒᛟᛏ</a> <code>v{client.app_version}</code>\n' +
 		f"<code> → </code> <b>uptime</b> <code>{str(datetime.now() - client.start_time)}</code>\n" +
 		(f"<code>  → </code> <b>session age</b> <code>{str(session_age)}</code>\n" if not client.me.is_bot else "") +
 		f"<code> → </code> <b>latency</b> <code>{latency:.1f} ms</code>\n" +
@@ -156,10 +156,10 @@ async def info_cmd(client:alemiBot, message:Message):
 	)
 
 @HELP.add()
-@alemiBot.on_message(sudo & filterCommand("update", flags=["-force"]))
+@aBot.on_message(sudo & filterCommand("update", flags=["-force"]))
 @report_error(logger, mark_failed=True)
 @set_offline
-async def update_cmd(client:alemiBot, message:Message):
+async def update_cmd(client:aBot, message:Message):
 	"""fetch updates and restart client
 
 	Will pull changes from git (`git pull`), install requirements (`pip install -r requirements.txt --upgrade`) \
@@ -177,7 +177,7 @@ async def update_cmd(client:alemiBot, message:Message):
 		"<code> → </code> Fetching updates"
 	)
 
-	pulled = await update_alemibot()
+	pulled = await update_abot()
 
 	if pulled:
 		result = "[<code>OK</code>]"
@@ -199,7 +199,7 @@ async def update_cmd(client:alemiBot, message:Message):
 	message = await edit_or_reply(message, result + "\n<code> → </code> Checking libraries", separator=" ")
 
 	try:
-		core_deps = await update_alemibot_dependancies()
+		core_deps = await update_abot_dependancies()
 		result = f"[<code>{core_deps} new</code>]"
 	except PipException:
 		result = "[<code>WARN</code>]"
@@ -227,21 +227,21 @@ def split_url(url):
 	return plugin, author
 
 @HELP.add(cmd="<plugin>")
-@alemiBot.on_message(sudo & filterCommand(["install", "plugin_add"], options={
+@aBot.on_message(sudo & filterCommand(["install", "plugin_add"], options={
 	"dir": ["-d", "--dir"],
 	"branch": ["-b", "--branch"],
 }, flags=["-ssh"]))
 @report_error(logger, mark_failed=True)
 @set_offline
-async def plugin_add_cmd(client:alemiBot, message:Message):
+async def plugin_add_cmd(client:aBot, message:Message):
 	"""install a plugin
 
-	alemiBot plugins are git repos, cloned into the `plugins` folder as git submodules.
+	aBot plugins are git repos, cloned into the `plugins` folder as git submodules.
 	You can specify which extension to install by giving `user/repo` (will default to github.com), or specify the entire url.
 	For example,
-		`alemidev/alemibot-tricks`
+		`adev/abot-tricks`
 	is the same as
-		`https://github.com/alemidev/alemibot-tricks.git`
+		`https://github.com/adev/abot-tricks.git`
 	By default, https will be used (meaning that if you try to clone a private repo, it will just fail).
 	You can make it clone using ssh	with `-ssh` flag, or by adding `useSsh = True` to your config (under `[customization]`).
 	You can also include your GitHub credentials in the clone url itself:
@@ -308,13 +308,13 @@ async def plugin_add_cmd(client:alemiBot, message:Message):
 # TODO maybe I can merge these 2 commands like trust/revoke ?
 
 @HELP.add(cmd="<plugin>")
-@alemiBot.on_message(sudo & filterCommand(["uninstall", "plugin_remove"], flags=["-lib"]))
+@aBot.on_message(sudo & filterCommand(["uninstall", "plugin_remove"], flags=["-lib"]))
 @report_error(logger, mark_failed=True)
 @set_offline
-async def plugin_remove_cmd(client:alemiBot, message:Message):
+async def plugin_remove_cmd(client:aBot, message:Message):
 	"""remove an installed plugin.
 
-	alemiBot plugins are git repos, cloned into the `plugins` folder as git submodules.
+	aBot plugins are git repos, cloned into the `plugins` folder as git submodules.
 	This will call `git submodule deinit -f`, then remove the related folder in `.git/modules` and last remove \
 	plugin folder and all its content.
 	If flag `-lib` is added, libraries installed with pip will be removed too (may break dependancies of other plugins!)
@@ -354,10 +354,10 @@ async def plugin_remove_cmd(client:alemiBot, message:Message):
 	asyncio.get_event_loop().create_task(client.restart())
 
 @HELP.add()
-@alemiBot.on_message(sudo & filterCommand(["plugins", "plugin", "plugin_list"]))
+@aBot.on_message(sudo & filterCommand(["plugins", "plugin", "plugin_list"]))
 @report_error(logger)
 @set_offline
-async def plugin_list_cmd(client:alemiBot, message:Message):
+async def plugin_list_cmd(client:aBot, message:Message):
 	"""list installed plugins.
 
 	Will basically read the `.gitmodules` file
@@ -376,12 +376,12 @@ async def plugin_list_cmd(client:alemiBot, message:Message):
 		await edit_or_reply(message, "<code>[!] → </code> No plugins installed")
 
 @HELP.add(cmd="[<target>]")
-@alemiBot.on_message(sudo & filterCommand(["allow", "disallow", "revoke"], options={
+@aBot.on_message(sudo & filterCommand(["allow", "disallow", "revoke"], options={
 	'group' : ['-g', '--group'],
 }))
 @report_error(logger)
 @set_offline
-async def manage_allowed_cmd(client:alemiBot, message:Message):
+async def manage_allowed_cmd(client:aBot, message:Message):
 	"""allow/disallow target user
 
 	This command will work differently if invoked with `allow` or with `disallow`.
@@ -426,10 +426,10 @@ async def manage_allowed_cmd(client:alemiBot, message:Message):
 		await edit_or_reply(message, "<code> → </code> No changes")
 
 @HELP.add()
-@alemiBot.on_message(sudo & filterCommand(["trusted", "plist", "permlist"]))
+@aBot.on_message(sudo & filterCommand(["trusted", "plist", "permlist"]))
 @report_error(logger)
 @set_offline
-async def trusted_list_cmd(client:alemiBot, message:Message):
+async def trusted_list_cmd(client:aBot, message:Message):
 	"""list allowed users
 
 	This will be pretty leaky, don't do it around untrusted people!

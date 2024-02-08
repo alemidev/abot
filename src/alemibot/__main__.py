@@ -5,7 +5,7 @@ from logging.handlers import RotatingFileHandler
 
 from setproctitle import setproctitle
 
-from .bot import alemiBot
+from .bot import aBot
 from .util.text import setup_logging
 
 if __name__ == "__main__":
@@ -13,11 +13,11 @@ if __name__ == "__main__":
 	Default logging will only show the message on stdout (but up to INFO) 
 	and show time + type + module + message in file (data/<name>.log)
 	"""
-	setproctitle("alemiBot")
+	setproctitle("aBot")
 
 	parser = argparse.ArgumentParser(
-		prog='python -m alemibot',
-		description='alemiBot | My personal Telegram (user)bot framework',
+		prog='python -m abot',
+		description='aBot | Telegram (user)bot framework',
 	)
 
 	parser.add_argument('name', help='name to use for this client session')
@@ -50,7 +50,7 @@ if __name__ == "__main__":
 	if args.session_string is not None:
 		kwargs["session_string"] = args.session_string
 
-	app = alemiBot(
+	app = aBot(
 		args.name,
 		config_file=args.config,
 		allow_plugins=args.allow_plugins,

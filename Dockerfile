@@ -7,7 +7,7 @@ COPY . .
 RUN pip install .
 
 ARG SESSION_STRING
-ARG NAME="alemibot"
+ARG NAME="abot"
 ARG PREFIX="./"
 ARG SUDO="0"
 ARG INSTALL=""
@@ -18,4 +18,4 @@ ENV PREFIX ${PREFIX}
 ENV SUDO ${SUDO}
 ENV INSTALL ${INSTALL}
 
-CMD python -m alemibot $NAME --session="$SESSION_STRING" --sudo="$SUDO" --prefix="$PREFIX" --install="$INSTALL"
+CMD python -m abot $NAME --session="$SESSION_STRING" --sudo="$SUDO" --prefix="$PREFIX" --install="$INSTALL"
